@@ -23,6 +23,10 @@ export default defineConfig({
       'import.meta.env.BUILD_TIME': JSON.stringify(new Date().toISOString()),
     },
     plugins: [yaml()]
+  },
+  server: {
+    host: true,
+    port: 4321
   }
 });
 
