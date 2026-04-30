@@ -1,7 +1,7 @@
 {
   "name": "1up",
   "version": "0.0.1",
-  "description": "Blog for 1up.page",
+  "description": "Blog for 1up.md",
   "type": "commonjs",
   "main": "index.js",
   "scripts": {

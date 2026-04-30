@@ -2,9 +2,9 @@
 siteName: 1UP
 tagline: Web design, development and UX
 description: >-
-  1up.page is a blog that focuses on standards-based design techniques,
+  1up.md is a blog that focuses on standards-based design techniques,
   useful UX information and expert tips for building effective user interfaces.
-url: https://1up.page
+url: https://1up.md
 timezone: Asia/Seoul
 framework: Astro
 hosting: Cloudflare Pages
@@ -52,4 +52,3 @@ siteIcons:
     type: image/x-icon
     sizes: 48x48
     purpose: any
-

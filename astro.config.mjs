@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import path from 'path';
 
 export default defineConfig({
-  site: 'https://1up.page',
+  site: 'https://1up.md',
   base: '/',
   output: 'static',
   integrations: [sitemap()],
