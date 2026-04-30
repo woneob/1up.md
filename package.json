@@ -11,15 +11,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/woneob/1upnote.git"
+    "url": "https://github.com/woneob/1up.md.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/woneob/1upnote/issues"
-  },
-  "homepage": "https://github.com/woneob/1upnote#readme",
+  "homepage": "https://1up.md",
   "dependencies": {
     "astro": "5.16.5"
   },
