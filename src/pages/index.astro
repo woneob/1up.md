@@ -5,8 +5,8 @@ import path from 'node:path';
 import readingTime from 'reading-time';
 import { formatDate } from '~/utils/formatDate';
 
-const modules = import.meta.glob('/src/content/posts/**/index.md', { eager: true });
-const coverImports = import.meta.glob('/src/content/posts/**/images/cover.{jpg,jpeg,png,webp}', {
+const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
+const coverImports = import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}', {
   eager: true,
   import: 'default',
 });
