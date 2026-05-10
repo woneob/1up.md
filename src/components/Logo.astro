@@ -3,7 +3,7 @@ const { siteName, description, layoutType } = Astro.props;
 const Logo = layoutType === 'main' ? 'h1' : 'div';
 ---
 
-<Logo class="logo">
+<Logo class="logo" transition:persist>
   <figure>
     <a href="/">
       <img src="/images/1up.png" alt={siteName + ' 로고'}>

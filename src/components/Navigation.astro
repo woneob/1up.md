@@ -2,7 +2,7 @@
 const  { nav, currentPageId } = Astro.props;
 ---
 
-<nav class="navigation" aria-label="Primary Navigation">
+<nav class="navigation" aria-label="Primary Navigation" transition:persist>
   <ul class="mainNav">
     {nav.map(item => {
       const isActive = currentPageId === item.label;

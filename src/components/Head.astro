@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from 'astro:transitions';
 import site from '~/data/site.config.yml';
 const { title, description, robots } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -46,4 +47,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     href={new URL('rss.xml', Astro.site)} />
 
   <link rel="author" href="/humans.txt" />
+
+  <ClientRouter />
 </head>
