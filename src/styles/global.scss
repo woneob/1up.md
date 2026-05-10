@@ -216,6 +216,8 @@ body {
 
 .articles {
   article {
+    position: relative;
+
     + article {
       margin-top: 80px;
     }
@@ -239,6 +241,17 @@ body {
         text-overflow: ellipsis;
         color: #222;
 
+        &::before {
+          content: "";
+          position: absolute;
+          z-index: 1;
+          inset: 0;
+        }
+
+        span {
+          position: relative;
+          z-index: 2;
+        }
       }
     }
 
@@ -322,7 +335,6 @@ body {
     color: #666;
   }
 }
-
 
 .posts {
   .postItem {
