@@ -51,7 +51,11 @@ src/content/posts/
 
 ## 스타일
 
-`@use` 모듈 방식의 Sass. 진입점: [src/styles/global.scss](src/styles/global.scss)(`functions`, `reset`, `font` 임포트). View Transitions API가 전체 사이트에 적용됨(`@view-transition { navigation: auto }`).
+`@use` 모듈 방식의 Sass. 진입점: [src/styles/global.scss](src/styles/global.scss)(`functions`, `reset`, `font` 임포트).
+
+## SPA 전환
+
+[src/components/Head.astro](src/components/Head.astro)의 `<ClientRouter />`(astro:transitions)가 SPA 스타일 네비게이션을 담당 — 헤더가 다시 로드되며 발생하는 플리커링 방지가 도입 목적. 시각적 전환 효과 의도는 없으며, [src/styles/global.scss](src/styles/global.scss)의 `::view-transition-old/new(root) { animation: none }` 규칙이 `document.startViewTransition()`의 기본 cross-fade를 끔.
 
 ## 빌드 타임 상수
 
