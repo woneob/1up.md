@@ -1,0 +1,22 @@
+---
+export async function getStaticPaths() {
+  const demos = import.meta.glob('/src/content/posts/*/demos/*/index.astro', { eager: true });
+
+  return Object.entries(demos).map(([filePath, mod]) => {
+    const normalized = filePath.replace(/\\/g, '/');
+    const match = normalized.match(/\/posts\/(\d{4}-\d{2}-\d{2})\.([^/]+)\/demos\/([^/]+)\/index\.astro$/);
+
+    if (!match) {
+      throw new Error(`데모 디렉토리 형식 오류: ${normalized}`);
+    }
+
+    return {
+      params: { slug: match[2], demoSlug: match[3] },
+      props: { Component: mod.default },
+    };
+  });
+}
+
+const { Component } = Astro.props;
+---
+<Component />

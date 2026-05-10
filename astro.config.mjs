@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import yaml from '@rollup/plugin-yaml';
 import sitemap from '@astrojs/sitemap';
 import path from 'path';
+import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
 
 export default defineConfig({
   site: 'https://1up.md',
@@ -9,6 +10,7 @@ export default defineConfig({
   output: 'static',
   integrations: [sitemap()],
   markdown: {
+    remarkPlugins: [resolvePostRelativeUrls],
     shikiConfig: {
       theme: 'nord',
     },
