@@ -33,11 +33,31 @@ src/content/posts/
 - **URL 슬러그**는 날짜 뒤의 부분만 사용 (예: `2025-11-24.bulkhead-pattern` → `/bulkhead-pattern`).
 - `YYYY-MM-DD.slug` 형식에 맞지 않는 폴더는 빌드 시 에러 발생 — [src/pages/[slug].astro](src/pages/[slug].astro), [src/pages/index.astro](src/pages/index.astro) 참조.
 - 템플릿에서 사용하는 프론트매터 필드: `title`, `description`, `pubDate`(ISO + 타임존), `tags`(배열), 선택적 `robots`.
-- 커버 이미지는 [src/pages/index.astro](src/pages/index.astro)의 `import.meta.glob('/src/content/posts/**/images/cover.{jpg,jpeg,png,webp}')` 로 **디렉토리 단위** 매칭 — `images/cover.*` 경로에 있는 파일만 인식됨.
+- 커버 이미지는 [src/pages/index.astro](src/pages/index.astro)의 `import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}')` 로 **디렉토리 단위** 매칭 — 포스트 직속 `images/cover.*` 경로에 있는 파일만 인식됨 (데모 폴더 등 하위는 잡히지 않음).
 
 ### 포스트 로딩 메커니즘
 
 [src/pages/rss.xml.js](src/pages/rss.xml.js) 를 포함한 모든 페이지는 `import.meta.glob('/src/content/posts/*/index.md', { eager: true })` 로 포스트를 읽음. **Content Collections 설정 없음** (`src/content.config.ts` 미존재); `getCollection()`과 `astro:content`는 의도적으로 사용하지 않음. RSS 피드는 프론트매터(`title`, `description`, `pubDate`, `tags`)를 직접 읽어 RSS 2.0 XML을 수동 생성 — Astro 6 / Zod 4 비호환 문제([withastro/astro#15792](https://github.com/withastro/astro/issues/15792))를 회피하기 위해 `@astrojs/rss` 의존성을 제거한 것임. 새로운 포스트 탐색 코드를 추가할 때는 glob 경로를 정식 출처로 유지할 것.
+
+## 데모 페이지
+
+포스트 본문에 iframe 으로 임베드할 인터랙티브 예제는 포스트 폴더 내부에 둠:
+
+```
+src/content/posts/2025-11-24.bulkhead-pattern/
+  index.md
+  demos/
+    <demo-slug>/
+      index.astro     # standalone HTML (DefaultLayout 미사용, <!doctype html>부터 작성)
+      style.scss      # index.astro 에서 `import './style.scss'`
+      script.js       # index.astro 의 <script>import './script.js'</script>
+      images/         # 선택, 같은 폴더 기준 상대 import 가능
+```
+
+- 동적 라우트 [src/pages/[slug]/demos/[demoSlug].astro](src/pages/[slug]/demos/[demoSlug].astro) 가 `import.meta.glob('/src/content/posts/*/demos/*/index.astro', { eager: true })` 로 발견하여 `/<post-slug>/demos/<demo-slug>/` 라우트를 자동 생성.
+- `index.astro` 는 standalone 페이지이므로 `<meta name="robots" content="noindex,nofollow">` 권장.
+- SCSS / JS / 이미지는 같은 폴더 기준 상대 경로 import (Vite 가 번들 처리). 예: `import cover from './images/cover.png'`, SCSS의 `url('./images/bg.png')`.
+- 포스트 본문 (`index.md`) 에서는 상대 경로로 임베드: `<iframe src="demos/<demo-slug>/" ...></iframe>`. 빌드 시 자동으로 절대 경로로 변환됨 ([마크다운 렌더링](#마크다운-렌더링) 참조).
 
 ## 사이트 설정
 
@@ -63,4 +83,5 @@ src/content/posts/
 
 ## 마크다운 렌더링
 
-Shiki 테마: `nord` ([astro.config.mjs](astro.config.mjs)에서 설정).
+- Shiki 테마: `nord` ([astro.config.mjs](astro.config.mjs)에서 설정).
+- 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 마크다운 raw HTML(`<iframe>`, `<img>` 등)의 `src`/`href` 상대 경로를 빌드 시 포스트 슬러그 기준 절대 경로로 자동 치환 (예: `<iframe src="demos/foo/">` → `<iframe src="/<post-slug>/demos/foo/">`). 절대 경로(`/`), 프로토콜 (`http:`, `mailto:` 등), 앵커(`#`)는 변환 대상 아님. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization)를 따르며 이 플러그인의 영향을 받지 않음.
