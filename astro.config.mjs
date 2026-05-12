@@ -8,6 +8,10 @@ export default defineConfig({
   site: 'https://1up.md',
   base: '/',
   output: 'static',
+  trailingSlash: 'never',
+  build: {
+    format: 'file',
+  },
   integrations: [sitemap()],
   markdown: {
     remarkPlugins: [resolvePostRelativeUrls],

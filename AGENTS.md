@@ -54,10 +54,10 @@ src/content/posts/2025-11-24.bulkhead-pattern/
       images/         # 선택, 같은 폴더 기준 상대 import 가능
 ```
 
-- 동적 라우트 [src/pages/[slug]/demos/[demoSlug].astro](src/pages/[slug]/demos/[demoSlug].astro) 가 `import.meta.glob('/src/content/posts/*/demos/*/index.astro', { eager: true })` 로 발견하여 `/<post-slug>/demos/<demo-slug>/` 라우트를 자동 생성.
+- 동적 라우트 [src/pages/[slug]/demos/[demoSlug].astro](src/pages/[slug]/demos/[demoSlug].astro) 가 `import.meta.glob('/src/content/posts/*/demos/*/index.astro', { eager: true })` 로 발견하여 `/<post-slug>/demos/<demo-slug>` 라우트를 자동 생성.
 - `index.astro` 는 standalone 페이지이므로 `<meta name="robots" content="noindex,nofollow">` 권장.
-- SCSS / JS / 이미지는 같은 폴더 기준 상대 경로 import (Vite 가 번들 처리). 예: `import cover from './images/cover.png'`, SCSS의 `url('./images/bg.png')`.
-- 포스트 본문 (`index.md`) 에서는 상대 경로로 임베드: `<iframe src="demos/<demo-slug>/" ...></iframe>`. 빌드 시 자동으로 절대 경로로 변환됨 ([마크다운 렌더링](#마크다운-렌더링) 참조).
+- SCSS / JS / 이미지는 같은 폴더 기준 상대 경로 import (Vite 가 번들 처리). 예: `import cover from './images/cover.png'`, SCSS의 `url('./images/bg.png')`. Vite가 절대 경로의 번들 자산으로 치환하므로 [URL 정책](#url-정책)의 영향을 받지 않음.
+- 포스트 본문 (`index.md`) 에서는 상대 경로로 임베드: `<iframe src="demos/<demo-slug>" ...></iframe>`. 빌드 시 자동으로 절대 경로로 변환됨 ([마크다운 렌더링](#마크다운-렌더링) 참조).
 
 ## 사이트 설정
 
@@ -81,7 +81,11 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 `import.meta.env.BUILD_TIME`은 [astro.config.mjs](astro.config.mjs)의 Vite `define`으로 주입되는 빌드 시점 ISO 타임스탬프.
 
+## URL 정책
+
+trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 `trailingSlash: 'never'` + `build.format: 'file'` 로 설정되어 있어 정적 출력은 `/foo/index.html` 가 아닌 `/foo.html` 형태이며 캐노니컬 URL은 `/foo`. 내부 링크 작성 시 항상 슬래시 없이 작성하고, 마크다운 raw HTML에서 `demos/foo/` 처럼 끝 슬래시를 넣어도 [resolve-post-relative-urls 플러그인](src/plugins/resolve-post-relative-urls.mjs)이 빌드 시 제거함.
+
 ## 마크다운 렌더링
 
 - Shiki 테마: `nord` ([astro.config.mjs](astro.config.mjs)에서 설정).
-- 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 마크다운 raw HTML(`<iframe>`, `<img>` 등)의 `src`/`href` 상대 경로를 빌드 시 포스트 슬러그 기준 절대 경로로 자동 치환 (예: `<iframe src="demos/foo/">` → `<iframe src="/<post-slug>/demos/foo/">`). 절대 경로(`/`), 프로토콜 (`http:`, `mailto:` 등), 앵커(`#`)는 변환 대상 아님. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization)를 따르며 이 플러그인의 영향을 받지 않음.
+- 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 마크다운 raw HTML(`<iframe>`, `<img>` 등)의 `src`/`href` 상대 경로를 빌드 시 포스트 슬러그 기준 절대 경로로 자동 치환 (예: `<iframe src="demos/foo/">` → `<iframe src="/<post-slug>/demos/foo">`). 경로의 trailing slash 는 [URL 정책](#url-정책)에 따라 제거. 절대 경로(`/`), 프로토콜 (`http:`, `mailto:` 등), 앵커(`#`)는 변환 대상 아님. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization)를 따르며 이 플러그인의 영향을 받지 않음.
