@@ -11,10 +11,8 @@ import { truncate } from '~/utils/truncate';
 import site from '~/data/site.config.yml';
 import nav from '~/data/navigation.json';
 
-const { title, description, robots } = Astro.props;
+const { title, description, robots, pageId: pageIdProp } = Astro.props;
 const currentPath = Astro.url.pathname;
-
-console.log(robots)
 
 function getPageId(path) {
   if (path === '/') return 'posts';
@@ -28,7 +26,7 @@ function getPageId(path) {
   return 'unknown';
 }
 
-const pageId = getPageId(currentPath);
+const pageId = pageIdProp ?? getPageId(currentPath);
 const pageTitle = title ? `${title} | ${site.siteName}` : site.siteName;
 const pageDescription = truncate(description ?? site.tagline);
 const layoutType = currentPath === '/' ? 'main' : 'sub';
