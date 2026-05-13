@@ -1,6 +1,8 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import path from 'node:path';
+import readingTime from 'reading-time';
+import { formatDate } from '~/utils/formatDate';
 
 export async function getStaticPaths() {
   const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
@@ -49,17 +51,37 @@ if (!postModule) {
 const { frontmatter } = postModule;
 const { title, description, pubDate, tags, robots } = frontmatter;
 const Content = postModule.default;
+const stats = readingTime(postModule.rawContent());
 ---
 
 <DefaultLayout {title} {description} {robots} pageId="post">
   <article>
     <h1>{title}</h1>
-    <p>발행일: {pubDate}</p>
+
+    <dl class="postMeta">
+      <div class="postMetaItem" data-type="published">
+        <dt>Published</dt>
+        <dd>
+          <time datetime={pubDate}>
+            {formatDate(pubDate)}
+          </time>
+        </dd>
+      </div>
+
+      <div class="postMetaItem" data-type="readingTime">
+        <dt>Reading time</dt>
+        <dd>
+          <data value={Math.ceil(stats.minutes)}>
+            {stats.text}
+          </data>
+        </dd>
+      </div>
+    </dl>
 
     {tags && (
-      <ul>
+      <ul class="tags">
         {tags.map(tag => (
-          <li><a href={`/tags/${tag}`}>{tag}</a></li>
+          <li><a href={`/tags/${tag}`} rel="tag">{tag}</a></li>
         ))}
       </ul>
     )}
