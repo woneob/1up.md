@@ -1,9 +1,9 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
+import PostMeta from '~/components/PostMeta.astro';
 import { Image } from 'astro:assets';
 import path from 'node:path';
 import readingTime from 'reading-time';
-import { formatDate } from '~/utils/formatDate';
 
 const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
 const coverImports = import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}', {
@@ -71,25 +71,7 @@ posts.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime
         </a>
       </h2>
 
-      <dl class="postMeta">
-        <div class="postMetaItem" data-type="published">
-          <dt>Published</dt>
-          <dd>
-            <time datetime={post.pubDate}>
-              {formatDate(post.pubDate)}
-            </time>
-          </dd>
-        </div>
-
-        <div class="postMetaItem" data-type="readingTime">
-          <dt>Reading time</dt>
-          <dd>
-            <data value={Math.ceil(post.stats.minutes)}>
-              {post.stats.text}
-            </data>
-          </dd>
-        </div>
-      </dl>
+      <PostMeta pubDate={post.pubDate} stats={post.stats} />
       <div class="postBody">
         <p>{post.description}</p>
       </div>

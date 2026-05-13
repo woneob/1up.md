@@ -1,8 +1,8 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
+import PostMeta from '~/components/PostMeta.astro';
 import path from 'node:path';
 import readingTime from 'reading-time';
-import { formatDate } from '~/utils/formatDate';
 
 export async function getStaticPaths() {
   const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
@@ -58,25 +58,7 @@ const stats = readingTime(postModule.rawContent());
   <article>
     <h1>{title}</h1>
 
-    <dl class="postMeta">
-      <div class="postMetaItem" data-type="published">
-        <dt>Published</dt>
-        <dd>
-          <time datetime={pubDate}>
-            {formatDate(pubDate)}
-          </time>
-        </dd>
-      </div>
-
-      <div class="postMetaItem" data-type="readingTime">
-        <dt>Reading time</dt>
-        <dd>
-          <data value={Math.ceil(stats.minutes)}>
-            {stats.text}
-          </data>
-        </dd>
-      </div>
-    </dl>
+    <PostMeta {pubDate} {stats} />
 
     {tags && (
       <ul class="tags">

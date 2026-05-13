@@ -1,6 +1,8 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
+import PostMeta from '~/components/PostMeta.astro';
 import path from 'node:path';
+import readingTime from 'reading-time';
 
 export async function getStaticPaths() {
   const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
@@ -20,9 +22,15 @@ const { tag } = Astro.params;
 const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
 
 const posts = Object.entries(modules).map(([filePath, mod]) => {
-  const normalized = path.normalize(filePath);
-  const slug = path.basename(path.dirname(normalized));
+  const dir = path.dirname(filePath).replace(/\\/g, '/');
+  const base = path.basename(dir);
+  const match = base.match(/^(\d{4}-\d{2}-\d{2})\.(.+)$/);
+
+  if (!match) throw new Error(`Invalid post folder name: ${base}`);
+
+  const slug = match[2];
   const frontmatter = mod.frontmatter ?? {};
+  const stats = readingTime(mod.rawContent());
 
   return {
     slug,
@@ -30,10 +38,14 @@ const posts = Object.entries(modules).map(([filePath, mod]) => {
     description: frontmatter.description || '',
     pubDate: frontmatter.pubDate || '',
     tags: frontmatter.tags || [],
+    stats,
   };
 });
 
-const filtered = posts.filter(post => post.tags.includes(tag));
+const filtered = posts
+  .filter(post => post.tags.includes(tag))
+  .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+
 const title = `Tag: ${tag}`;
 const description = `"${tag}" 태그를 가진 게시물`;
 ---
@@ -44,17 +56,22 @@ const description = `"${tag}" 태그를 가진 게시물`;
   {filtered.length === 0 ? (
     <p>해당 태그의 게시물이 없습니다.</p>
   ) : (
-    <ul>
+    <div class="articles">
       {filtered.map(post => (
-        <li>
-          <a href={`/${post.slug}`}>
-            <strong>{post.title}</strong>
-          </a>
-          <br/>
-          <small>{new Date(post.pubDate).toLocaleDateString()}</small>
-          <p>{post.description}</p>
-        </li>
+        <article>
+          <h2>
+            <a href={`/${post.slug}`}>
+              <span>{post.title}</span>
+            </a>
+          </h2>
+
+          <PostMeta pubDate={post.pubDate} stats={post.stats} />
+
+          <div class="postBody">
+            <p>{post.description}</p>
+          </div>
+        </article>
       ))}
-    </ul>
+    </div>
   )}
 </DefaultLayout>

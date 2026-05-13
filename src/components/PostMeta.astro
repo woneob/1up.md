@@ -1,0 +1,27 @@
+---
+import { formatDate } from '~/utils/formatDate';
+
+const { pubDate, stats } = Astro.props;
+---
+
+<dl class="postMeta">
+  <div class="postMetaItem" data-type="published">
+    <dt>Published</dt>
+    <dd>
+      <time datetime={pubDate}>
+        {formatDate(pubDate)}
+      </time>
+    </dd>
+  </div>
+
+  {stats && (
+    <div class="postMetaItem" data-type="readingTime">
+      <dt>Reading time</dt>
+      <dd>
+        <data value={Math.ceil(stats.minutes)}>
+          {stats.text}
+        </data>
+      </dd>
+    </div>
+  )}
+</dl>
