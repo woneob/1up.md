@@ -24,7 +24,6 @@
     "@astrojs/sitemap": "3.7.2",
     "@rollup/plugin-yaml": "4.1.2",
     "reading-time": "1.5.0",
-    "sass": "1.96.0",
-    "shiki": "3.20.0"
+    "sass": "1.96.0"
   }
 }
