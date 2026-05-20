@@ -61,6 +61,9 @@ posts.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime
             class="cover"
             format="webp"
             fit="cover"
+            widths={[320, 640, 1000]}
+            sizes="auto"
+            loading="lazy"
           />
         </figure>
       )}
