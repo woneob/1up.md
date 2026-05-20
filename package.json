@@ -1,6 +1,6 @@
 {
   "name": "1up",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Blog for 1up.md",
   "type": "commonjs",
   "main": "index.js",
@@ -18,12 +18,12 @@
   "license": "ISC",
   "homepage": "https://1up.md",
   "dependencies": {
-    "astro": "6.2.2"
+    "astro": "6.3.6"
   },
   "devDependencies": {
     "@astrojs/sitemap": "3.7.2",
     "@rollup/plugin-yaml": "4.1.2",
     "reading-time": "1.5.0",
-    "sass": "1.96.0"
+    "sass": "1.99.0"
   }
 }
