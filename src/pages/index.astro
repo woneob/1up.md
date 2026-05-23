@@ -75,11 +75,12 @@ posts.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime
       </h2>
 
       <PostMeta pubDate={post.pubDate} stats={post.stats} />
+
       <div class="postBody">
         <p>{post.description}</p>
       </div>
 
-      <ul class="tags">
+      <ul class="postTags">
         {post.tags.map(tag => (
           <li>
             <a href={`/tags/${tag}`} rel="tag">{tag}</a>

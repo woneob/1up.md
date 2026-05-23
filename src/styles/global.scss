@@ -251,50 +251,7 @@ body {
       }
     }
 
-    .postMeta {
-      display: flex;
-      justify-content: flex-start;
-      flex-wrap: wrap;
 
-      .postMetaItem {
-        position: relative;
-        margin-right: 10px;
-        padding-left: 16px;
-
-        dt {
-          position: absolute;
-          width: 1px;
-          height: 1px;
-          margin: -1px;
-          overflow: hidden;
-          clip: rect(0, 0, 0, 0);
-        }
-
-        dd {
-          font-size: 13px;
-          color: #777;
-        }
-
-        &::before {
-          content: "";
-          position: absolute;
-          width: 16px;
-          height: 16px;
-          inset: 0 auto 0 0;
-          margin: auto;
-          background-repeat: no-repeat;
-          background-size: contain;
-        }
-
-        $meta-names: ("published", "readingTime", "wordCount");
-
-        @each $name in $meta-names {
-          &[data-type="#{$name}"]::before {
-            background-image: url("/images/metaIcons/metaIcon_#{$name}.svg");
-          }
-        }
-      }
-    }
 
     .postBody {
       padding: 0 2px;
@@ -303,25 +260,6 @@ body {
       overflow: hidden;
       text-align: justify;
       color: #666;
-    }
-
-    .tags {
-      margin-top: 10px;
-
-      li {
-        display: inline-block;
-        margin-right: 6px;
-
-        a {
-          padding: 1px 10px;
-          background-color:#eee;
-          border: 1px solid #ddd;
-          border-radius: 3px;
-          font-size: 15px;
-          text-decoration: none;
-          color: #555;
-        }
-      }
     }
   }
 
@@ -332,98 +270,71 @@ body {
   }
 }
 
-.posts {
-  .postItem {
-    padding-bottom: 40px;
 
-    .postHeader {
-      h2 {
-        font-size: rem(28);
-        font-weight: 300;
+.postMeta {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 
-        a {
-          text-decoration: none;
-          color: #333;
+  .postMetaItem {
+    position: relative;
+    margin-right: 10px;
+    padding-left: 16px;
 
-          &:hover {
-            color: #000;
-          }
-        }
-      }
-
-      .postMeta {
-        display: flex;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-
-        .postMetaItem {
-          position: relative;
-          margin-right: 10px;
-          padding-left: 16px;
-
-          dt {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-          }
-
-          dd {
-            font-size: 13px;
-            color: #666;
-          }
-
-          &::before {
-            content: "";
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            inset: 0 auto 0 0;
-            margin: auto;
-            background-repeat: no-repeat;
-            background-size: contain;
-          }
-
-          $meta-names: ("published", "readingTime", "wordCount");
-
-          @each $name in $meta-names {
-            &[data-type="#{$name}"]::before {
-              background-image: url("/images/metaIcon_#{$name}.svg");
-            }
-          }
-        }
-      }
+    dt {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
     }
 
-    .postBody {
-      margin-top: 14px;
-      font-size: rem(16);
-      text-align: justify;
-      color: #555;
+    dd {
+      font-size: 13px;
+      color: #777;
     }
 
-    .tags {
-      margin-top: 10px;
+    &::before {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      inset: 0 auto 0 0;
+      margin: auto;
+      background-repeat: no-repeat;
+      background-size: contain;
+    }
 
-      li {
-        display: inline-block;
-        margin-right: 4px;
+    $meta-names: ("published", "readingTime", "wordCount");
 
-        a {
-          padding: 1px 10px;
-          background-color:#eee;
-          border: 1px solid #ddd;
-          border-radius: 3px;
-          font-size: 13px;
-          text-decoration: none;
-          color: #555;
-        }
+    @each $name in $meta-names {
+      &[data-type="#{$name}"]::before {
+        background-image: url("/images/metaIcons/metaIcon_#{$name}.svg");
       }
     }
   }
 }
+
+.postTags {
+  margin-top: 10px;
+
+  li {
+    display: inline-block;
+    margin-right: 6px;
+
+    a {
+      padding: 1px 10px;
+      background-color:#eee;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 15px;
+      text-decoration: none;
+      color: #555;
+    }
+  }
+}
+
 
 .siteFooter {
   padding-top: 30px;
