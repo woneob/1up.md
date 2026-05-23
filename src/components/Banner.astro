@@ -2,7 +2,7 @@
 import site from '~/data/site.config.yml';
 
 const buildTime = import.meta.env.BUILD_TIME;
-const date = new Date(buildTime);
+const date = buildTime ? new Date(buildTime) : new Date();
 
 const time = new Intl.DateTimeFormat('en-US', {
   hour: 'numeric',

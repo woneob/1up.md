@@ -26,7 +26,9 @@ export default defineConfig({
       }
     },
     define: {
-      'import.meta.env.BUILD_TIME': JSON.stringify(new Date().toISOString()),
+      'import.meta.env.BUILD_TIME': JSON.stringify(
+        process.env.NODE_ENV === 'production' ? new Date().toISOString() : ''
+      ),
     },
     plugins: [yaml()]
   },
