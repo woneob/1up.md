@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
+import PostTags from '~/components/PostTags.astro';
 import path from 'node:path';
 import readingTime from 'reading-time';
 
@@ -57,17 +58,8 @@ const stats = readingTime(postModule.rawContent());
 <DefaultLayout {title} {description} {robots} pageId="post">
   <article>
     <h1>{title}</h1>
-
     <PostMeta {pubDate} {stats} />
-
-    {tags && (
-      <ul class="tags">
-        {tags.map(tag => (
-          <li><a href={`/tags/${tag}`} rel="tag">{tag}</a></li>
-        ))}
-      </ul>
-    )}
-
+    <PostTags {tags} />
     <Content />
   </article>
 </DefaultLayout>

@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
+import PostTags from '~/components/PostTags.astro';
 import { Image } from 'astro:assets';
 import path from 'node:path';
 import readingTime from 'reading-time';
@@ -80,13 +81,7 @@ posts.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime
         <p>{post.description}</p>
       </div>
 
-      <ul class="postTags">
-        {post.tags.map(tag => (
-          <li>
-            <a href={`/tags/${tag}`} rel="tag">{tag}</a>
-          </li>
-        ))}
-      </ul>
+      <PostTags tags={post.tags} />
     </article>
     ))}
 

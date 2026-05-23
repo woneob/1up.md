@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
+import PostTags from '~/components/PostTags.astro';
 import path from 'node:path';
 import readingTime from 'reading-time';
 
@@ -70,6 +71,8 @@ const description = `"${tag}" 태그를 가진 게시물`;
           <div class="postBody">
             <p>{post.description}</p>
           </div>
+
+          <PostTags tags={post.tags} />
         </article>
       ))}
     </div>
