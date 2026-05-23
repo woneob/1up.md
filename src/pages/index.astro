@@ -1,8 +1,6 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
-import PostMeta from '~/components/PostMeta.astro';
-import PostTags from '~/components/PostTags.astro';
-import { Image } from 'astro:assets';
+import PostCard from '~/components/PostCard.astro';
 import path from 'node:path';
 import readingTime from 'reading-time';
 
@@ -51,38 +49,7 @@ posts.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime
 <DefaultLayout>
   <div class="articles">
     {posts.map(post => (
-    <article>
-      {post.cover && (
-        <figure class="cover">
-          <Image
-            src={post.cover}
-            width={960}
-            height={320}
-            alt={post.title}
-            class="cover"
-            format="webp"
-            fit="cover"
-            widths={[320, 640, 1000]}
-            sizes="auto"
-            loading="lazy"
-          />
-        </figure>
-      )}
-
-      <h2>
-        <a href={`/${post.slug}`}>
-          <span>{post.title}</span>
-        </a>
-      </h2>
-
-      <PostMeta pubDate={post.pubDate} stats={post.stats} />
-
-      <div class="postBody">
-        <p>{post.description}</p>
-      </div>
-
-      <PostTags tags={post.tags} />
-    </article>
+      <PostCard {post} showCover />
     ))}
 
     {posts.length === 0 && (

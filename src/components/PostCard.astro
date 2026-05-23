@@ -1,0 +1,40 @@
+---
+import { Image } from 'astro:assets';
+import PostMeta from '~/components/PostMeta.astro';
+import PostTags from '~/components/PostTags.astro';
+
+const { post, showCover = false } = Astro.props;
+---
+
+<article>
+  {showCover && post.cover && (
+    <figure class="cover">
+      <Image
+        src={post.cover}
+        width={960}
+        height={320}
+        alt={post.title}
+        class="cover"
+        format="webp"
+        fit="cover"
+        widths={[320, 640, 1000]}
+        sizes="auto"
+        loading="lazy"
+      />
+    </figure>
+  )}
+
+  <h2>
+    <a href={`/${post.slug}`}>
+      <span>{post.title}</span>
+    </a>
+  </h2>
+
+  <PostMeta pubDate={post.pubDate} stats={post.stats} />
+
+  <div class="postBody">
+    <p>{post.description}</p>
+  </div>
+
+  <PostTags tags={post.tags} />
+</article>
