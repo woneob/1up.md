@@ -13,7 +13,7 @@ const { title, description, robots, pageId: pageIdProp } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 function getPageId(path) {
-  if (path === '/') return 'posts';
+  if (path === '/' || path === '/index.html') return 'posts';
 
   for (const item of nav) {
     if (path.startsWith(item.base)) {
@@ -27,7 +27,7 @@ function getPageId(path) {
 const pageId = pageIdProp ?? getPageId(currentPath);
 const pageTitle = title ? `${title} | ${site.siteName}` : site.siteName;
 const pageDescription = truncate(description ?? site.tagline);
-const layoutType = currentPath === '/' ? 'main' : 'sub';
+const layoutType = (currentPath === '/' || currentPath === '/index.html') ? 'main' : 'sub';
 ---
 
 <html lang={site.language.code}>
