@@ -18,9 +18,8 @@ const { pubDate, stats } = Astro.props;
     <div class="postMetaItem" data-type="readingTime">
       <dt>Reading time</dt>
       <dd>
-        <data value={Math.ceil(stats.minutes)}>
-          {stats.text}
-        </data>
+        <data value={Math.ceil(stats.minutes)}>{stats.text}</data>
+        ({stats.words.toLocaleString()} words)
       </dd>
     </div>
   )}

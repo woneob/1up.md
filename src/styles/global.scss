@@ -306,7 +306,7 @@ body {
       background-size: contain;
     }
 
-    $meta-names: ("published", "readingTime", "wordCount");
+    $meta-names: ("published", "readingTime");
 
     @each $name in $meta-names {
       &[data-type="#{$name}"]::before {
