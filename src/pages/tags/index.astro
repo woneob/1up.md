@@ -1,28 +1,11 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
-import path from 'node:path';
+import { getAllPosts } from '~/utils/posts.js';
 
-// 모든 포스트 로드
-const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
-
-const posts = Object.entries(modules).map(([filePath, mod]) => {
-  const normalized = path.normalize(filePath);
-  const slug = path.basename(path.dirname(normalized));
-
-  const frontmatter = mod.frontmatter ?? {};
-
-  return {
-    slug,
-    title: frontmatter.title || slug,
-    description: frontmatter.description || '',
-    pubDate: frontmatter.pubDate || '',
-    tags: frontmatter.tags || [],
-  };
-});
-
-// 전체 태그 수집
 const tagSet = new Set();
-posts.forEach(post => post.tags.forEach(tag => tagSet.add(tag)));
+getAllPosts().forEach(({ frontmatter }) => {
+  (frontmatter.tags ?? []).forEach(tag => tagSet.add(tag));
+});
 const tags = Array.from(tagSet);
 
 const title = "Tags";

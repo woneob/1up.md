@@ -2,57 +2,22 @@
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
-import path from 'node:path';
-import readingTime from 'reading-time';
+import { getAllPosts, getPostBySlug } from '~/utils/posts.js';
 
-export async function getStaticPaths() {
-  const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
-
-  return Object.keys(modules).map((filePath) => {
-    const normalized = path.normalize(filePath);
-    const dir = path.dirname(normalized);
-    const base = path.basename(dir);
-    const match = base.match(/^(\d{4}-\d{2}-\d{2})\.(.+)$/);
-
-    if (!match) {
-      throw new Error(`포스트 디렉토리 형식 오류: ${base}`);
-    }
-
-    const slug = match[2];
-
-    return { params: { slug } };
-  });
+export function getStaticPaths() {
+  return getAllPosts().map(({ slug }) => ({ params: { slug } }));
 }
 
 const { slug } = Astro.params;
-const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
-let postModule = null;
+const post = getPostBySlug(slug);
 
-for (const [filePath, mod] of Object.entries(modules)) {
-  const dir = path.dirname(filePath);
-  const base = path.basename(dir);
-
-  // base = "2025-11-24.bulkhead-pattern"
-  const match = base.match(/^(\d{4}-\d{2}-\d{2})\.(.+)$/);
-
-  if (!match) continue;
-
-  const folderSlug = match[2];
-
-  if (folderSlug === slug) {
-    postModule = mod;
-    break;
-  }
-}
-
-if (!postModule) {
+if (!post) {
   throw new Error(`포스트를 찾을 수 없습니다: ${slug}`);
 }
 
-const { frontmatter } = postModule;
-const { title, description, pubDate, tags, robots } = frontmatter;
-const Content = postModule.default;
-const stats = readingTime(postModule.rawContent());
+const { title, description, pubDate, tags, robots } = post.frontmatter;
+const Content = post.module.default;
+const stats = post.stats;
 ---
 
 <DefaultLayout {title} {description} {robots} pageId="post">

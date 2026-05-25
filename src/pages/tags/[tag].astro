@@ -1,50 +1,28 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostCard from '~/components/PostCard.astro';
-import path from 'node:path';
-import readingTime from 'reading-time';
+import { getAllPosts } from '~/utils/posts.js';
 
-export async function getStaticPaths() {
-  const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
+export function getStaticPaths() {
   const tagSet = new Set();
-
-  for (const mod of Object.values(modules)) {
-    const tags = mod.frontmatter?.tags ?? [];
-    tags.forEach(tag => tagSet.add(tag));
-  }
-
-  return Array.from(tagSet).map(tag => ({
-    params: { tag },
-  }));
+  getAllPosts().forEach(({ frontmatter }) => {
+    (frontmatter.tags ?? []).forEach(tag => tagSet.add(tag));
+  });
+  return Array.from(tagSet).map(tag => ({ params: { tag } }));
 }
 
 const { tag } = Astro.params;
-const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
 
-const posts = Object.entries(modules).map(([filePath, mod]) => {
-  const dir = path.dirname(filePath).replace(/\\/g, '/');
-  const base = path.basename(dir);
-  const match = base.match(/^(\d{4}-\d{2}-\d{2})\.(.+)$/);
-
-  if (!match) throw new Error(`Invalid post folder name: ${base}`);
-
-  const slug = match[2];
-  const frontmatter = mod.frontmatter ?? {};
-  const stats = readingTime(mod.rawContent());
-
-  return {
+const filtered = getAllPosts()
+  .filter(({ frontmatter }) => (frontmatter.tags ?? []).includes(tag))
+  .map(({ slug, frontmatter, stats }) => ({
     slug,
     title: frontmatter.title || slug,
     description: frontmatter.description || '',
     pubDate: frontmatter.pubDate || '',
     tags: frontmatter.tags || [],
     stats,
-  };
-});
-
-const filtered = posts
-  .filter(post => post.tags.includes(tag))
-  .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+  }));
 
 const title = `Tag: ${tag}`;
 const description = `"${tag}" 태그를 가진 게시물`;

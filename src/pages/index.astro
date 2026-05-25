@@ -1,49 +1,17 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostCard from '~/components/PostCard.astro';
-import path from 'node:path';
-import readingTime from 'reading-time';
+import { getAllPosts } from '~/utils/posts.js';
 
-const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
-const coverImports = import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}', {
-  eager: true,
-  import: 'default',
-});
-
-const coverByDir = Object.entries(coverImports).reduce((map, [filePath, img]) => {
-  const normalized = filePath.replace(/\\/g, '/');
-  const dir = normalized.replace(/\/images\/[^/]+$/, '');
-
-  if (!map[dir]) {
-    map[dir] = img;
-  }
-
-  return map;
-}, {});
-
-const posts = Object.entries(modules).map(([filePath, mod]) => {
-  const dir = path.dirname(filePath).replace(/\\/g, '/'); // "../content/posts/2025-11-24.bulkhead"
-  const base = path.basename(dir);
-
-  const match = base.match(/^(\d{4}-\d{2}-\d{2})\.(.+)$/);
-  if (!match) throw new Error(`Invalid post folder name: ${base}`);
-
-  const slug = match[2];
-  const stats = readingTime(mod.rawContent());
-  const cover = coverByDir[dir] ?? null;
-
-  return {
-    slug,
-    title: mod.frontmatter.title,
-    description: mod.frontmatter.description,
-    pubDate: mod.frontmatter.pubDate,
-    tags: mod.frontmatter.tags,
-    cover,
-    stats,
-  };
-});
-
-posts.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+const posts = getAllPosts().map(({ slug, frontmatter, cover, stats }) => ({
+  slug,
+  title: frontmatter.title,
+  description: frontmatter.description,
+  pubDate: frontmatter.pubDate,
+  tags: frontmatter.tags,
+  cover,
+  stats,
+}));
 ---
 
 <DefaultLayout>

@@ -1,7 +1,5 @@
-import path from 'node:path';
 import site from '~/data/site.config.yml';
-
-const POST_DIR_PATTERN = /^(\d{4}-\d{2}-\d{2})\.(.+)$/;
+import { getAllPosts } from '~/utils/posts.js';
 
 function escapeXml(value) {
   return String(value)
@@ -17,23 +15,13 @@ function cdata(value) {
 }
 
 export async function GET(context) {
-  const modules = import.meta.glob('/src/content/posts/*/index.md', { eager: true });
-
-  const items = Object.entries(modules)
-    .map(([filePath, mod]) => {
-      const dir = path.basename(path.dirname(filePath));
-      const match = dir.match(POST_DIR_PATTERN);
-
-      if (!match) {
-        throw new Error(`포스트 디렉토리 형식 오류: ${dir}`);
-      }
-
-      const slug = match[2];
-      const { title, description, pubDate, tags } = mod.frontmatter;
-
-      return { slug, title, description, pubDate, tags: tags ?? [] };
-    })
-    .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+  const items = getAllPosts().map(({ slug, frontmatter }) => ({
+    slug,
+    title: frontmatter.title,
+    description: frontmatter.description,
+    pubDate: frontmatter.pubDate,
+    tags: frontmatter.tags ?? [],
+  }));
 
   const siteUrl = context.site?.toString().replace(/\/$/, '') ?? site.url;
   const feedUrl = `${siteUrl}/rss.xml`;
