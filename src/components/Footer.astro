@@ -1,9 +1,15 @@
 ---
 import site from '~/data/site.config.yml';
+
+const year = new Date().getFullYear();
 ---
 <footer class="siteFooter">
-  <p>
-    &copy; {new Date().getFullYear()} {site.siteName}.
-    Powered by <a href="https://astro.build/" rel="noopener">Astro</a>
+  <p class="copyright">
+    &copy; <time datetime={String(year)}>{year}</time> {site.siteName}.
   </p>
+  <ul class="colophon">
+    <li>Powered by <a href="https://astro.build" target="_blank" rel="noopener">Astro</a></li>
+    <li>Hosted on <a href="https://cloudflare.com" target="_blank" rel="noopener">Cloudflare Pages</a></li>
+    <li>Source on <a href="https://github.com/woneob/1up.md" target="_blank" rel="noopener">GitHub</a></li>
+  </ul>
 </footer>

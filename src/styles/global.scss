@@ -96,7 +96,7 @@ body {
           &::before {
             content: "";
             display: block;
-            width: 30px;
+            width: 26px;
             margin: 0 auto;
             aspect-ratio: 1 / 1;
             background-repeat: no-repeat;
@@ -337,9 +337,37 @@ body {
 
 
 .siteFooter {
-  padding-top: 30px;
+  margin-top: 40px;
+  padding: 50px 0 100px;
   border-top: 1px solid #ddd;
   text-align: center;
+  font-size: 13px;
+  color: #767676;
+
+  a {
+    color: #333;
+  }
+
+  .copyright {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .colophon {
+    margin: .25em 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: .4em;
+
+    li + li::before {
+      content: "·";
+      margin-right: .4em;
+    }
+  }
 }
 
 #page-post {
