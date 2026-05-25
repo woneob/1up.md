@@ -1,10 +1,9 @@
 ---
-const { siteName } = Astro.props;
+import site from '~/data/site.config.yml';
 ---
 <footer class="siteFooter">
-    <p>
-      &copy; {new Date().getFullYear()} {siteName}.
-      Powered by <a href="https://astro.build/" rel="noopener">Astro</a>
-    </p>
-  </footer>
-</body>
+  <p>
+    &copy; {new Date().getFullYear()} {site.siteName}.
+    Powered by <a href="https://astro.build/" rel="noopener">Astro</a>
+  </p>
+</footer>
