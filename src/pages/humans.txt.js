@@ -1,4 +1,5 @@
 import site from '~/data/site.config.yml';
+import { logoAscii } from '~/utils/logoAscii.js';
 
 const buildTime = import.meta.env.BUILD_TIME;
 const buildTime_formattedDate = new Date(buildTime).toLocaleDateString('en-US', {
@@ -12,10 +13,7 @@ export async function GET() {
 /* The humans responsible & colophon */
 /* humanstxt.org */
 
- _ _   _ ___
-/ | | | | _ \`
-| | |_| |  _/
-|_|.___/|_|
+${logoAscii}
 
 
 /* AUTHOR */

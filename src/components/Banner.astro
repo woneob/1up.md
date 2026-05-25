@@ -1,5 +1,6 @@
 ---
 import site from '~/data/site.config.yml';
+import { logoAscii } from '~/utils/logoAscii.js';
 
 const buildTime = import.meta.env.BUILD_TIME;
 const date = buildTime ? new Date(buildTime) : new Date();
@@ -16,12 +17,11 @@ const day = new Intl.DateTimeFormat('en-US', {
   day: 'numeric',
 }).format(date);
 
+const indentedLogo = logoAscii.replace(/^/gm, ' ');
+
 const banner = `
 <!--
-  _ _   _ ___
- / | | | | _ \`
- | | |_| |  _/
- |_|.___/|_|
+${indentedLogo}
 
  ${site.siteName} - ${site.tagline}
  Last updated at ${time}, ${day}
