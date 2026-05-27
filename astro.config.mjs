@@ -13,6 +13,9 @@ export default defineConfig({
     format: 'file',
   },
   integrations: [sitemap()],
+  image: {
+    layout: 'constrained',
+  },
   markdown: {
     remarkPlugins: [resolvePostRelativeUrls],
     shikiConfig: {
