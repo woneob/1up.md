@@ -22,9 +22,13 @@ const stats = post.stats;
 
 <DefaultLayout {title} {description} {robots} pageId="post">
   <article>
-    <h1>{title}</h1>
-    <PostMeta {pubDate} {stats} />
-    <PostTags {tags} />
-    <Content />
+    <header class="postHeader">
+      <h1>{title}</h1>
+      <PostMeta {pubDate} {stats} />
+      <PostTags {tags} />
+    </header>
+    <div class="postContent">
+      <Content />
+    </div>
   </article>
 </DefaultLayout>

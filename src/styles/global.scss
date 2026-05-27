@@ -372,9 +372,41 @@ body {
 
 #page-post {
   article {
-    h1 {
-      font-size: 40px;
-      font-weight: normal;
+    .postHeader {
+      h1 {
+        font-size: 40px;
+        font-weight: normal;
+      }
     }
+
+    .postContent {
+      margin-top: 30px;
+
+      h2 {
+        font-size: 32px;
+        font-weight: normal;
+      }
+
+      h3 {
+        font-size: 24px;
+        font-weight: normal;
+      }
+
+      p {
+        margin: 16px 0;
+        font-size: 18px;
+      }
+
+      small{
+        font-size: 80%;
+        color: #666;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+
   }
 }
