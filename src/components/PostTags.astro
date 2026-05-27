@@ -6,7 +6,7 @@ const { tags } = Astro.props;
   <ul class="postTags">
     {tags.map(tag => (
       <li>
-        <a href={`/tags/${tag}`} rel="tag">{tag}</a>
+        <a href={`/tags/${encodeURIComponent(tag)}`} rel="tag">{tag}</a>
       </li>
     ))}
   </ul>
