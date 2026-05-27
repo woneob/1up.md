@@ -2,7 +2,8 @@ import site from '~/data/site.config.yml';
 import { logoAscii } from '~/utils/logoAscii.js';
 
 const buildTime = import.meta.env.BUILD_TIME;
-const buildTime_formattedDate = new Date(buildTime).toLocaleDateString('en-US', {
+const date = buildTime ? new Date(buildTime) : new Date();
+const buildTime_formattedDate = date.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
