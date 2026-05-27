@@ -4,11 +4,11 @@ const Logo = layoutType === 'main' ? 'h1' : 'div';
 ---
 
 <Logo class="logo" transition:persist>
-  <figure>
-    <a href="/">
-      <img src="/images/1up.png" alt={siteName + ' 로고'}>
-      <figcaption>{siteName}</figcaption>
-      <p class="tagline">{description}</p>
-    </a>
-  </figure>
+  <a href="/">
+    <span class="brand" role="img" aria-label={siteName + ' 로고'}>
+      <img src="/images/1up.png" alt="" aria-hidden="true">
+      <span class="siteName">{siteName}</span>
+    </span>
+    <span class="tagline">{description}</span>
+  </a>
 </Logo>
