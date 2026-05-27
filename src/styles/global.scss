@@ -102,7 +102,7 @@ body {
             background-repeat: no-repeat;
             background-size: 100%;
             opacity: .4;
-            transition: .1s scale;
+            transition: scale .1s;
           }
 
           &:hover::before {
