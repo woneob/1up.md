@@ -9,10 +9,13 @@
 ## 명령어
 
 ```bash
-npm run dev      # astro dev — http://localhost:4321 (host: true, LAN 공개)
-npm run build    # astro build — /dist 에 정적 파일 출력
-npm run preview  # astro preview — 빌드 결과 미리보기
+npm run dev        # astro dev — http://localhost:4321 (host: true, LAN 공개). 배포용 src/content/posts 로드
+npm run dev:draft  # astro dev --mode draft — gitignore된 src/content.draft/posts(로컬 초안)만 로드
+npm run build      # astro build — /dist 에 정적 파일 출력
+npm run preview    # astro preview — 빌드 결과 미리보기
 ```
+
+> 콘텐츠 소스 선택은 [콘텐츠 모델](#콘텐츠-모델--포스트) 참조.
 
 ## 경로 별칭
 
@@ -35,6 +38,15 @@ src/content/posts/
 - 템플릿에서 사용하는 프론트매터 필드: `title`, `description`, `pubDate`(ISO + 타임존), `tags`(배열), 선택적 `robots`.
 - 커버 이미지는 [src/utils/posts.js](src/utils/posts.js)의 `import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}')` 로 **디렉토리 단위** 매칭 — 포스트 직속 `images/cover.*` 경로에 있는 파일만 인식됨 (데모 폴더 등 하위는 잡히지 않음).
 
+### 콘텐츠 소스 — 배포용 vs 로컬 초안
+
+포스트 소스 디렉토리는 실행 모드에 따라 둘 중 하나로 결정됨:
+
+- **`src/content/posts/`** — 배포되는 실제 포스트. 커밋 대상. `npm run dev` / `npm run build` 가 사용.
+- **`src/content.draft/posts/`** — 로컬 테스트용 초안. **gitignore**([.gitignore](.gitignore))되어 커밋·배포되지 않음. `npm run dev:draft`(`astro dev --mode draft`)가 **이것만** 사용 (배포 포스트와 섞이지 않음). 구조는 `content/posts/` 와 동일 (`images/`, `demos/` 포함).
+
+[src/utils/posts.js](src/utils/posts.js)에서 `import.meta.env.MODE === 'draft'` 여부로 소스를 고름. `import.meta.glob` 은 패턴에 변수/템플릿 보간을 허용하지 않으므로(정적 문자열 리터럴만 가능 — `` `/src/${dir}/...` `` 는 빌드 에러), prod/dev 글로브를 **쌍으로 선언**하고 `pick(prod, dev)` 헬퍼로 선택함. 데모 글로브도 같은 방식이며 `getDemoModules()` 로 노출됨.
+
 ### 포스트 로딩 메커니즘
 
 모든 포스트 접근은 [src/utils/posts.js](src/utils/posts.js)의 `getAllPosts()` / `getPostBySlug(slug)` 를 거침 — 이 모듈이 `import.meta.glob('/src/content/posts/*/index.md', { eager: true })` 의 단일 출처이며, 폴더명 정규식 파싱(`/^(\d{4}-\d{2}-\d{2})\.(.+)$/`), 커버 이미지 매칭, `pubDate` 내림차순 정렬, `readingTime` 계산을 모두 수행. 반환 객체는 `{ slug, date, dir, frontmatter, module, cover, stats }` 형태. **Content Collections 설정 없음** (`src/content.config.ts` 미존재); `getCollection()`과 `astro:content`는 의도적으로 사용하지 않음. RSS 피드는 프론트매터(`title`, `description`, `pubDate`, `tags`)를 직접 읽어 RSS 2.0 XML을 수동 생성 — Astro 6 / Zod 4 비호환 문제([withastro/astro#15792](https://github.com/withastro/astro/issues/15792))를 회피하기 위해 `@astrojs/rss` 의존성을 제거한 것임. 새로운 포스트 탐색 코드를 추가할 때는 페이지/엔드포인트에서 `import.meta.glob` 을 다시 호출하지 말고 이 헬퍼를 통해 접근할 것.
@@ -54,7 +66,7 @@ src/content/posts/2025-11-24.bulkhead-pattern/
       images/         # 선택, 같은 폴더 기준 상대 import 가능
 ```
 
-- 동적 라우트 [src/pages/[slug]/demos/[demoSlug].astro](src/pages/[slug]/demos/[demoSlug].astro) 가 `import.meta.glob('/src/content/posts/*/demos/*/index.astro', { eager: true })` 로 발견하여 `/<post-slug>/demos/<demo-slug>` 라우트를 자동 생성.
+- 동적 라우트 [src/pages/[slug]/demos/[demoSlug].astro](src/pages/[slug]/demos/[demoSlug].astro) 가 [src/utils/posts.js](src/utils/posts.js)의 `getDemoModules()`(내부적으로 `import.meta.glob('/src/{content,content.draft}/posts/*/demos/*/index.astro', { eager: true })` — [콘텐츠 소스](#콘텐츠-소스--배포용-vs-로컬-초안) 참조)로 발견하여 `/<post-slug>/demos/<demo-slug>` 라우트를 자동 생성. 글로브를 라우트에서 직접 호출하지 않고 헬퍼를 거침.
 - `index.astro` 는 standalone 페이지이므로 `<meta name="robots" content="noindex,nofollow">` 권장.
 - SCSS / JS / 이미지는 같은 폴더 기준 상대 경로 import (Vite 가 번들 처리). 예: `import cover from './images/cover.png'`, SCSS의 `url('./images/bg.png')`. Vite가 절대 경로의 번들 자산으로 치환하므로 [URL 정책](#url-정책)의 영향을 받지 않음.
 - 포스트 본문 (`index.md`) 에서는 상대 경로로 임베드: `<iframe src="demos/<demo-slug>" ...></iframe>`. 빌드 시 자동으로 절대 경로로 변환됨 ([마크다운 렌더링](#마크다운-렌더링) 참조).

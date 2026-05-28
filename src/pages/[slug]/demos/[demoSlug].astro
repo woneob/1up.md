@@ -1,6 +1,8 @@
 ---
+import { getDemoModules } from '~/utils/posts.js';
+
 export async function getStaticPaths() {
-  const demos = import.meta.glob('/src/content/posts/*/demos/*/index.astro', { eager: true });
+  const demos = getDemoModules();
 
   return Object.entries(demos).map(([filePath, mod]) => {
     const normalized = filePath.replace(/\\/g, '/');

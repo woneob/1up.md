@@ -20,6 +20,9 @@ vite.config.ts.timestamp-*
 # Build generated files
 /dist
 
+# Local-only draft posts (npm run dev:draft)
+/src/content.draft/
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
