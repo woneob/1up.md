@@ -13,6 +13,9 @@ export default defineConfig({
     format: 'file',
   },
   integrations: [sitemap()],
+  devToolbar: {
+    enabled: false,
+  },
   image: {
     layout: 'constrained',
   },
