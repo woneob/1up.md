@@ -4,6 +4,7 @@ import Head from '~/components/Head.astro';
 import Logo from '~/components/Logo.astro';
 import Navigation from '~/components/Navigation.astro';
 import Footer from '~/components/Footer.astro';
+import SiteAside from '~/components/SiteAside.astro';
 
 import { truncate } from '~/utils/truncate';
 import site from '~/data/site.config.yml';
@@ -28,6 +29,7 @@ const pageId = pageIdProp ?? getPageId(currentPath);
 const pageTitle = title ? `${title} | ${site.siteName}` : site.siteName;
 const pageDescription = truncate(description ?? site.tagline);
 const layoutType = (currentPath === '/' || currentPath === '/index.html') ? 'main' : 'sub';
+const showAside = pageId !== 'post';
 ---
 
 <html lang={site.language.code}>
@@ -43,20 +45,23 @@ const layoutType = (currentPath === '/' || currentPath === '/index.html') ? 'mai
     data-layout-type={layoutType}>
 
     <header class="siteHeader">
-      <Logo
-        siteName={site.siteName}
-        description={site.tagline}
-        layoutType={layoutType} />
+      <div class="siteHeaderInner">
+        <Logo
+          siteName={site.siteName}
+          description={site.tagline}
+          layoutType={layoutType} />
 
-      <Navigation
-        nav= {nav}
-        currentPageId={pageId} />
+        <Navigation
+          nav= {nav}
+          currentPageId={pageId} />
+      </div>
     </header>
 
     <div class="siteBody">
       <main>
         <slot />
       </main>
+      {showAside && <SiteAside />}
     </div>
 
     <Footer />

@@ -1,7 +1,9 @@
 ---
+import { Image } from 'astro:assets';
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
+import PostToc from '~/components/PostToc.astro';
 import { getAllPosts, getPostBySlug } from '~/utils/posts.js';
 
 export function getStaticPaths() {
@@ -18,6 +20,8 @@ if (!post) {
 const { title, description, pubDate, tags, robots } = post.frontmatter;
 const Content = post.module.default;
 const stats = post.stats;
+const headings = typeof post.module.getHeadings === 'function' ? post.module.getHeadings() : [];
+const cover = post.cover;
 ---
 
 <DefaultLayout {title} {description} {robots} pageId="post">
@@ -28,7 +32,25 @@ const stats = post.stats;
       <PostTags {tags} />
     </header>
     <div class="postContent">
-      <Content />
+      {cover && (
+        <figure class="postCover">
+          <Image
+            src={cover}
+            width={1032}
+            height={420}
+            alt={title}
+            format="webp"
+            fit="cover"
+            widths={[640, 1032, 1600]}
+            sizes="(min-width: 1072px) 1032px, 100vw"
+            loading="eager"
+          />
+        </figure>
+      )}
+      <PostToc {headings} />
+      <div class="postBody">
+        <Content />
+      </div>
     </div>
   </article>
 </DefaultLayout>

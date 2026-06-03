@@ -1,0 +1,26 @@
+---
+import { getAllPosts } from '~/utils/posts.js';
+
+const tagSet = new Set();
+getAllPosts().forEach(({ frontmatter }) => {
+  (frontmatter.tags ?? []).forEach(tag => tagSet.add(tag));
+});
+const tags = Array.from(tagSet).sort((a, b) => a.localeCompare(b));
+---
+
+<aside class="siteAside">
+  <section class="asideTags">
+    <h2 class="asideTitle">Tags</h2>
+    {tags.length === 0 ? (
+      <p class="asideEmpty">태그가 없습니다.</p>
+    ) : (
+      <ul class="asideTagList">
+        {tags.map(tag => (
+          <li>
+            <a href={`/tags/${encodeURIComponent(tag)}`} rel="tag">{tag}</a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</aside>

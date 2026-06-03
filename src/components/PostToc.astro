@@ -1,0 +1,85 @@
+---
+const { headings = [] } = Astro.props;
+const items = headings.filter(h => h.depth >= 2 && h.depth <= 3);
+---
+
+{items.length > 0 && (
+  <aside class="postToc" aria-label="목차">
+    <nav>
+      <p class="postTocTitle">목차</p>
+      <ol>
+        {items.map(({ depth, slug, text }) => (
+          <li class:list={['postTocItem', `postTocItem--h${depth}`]}>
+            <a href={`#${slug}`} data-toc-slug={slug}>{text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </aside>
+)}
+
+<script>
+  function initPostToc() {
+    const toc = document.querySelector('.postToc');
+    if (!toc) return;
+
+    const items = Array.from(toc.querySelectorAll('a[data-toc-slug]'))
+      .map((link) => {
+        const slug = link.getAttribute('data-toc-slug');
+        const heading = slug ? document.getElementById(slug) : null;
+        return heading ? { slug, link, heading } : null;
+      })
+      .filter(Boolean);
+
+    if (!items.length) return;
+
+    const THRESHOLD = 100;
+    let activeSlug = null;
+
+    const setActive = (slug) => {
+      if (slug === activeSlug) return;
+      if (activeSlug) {
+        const prev = items.find((it) => it.slug === activeSlug);
+        prev?.link.removeAttribute('aria-current');
+      }
+      if (slug) {
+        const next = items.find((it) => it.slug === slug);
+        next?.link.setAttribute('aria-current', 'location');
+      }
+      activeSlug = slug;
+    };
+
+    const update = () => {
+      let current = null;
+      for (const { slug, heading } of items) {
+        if (heading.getBoundingClientRect().top <= THRESHOLD) {
+          current = slug;
+        } else {
+          break;
+        }
+      }
+      setActive(current);
+    };
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        update();
+      });
+    };
+
+    document.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+
+    document.addEventListener('astro:before-swap', () => {
+      document.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    }, { once: true });
+  }
+
+  document.addEventListener('astro:page-load', initPostToc);
+</script>
