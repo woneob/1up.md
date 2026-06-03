@@ -18,11 +18,11 @@
   "license": "ISC",
   "homepage": "https://1up.md",
   "dependencies": {
-    "astro": "6.3.7"
+    "astro": "6.4.3"
   },
   "devDependencies": {
-    "@astrojs/sitemap": "3.7.2",
-    "@rollup/plugin-yaml": "4.1.2",
+    "@astrojs/sitemap": "3.7.3",
+    "@rollup/plugin-yaml": "5.0.0",
     "reading-time": "1.5.0",
     "sass": "1.100.0"
   }

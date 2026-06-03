@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import { unified } from '@astrojs/markdown-remark';
 import yaml from '@rollup/plugin-yaml';
 import sitemap from '@astrojs/sitemap';
 import path from 'path';
@@ -20,7 +21,9 @@ export default defineConfig({
     layout: 'constrained',
   },
   markdown: {
-    remarkPlugins: [resolvePostRelativeUrls],
+    processor: unified({
+      remarkPlugins: [resolvePostRelativeUrls],
+    }),
     shikiConfig: {
       theme: 'nord',
     },
