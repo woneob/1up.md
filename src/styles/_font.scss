@@ -9,3 +9,10 @@
   font-weight: 700;
   src: url('/fonts/Pretendard-Bold.subset.woff2') format('woff2');
 }
+
+// 헤더 로고(siteName)용 서브셋 — '1', 'U', 'P' 글리프만 포함
+@font-face {
+  font-family: 'Outfit';
+  font-weight: 400;
+  src: url('/fonts/Outfit-Regular.subset.woff2') format('woff2');
+}
