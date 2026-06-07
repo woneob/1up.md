@@ -105,3 +105,4 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 
 - Shiki 테마: `nord` ([astro.config.mjs](astro.config.mjs)에서 설정).
 - 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 마크다운 raw HTML(`<iframe>`, `<img>` 등)의 `src`/`href` 상대 경로를 빌드 시 포스트 슬러그 기준 절대 경로로 자동 치환 (예: `<iframe src="demos/foo/">` → `<iframe src="/<post-slug>/demos/foo">`). 경로의 trailing slash 는 [URL 정책](#url-정책)에 따라 제거. 절대 경로(`/`), 프로토콜 (`http:`, `mailto:` 등), 앵커(`#`)는 변환 대상 아님. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization)를 따르며 이 플러그인의 영향을 받지 않음.
+- 커스텀 remark 플러그인 [src/plugins/strip-h1.mjs](src/plugins/strip-h1.mjs) 가 본문의 H1(`# 제목`)을 **모두 제거**. 페이지 제목의 단일 출처는 frontmatter `title` 이며, 본문 H1 은 raw 마크다운을 뷰어로 볼 때의 가독성용 장식일 뿐 사이트에서는 의미가 없음. frontmatter `title` 과 내용이 다르거나 H1 이 복수여도 상관없이 전부 제거. remark(mdast) 단계라 Astro 의 heading 수집(rehype)보다 앞서므로 본문뿐 아니라 `getHeadings()` / 목차([PostToc](src/components/PostToc.astro))에도 H1 이 잡히지 않음.

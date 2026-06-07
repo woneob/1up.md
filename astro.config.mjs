@@ -4,6 +4,7 @@ import yaml from '@rollup/plugin-yaml';
 import sitemap from '@astrojs/sitemap';
 import path from 'path';
 import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
+import stripH1 from './src/plugins/strip-h1.mjs';
 
 export default defineConfig({
   site: 'https://1up.md',
@@ -22,7 +23,7 @@ export default defineConfig({
   },
   markdown: {
     processor: unified({
-      remarkPlugins: [resolvePostRelativeUrls],
+      remarkPlugins: [resolvePostRelativeUrls, stripH1],
     }),
     shikiConfig: {
       theme: 'nord',
