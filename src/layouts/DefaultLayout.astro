@@ -29,7 +29,7 @@ const pageId = pageIdProp ?? getPageId(currentPath);
 const pageTitle = title ? `${title} | ${site.siteName}` : site.siteName;
 const pageDescription = truncate(description ?? site.tagline);
 const layoutType = (currentPath === '/' || currentPath === '/index.html') ? 'main' : 'sub';
-const showAside = pageId !== 'post';
+const showAside = pageId !== 'post' && pageId !== 'posts';
 ---
 
 <html lang={site.language.code}>

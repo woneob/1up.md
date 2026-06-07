@@ -2,11 +2,13 @@
 import { Image } from 'astro:assets';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
+import { formatDate } from '~/utils/formatDate';
 
-const { post, showCover = false } = Astro.props;
+const { post, showCover = false, seq = null } = Astro.props;
+const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
 ---
 
-<article>
+<article class:list={['postCard', { 'postCard--indexed': seqLabel != null }]}>
   {showCover && post.cover && (
     <figure class="cover">
       <Image
@@ -24,17 +26,58 @@ const { post, showCover = false } = Astro.props;
     </figure>
   )}
 
-  <h2>
-    <a href={`/${post.slug}`}>
-      <span>{post.title}</span>
-    </a>
-  </h2>
+  {seqLabel != null ? (
+    <div class="cardGrid">
+      <div class="cardSeq">
+        <span class="cardSeqNum">{seqLabel}</span>
+        <dl class="postMeta cardSeqMeta">
+          <div class="postMetaItem" data-type="published">
+            <dt>Published</dt>
+            <dd>
+              <time datetime={post.pubDate}>{formatDate(post.pubDate)}</time>
+            </dd>
+          </div>
+          {post.stats && (
+            <div class="postMetaItem" data-type="readingTime">
+              <dt>Reading time</dt>
+              <dd>
+                <data value={Math.ceil(post.stats.minutes)}>{post.stats.text}</data>
+              </dd>
+            </div>
+          )}
+        </dl>
+      </div>
 
-  <PostMeta pubDate={post.pubDate} stats={post.stats} />
+      <div class="cardMain">
+        <h2>
+          <a href={`/${post.slug}`}>
+            <span>{post.title}</span>
+          </a>
+        </h2>
+        <div class="postBody">
+          <p>{post.description}</p>
+        </div>
+      </div>
 
-  <div class="postBody">
-    <p>{post.description}</p>
-  </div>
+      <div class="cardTags">
+        <PostTags tags={post.tags} />
+      </div>
+    </div>
+  ) : (
+    <Fragment>
+      <h2>
+        <a href={`/${post.slug}`}>
+          <span>{post.title}</span>
+        </a>
+      </h2>
 
-  <PostTags tags={post.tags} />
+      <PostMeta pubDate={post.pubDate} stats={post.stats} />
+
+      <div class="postBody">
+        <p>{post.description}</p>
+      </div>
+
+      <PostTags tags={post.tags} />
+    </Fragment>
+  )}
 </article>

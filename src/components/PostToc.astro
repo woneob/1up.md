@@ -6,7 +6,7 @@ const items = headings.filter(h => h.depth >= 2 && h.depth <= 3);
 {items.length > 0 && (
   <aside class="postToc" aria-label="목차">
     <nav>
-      <p class="postTocTitle">목차</p>
+      <p class="postTocTitle">On this page</p>
       <ol>
         {items.map(({ depth, slug, text }) => (
           <li class:list={['postTocItem', `postTocItem--h${depth}`]}>
@@ -58,7 +58,7 @@ const items = headings.filter(h => h.depth >= 2 && h.depth <= 3);
           break;
         }
       }
-      setActive(current);
+      setActive(current ?? items[0].slug);
     };
 
     let ticking = false;

@@ -23,45 +23,15 @@ body {
 
   .siteHeaderInner {
     display: flex;
-    max-width: rem(1072);
+    max-width: rem(960);
     margin: 0 auto;
-    padding: 40px rem(20);
+    padding: 40px rem(10);
   }
 
   .logo {
     margin: 0;
     min-width: 0;
     font-weight: 400;
-
-    > a {
-      flex: 0 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      .brand {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-
-        img {
-          display: block;
-          width: 124px;
-          aspect-ratio: 1 / 1;
-          image-rendering: pixelated;
-          border-radius: 50%;
-        }
-
-        .siteName {
-          margin-top: 6px;
-          margin-left: 4px;
-          font-family: 'Outfit', sans-serif;
-          font-size: 40px;
-          line-height: 1;
-          color: #333;
-        }
-      }
-    }
   }
 
   .navigation {
@@ -145,13 +115,39 @@ body {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: rem(60) rem(20);
+      padding: rem(60) rem(10);
     }
 
     .logo {
-
       > a {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: left;
+
+        .brand {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          img {
+            display: block;
+            width: 124px;
+            aspect-ratio: 1;
+            image-rendering: pixelated;
+            border-radius: 50%;
+          }
+
+          .siteName {
+            margin-top: 6px;
+            margin-left: 4px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 40px;
+            line-height: 1;
+            color: #333;
+          }
+        }
       }
     }
 
@@ -169,42 +165,43 @@ body {
 
   [data-layout-type="sub"] & {
     .siteHeaderInner {
-      padding: 10px;;
+      padding: 10px;
       border-bottom: 1px solid #ddd;
       justify-content: space-between;
       align-items: center;
     }
 
     .logo {
-      display: block;
-
-      a {
+      > a {
+        position: relative;
         display: block;
+        padding: 4px 0 2px 44px;
 
         .brand {
           display: block;
 
           img {
-            float: left;
-            width: 40px;
-            margin-right: 10px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 36px;
+            aspect-ratio: 1;
+            border-radius: 50%;
           }
 
           .siteName {
             display: block;
-            margin-top: 0;
-            font-size: 22px;
-            color: #333;
+            font-size: 20px;
+            font-family: 'Outfit', sans-serif;
             line-height: 1;
           }
         }
 
         .tagline {
           display: block;
-          white-space: nowrap;
-          color: #888;
-          font-size: 11px;
-          line-height: 1.2;
+          font-size: 10px;
+          line-height: 1;
+          color: #777;
         }
       }
     }
@@ -219,24 +216,24 @@ body {
 }
 
 .siteBody {
-  max-width: rem(1072);
+  max-width: rem(960);
   margin: 0 auto;
-  padding: rem(20);
+  padding: rem(10);
   display: flex;
-  gap: rem(32);
+  gap: rem(20);
   align-items: flex-start;
 
   > main {
-    flex: 0 0 rem(800);
+    flex: 1 1 auto;
     min-width: 0;
   }
 
   > .siteAside {
-    flex: 0 0 rem(200);
+    flex: 0 0 rem(140);
     min-width: 0;
   }
 
-  @media (max-width: 1071px) {
+  @media (max-width: 959px) {
     flex-direction: column;
     gap: rem(40);
 
@@ -289,7 +286,7 @@ body {
     color: #999;
   }
 
-  @media (max-width: 1071px) {
+  @media (max-width: 959px) {
     position: static;
     top: auto;
   }
@@ -300,7 +297,7 @@ body {
     position: relative;
 
     + article {
-      margin-top: 80px;
+      margin-top: 100px;
     }
 
     .cover {
@@ -314,12 +311,11 @@ body {
       margin-top: 10px;
       font-weight: 300;
       font-size: 30px;
+      line-height: 1.3;
+      word-break: keep-all;
 
       a {
         display: block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
         color: #222;
 
         &::before {
@@ -343,7 +339,6 @@ body {
       margin-top: 16px;
       font-size: 16px;
       overflow: hidden;
-      text-align: justify;
       color: #666;
     }
   }
@@ -409,13 +404,14 @@ body {
     margin-right: 6px;
 
     a {
-      padding: 1px 10px;
-      background-color:#eee;
-      border: 1px solid #ddd;
-      border-radius: 3px;
       font-size: 15px;
       text-decoration: none;
       color: #555;
+
+      &::before {
+        content: "#";
+        color: #999;
+      }
     }
   }
 }
@@ -455,21 +451,121 @@ body {
   }
 }
 
-#page-post {
-  .siteBody {
-    > main {
-      flex: 1 1 100%;
-      width: 100%;
-      max-width: rem(1032);
+#page-posts {
+  .postCard--indexed {
+    .cardGrid {
+      margin-top: rem(16);
+      display: grid;
+      grid-template-columns: rem(140) minmax(0, 1fr) rem(140);
+      column-gap: rem(20);
+    }
+
+    .cardSeq {
+      grid-column: 1;
+      padding-top: 5px;
+    }
+
+    .cardSeqNum {
+      display: block;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 200;
+      font-size: 35px;
+      line-height: 1;
+      color: #888;
+    }
+
+    // .postMeta 를 그대로 써서 상세 페이지와 동일한 아이콘(published/readingTime)을 재사용,
+    // 다만 좁은 컬럼에 맞춰 세로 1줄씩 배치
+    .cardSeqMeta {
+      margin: rem(14) 0 0;
+      flex-direction: column;
+
+      .postMetaItem {
+        margin-right: 0;
+
+        + .postMetaItem {
+          margin-top: rem(4);
+        }
+      }
+
+      dd {
+        line-height: 1.5;
+      }
+    }
+
+    .cardMain {
+      grid-column: 2;
+      min-width: 0;
+
+      h2 {
+        margin-top: 0;
+      }
+
+      .postBody {
+        margin-top: 12px;
+      }
+    }
+
+    .cardTags {
+      grid-column: 3;
+      min-width: 0;
+
+      .postTags {
+        margin-top: 0;
+
+        li {
+          display: block;
+          margin-right: 0;
+
+          + li {
+            margin-top: rem(2);
+          }
+        }
+      }
+    }
+
+    @media (max-width: 959px) {
+      .cardGrid {
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: rem(20);
+      }
+
+      .cardSeq {
+        display: flex;
+        align-items: baseline;
+        column-gap: rem(16);
+      }
+
+      .cardSeqNum {
+        font-size: 36px;
+      }
+
+      .cardSeqMeta {
+        margin: 0;
+        flex-direction: row;
+        column-gap: rem(14);
+
+        .postMetaItem + .postMetaItem {
+          margin-top: 0;
+        }
+      }
+
+      .cardMain,
+      .cardTags {
+        grid-column: 1;
+      }
     }
   }
+}
 
+#page-post {
   article {
     .postHeader {
+      padding: rem(50) 0;
       text-align: center;
 
       h1 {
-        font-size: 40px;
+        font-size: rem(42);
         font-weight: normal;
       }
 
@@ -490,8 +586,8 @@ body {
     .postContent {
       margin-top: 30px;
       display: grid;
-      grid-template-columns: rem(200) minmax(0, 1fr);
-      column-gap: rem(32);
+      grid-template-columns: rem(140) minmax(0, 1fr);
+      column-gap: rem(20);
 
       .postCover {
         grid-column: 1 / -1;
@@ -501,6 +597,7 @@ body {
           display: block;
           width: 100%;
           height: auto;
+          border-radius: rem(12)
         }
       }
 
@@ -528,7 +625,7 @@ body {
           margin: 0;
           padding: 0;
           list-style: none;
-          border-left: 1px solid #eee;
+          border-left: 1px solid #ddd;
         }
 
         .postTocItem {
@@ -569,10 +666,18 @@ body {
       .postBody {
         grid-column: 2;
         min-width: 0;
+        font-size: 17px;
+
+        :first-child {
+          margin-top: 0;
+        }
 
         h2,
         h3 {
+          margin-top: rem(46);
+          text-box-trim: trim-both;
           scroll-margin-top: rem(20);
+          line-height: 1.2;
         }
 
         h2 {
@@ -586,8 +691,8 @@ body {
         }
 
         p {
-          margin: 16px 0;
-          font-size: 18px;
+          margin: 16px 0 24px;
+          letter-spacing: rem(-0.2);
         }
 
         small {
@@ -616,11 +721,12 @@ body {
         }
       }
 
-      @media (max-width: 1071px) {
+      @media (max-width: 959px) {
         grid-template-columns: minmax(0, 1fr);
         row-gap: rem(24);
 
         .postToc {
+          padding-top: 2px;
           grid-column: 1;
 
           > nav {

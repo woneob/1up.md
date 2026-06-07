@@ -3,7 +3,9 @@ import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostCard from '~/components/PostCard.astro';
 import { getAllPosts } from '~/utils/posts.js';
 
-const posts = getAllPosts().map(({ slug, frontmatter, cover, stats }) => ({
+const all = getAllPosts();
+const total = all.length;
+const posts = all.map(({ slug, frontmatter, cover, stats }, i) => ({
   slug,
   title: frontmatter.title,
   description: frontmatter.description,
@@ -11,13 +13,14 @@ const posts = getAllPosts().map(({ slug, frontmatter, cover, stats }) => ({
   tags: frontmatter.tags,
   cover,
   stats,
+  seq: total - i, // 최신글이 가장 큰 번호, 가장 오래된 글이 1
 }));
 ---
 
 <DefaultLayout>
   <div class="articles">
     {posts.map(post => (
-      <PostCard {post} showCover />
+      <PostCard {post} showCover seq={post.seq} />
     ))}
 
     {posts.length === 0 && (
