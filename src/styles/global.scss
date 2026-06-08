@@ -734,15 +734,9 @@ body {
         grid-template-columns: minmax(0, 1fr);
         row-gap: rem(24);
 
+        // 단일 컬럼에서는 목차가 본문 위에 쌓일 뿐 길잡이 역할을 못 하므로 숨김
         .postToc {
-          padding-top: 2px;
-          grid-column: 1;
-
-          > nav {
-            position: static;
-            max-height: none;
-            overflow: visible;
-          }
+          display: none;
         }
 
         .postBody {
