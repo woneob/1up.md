@@ -1,14 +1,13 @@
 ---
 const { siteName, description, layoutType } = Astro.props;
-const Logo = layoutType === 'main' ? 'h1' : 'div';
+const Heading = layoutType === 'main' ? 'h1' : 'div';
 ---
 
-<Logo class="logo" transition:persist>
-  <a href="/">
-    <span class="brand">
-      <img src="/images/1up.png" alt="" aria-hidden="true">
+<div class="logo" transition:persist>
+  <Heading class="brand">
+    <a href="/">
       <span class="siteName">{siteName}</span>
-    </span>
-    <span class="tagline">{description}</span>
-  </a>
-</Logo>
+    </a>
+  </Heading>
+  <p class="tagline">{description}</p>
+</div>

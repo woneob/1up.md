@@ -29,9 +29,36 @@ body {
   }
 
   .logo {
-    margin: 0;
-    min-width: 0;
-    font-weight: 400;
+    position: relative;
+    line-height: 1.6;
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+
+    .brand,
+    .tagline {
+      display: inline-block;
+      font-size: 13px;
+    }
+
+    .brand {
+      a {
+        font-weight: 700;
+        color: #666;
+
+        &::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+        }
+      }
+    }
+
+    .tagline {
+      &::before {
+        content: "\00B7";
+      }
+    }
   }
 
   .navigation {
@@ -115,63 +142,34 @@ body {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: rem(60) rem(10);
+      padding: rem(100) rem(10) rem(80);
+
+      @media (max-width: 959px) {
+        padding: rem(80) rem(10) rem(60);
+      }
     }
 
     .logo {
-      > a {
-        flex: 0 0 auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: left;
+      &::before {
+        content: "";
+        display: block;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 8px;
+        background: #ddd;
+        background: url("/images/1up.png") center /contain no-repeat;
+        image-rendering: pixelated;
+        border-radius: 50%;
 
-        .brand {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-
-          img {
-            display: block;
-            width: 120px;
-            aspect-ratio: 1;
-            image-rendering: pixelated;
-            border-radius: 50%;
-
-            @media (max-width: 959px) {
-              width: 80px;
-            }
-          }
-
-          .siteName {
-            margin-top: 6px;
-            margin-left: 4px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 40px;
-            line-height: 1;
-            color: #333;
-
-            @media (max-width: 959px) {
-              font-size: 32px;
-            }
-          }
+        @media (max-width: 959px) {
+          width: 100px;
+          height: 100px;
         }
       }
-    }
 
-    .tagline {
-      margin: 0;
-      text-align: center;
-      font-size: 13px;
-      color: #8a8d93;
-
-      @media (max-width: 959px) {
-        font-size: 12px;
+      &:has(.brand a:hover) {
+        opacity: .96;
       }
-    }
-
-    .navigation {
-      margin-top: 40px;
     }
   }
 
@@ -181,42 +179,6 @@ body {
       border-bottom: 1px solid #ddd;
       justify-content: space-between;
       align-items: center;
-    }
-
-    .logo {
-      > a {
-        position: relative;
-        display: block;
-        padding: 4px 0 2px 44px;
-
-        .brand {
-          display: block;
-
-          img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 36px;
-            aspect-ratio: 1;
-            border-radius: 50%;
-          }
-
-          .siteName {
-            display: block;
-            font-size: 20px;
-            font-family: 'Outfit', sans-serif;
-            line-height: 1;
-            color: #333;
-          }
-        }
-
-        .tagline {
-          display: block;
-          font-size: 10px;
-          line-height: 1;
-          color: #777;
-        }
-      }
     }
 
     .navigation {
