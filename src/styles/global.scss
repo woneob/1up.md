@@ -23,22 +23,22 @@ body {
 
   .siteHeaderInner {
     display: flex;
-    max-width: rem(960);
+    max-width: rem(980);
     margin: 0 auto;
-    padding: 40px rem(10);
+    padding: rem(40) rem(10);
   }
 
   .logo {
     position: relative;
     line-height: 1.6;
     text-align: center;
-    font-size: 13px;
+    font-size: rem(13);
     color: #888;
 
     .brand,
     .tagline {
       display: inline-block;
-      font-size: 13px;
+      font-size: rem(13);
     }
 
     .brand {
@@ -153,8 +153,8 @@ body {
       &::before {
         content: "";
         display: block;
-        width: 120px;
-        height: 120px;
+        width: rem(120);
+        height: rem(120);
         margin: 0 auto 8px;
         background: #ddd;
         background: url("/images/1up.png") center /contain no-repeat;
@@ -162,8 +162,8 @@ body {
         border-radius: 50%;
 
         @media (max-width: 959px) {
-          width: 100px;
-          height: 100px;
+          width: rem(100);
+          height: rem(100);
         }
       }
 
@@ -175,7 +175,7 @@ body {
 
   [data-layout-type="sub"] & {
     .siteHeaderInner {
-      padding: 10px;
+      padding: rem(10);
       border-bottom: 1px solid #ddd;
       justify-content: space-between;
       align-items: center;
@@ -184,16 +184,16 @@ body {
     .navigation {
       li {
         display: inline-block;
-        margin-left: 10px;
+        margin-left: rem(10);
       }
     }
   }
 }
 
 .siteBody {
-  max-width: rem(960);
+  max-width: rem(980);
   margin: 0 auto;
-  padding: rem(10);
+  padding: rem(10) rem(20);
   display: flex;
   gap: rem(20);
   align-items: flex-start;
@@ -240,16 +240,16 @@ body {
 
     li {
       display: inline-block;
-      margin: 0 4px 6px 0;
+      margin: 0 rem(4) rem(6) 0;
     }
 
     a {
       display: inline-block;
-      padding: 1px 10px;
+      padding: rem(1) rem(10);
       background-color: #eee;
       border: 1px solid #ddd;
-      border-radius: 3px;
-      font-size: 14px;
+      border-radius: rem(3);
+      font-size: rem(14);
       text-decoration: none;
       color: #555;
     }
@@ -272,10 +272,10 @@ body {
     position: relative;
 
     + article {
-      margin-top: 80px;
+      margin-top: rem(80);
 
       @media (max-width: 959px) {
-        margin-top: 50px;
+        margin-top: rem(50);
       }
     }
 
@@ -287,9 +287,9 @@ body {
     }
 
     h2 {
-      margin-top: 10px;
+      margin-top: rem(10);
       font-weight: 300;
-      font-size: 28px;
+      font-size: rem(28);
       line-height: 1.3;
       word-break: keep-all;
 
@@ -313,15 +313,15 @@ body {
 
     .postBody {
       padding: 0 2px;
-      margin-top: 16px;
-      font-size: 15px;
+      margin-top: rem(16);
+      font-size: rem(15);
       overflow: hidden;
       color: #666;
     }
   }
 
   .empty {
-    padding: 40px 0 80px;
+    padding: rem(40) 0 rem(80);
     text-align: center;
     color: #666;
   }
@@ -335,8 +335,8 @@ body {
 
   .postMetaItem {
     position: relative;
-    margin-right: 10px;
-    padding-left: 16px;
+    margin-right: rem(10);
+    padding-left: rem(16);
 
     dt {
       position: absolute;
@@ -374,14 +374,14 @@ body {
 }
 
 .postTags {
-  margin-top: 10px;
+  margin-top: rem(10);
 
   li {
     display: inline-block;
-    margin-right: 6px;
+    margin-right: rem(6);
 
     a {
-      font-size: 15px;
+      font-size: rem(15);
       text-decoration: none;
       color: #555;
 
@@ -390,8 +390,8 @@ body {
         display: inline-block;
         width: 0.85em;
         height: 0.85em;
-        margin-right: 3px;
-        vertical-align: -0.1em;
+        margin-right: rem(3);
+        vertical-align: rem(-3);
         background-color: #999;
         mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z'/%3E%3Ccircle cx='7.5' cy='7.5' r='.5' fill='%23000'/%3E%3C/svg%3E") center / contain no-repeat;
       }
@@ -401,11 +401,11 @@ body {
 
 
 .siteFooter {
-  margin-top: 40px;
-  padding: 50px 0 100px;
+  margin-top: rem(40);
+  padding: rem(50) 0 rem(100);
   border-top: 1px solid #ddd;
   text-align: center;
-  font-size: 13px;
+  font-size: rem(13);
   color: #767676;
 
   a {
@@ -414,22 +414,22 @@ body {
 
   .copyright {
     margin: 0;
-    font-size: 14px;
+    font-size: rem(14);
     color: #333;
   }
 
   .colophon {
-    margin: .25em 0 0;
+    margin: rem(4) 0 0;
     padding: 0;
     list-style: none;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    column-gap: .4em;
+    column-gap: rem(6);
 
     li + li::before {
       content: "·";
-      margin-right: .4em;
+      margin-right: rem(6);
     }
   }
 }
@@ -445,14 +445,14 @@ body {
 
     .cardSeq {
       grid-column: 1;
-      padding-top: 2px;
+      padding-top: rem(2);
     }
 
     .cardSeqNum {
       display: block;
       font-family: 'Outfit', sans-serif;
       font-weight: 200;
-      font-size: 35px;
+      font-size: rem(35);
       line-height: 1;
       color: #888;
     }
@@ -485,7 +485,7 @@ body {
       }
 
       .postBody {
-        margin-top: 12px;
+        margin-top: rem(12);
       }
     }
 
@@ -505,7 +505,7 @@ body {
           }
 
           a {
-            font-size: 14px;
+            font-size: rem(14);
           }
         }
       }
@@ -528,7 +528,7 @@ body {
       .cardMain h2 {
         order: 1;
         grid-column: 1;
-        font-size: 24px;
+        font-size: rem(24);
       }
 
       .cardSeq {
@@ -552,7 +552,7 @@ body {
 
         .postTags li {
           display: inline-block;
-          margin-right: 6px;
+          margin-right: rem(6);
 
           + li {
             margin-top: 0;
@@ -700,17 +700,17 @@ body {
         }
 
         h2 {
-          font-size: 32px;
+          font-size: rem(32);
           font-weight: normal;
         }
 
         h3 {
-          font-size: 24px;
+          font-size: rem(24);
           font-weight: normal;
         }
 
         p {
-          margin: 16px 0 24px;
+          margin: rem(16) 0 rem(24);
           letter-spacing: rem(-0.2);
         }
 
@@ -734,7 +734,7 @@ body {
             display: inline;
             font-size: 80%;
             vertical-align: text-top;
-            margin-left: 2px;
+            margin-left: rem(2);
             color: #666;
           }
         }
