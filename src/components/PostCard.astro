@@ -41,7 +41,7 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
             <div class="postMetaItem" data-type="readingTime">
               <dt>Reading time</dt>
               <dd>
-                <data value={Math.ceil(post.stats.minutes)}>{post.stats.text}</data>
+                <time datetime={`PT${Math.ceil(post.stats.minutes)}M`}>{post.stats.text}</time>
               </dd>
             </div>
           )}
