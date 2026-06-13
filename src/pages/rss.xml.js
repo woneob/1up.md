@@ -46,19 +46,21 @@ export async function GET(context) {
     })
     .join('\n');
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-<channel>
-  <title>${cdata(site.siteName)}</title>
-  <link>${escapeXml(siteUrl)}</link>
-  <description>${cdata(site.description ?? site.tagline)}</description>
-  <language>${escapeXml(site.language.locale)}</language>
-  <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-  <atom:link href="${escapeXml(feedUrl)}" rel="self" type="application/rss+xml" />
-${itemsXml}
-</channel>
-</rss>
-`;
+  const xml = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+    '<channel>',
+    `  <title>${cdata(site.siteName)}</title>`,
+    `  <link>${escapeXml(siteUrl)}</link>`,
+    `  <description>${cdata(site.description ?? site.tagline)}</description>`,
+    `  <language>${escapeXml(site.language.locale)}</language>`,
+    `  <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`,
+    `  <atom:link href="${escapeXml(feedUrl)}" rel="self" type="application/rss+xml" />`,
+    itemsXml,
+    '</channel>',
+    '</rss>',
+    '',
+  ].join('\n');
 
   return new Response(xml, {
     headers: {

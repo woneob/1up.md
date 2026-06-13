@@ -19,14 +19,16 @@ const day = new Intl.DateTimeFormat('en-US', {
 
 const indentedLogo = logoAscii.replace(/^/gm, ' ');
 
-const banner = `
-<!--
-${indentedLogo}
-
- ${site.siteName} - ${site.tagline}
- Last updated at ${time}, ${day}
--->
-`;
+const banner = [
+  '',
+  '<!--',
+  indentedLogo,
+  '',
+  ` ${site.siteName} - ${site.tagline}`,
+  ` Last updated at ${time}, ${day}`,
+  '-->',
+  '',
+].join('\n');
 ---
 
 <Fragment set:html={banner} />
