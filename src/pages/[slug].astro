@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { Picture } from 'astro:assets';
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
@@ -34,12 +34,13 @@ const cover = post.cover;
     <div class="postContent">
       {cover && (
         <figure class="postCover">
-          <Image
+          <Picture
             src={cover}
             width={940}
             height={382}
             alt={title}
-            format="webp"
+            formats={['avif', 'webp']}
+            fallbackFormat="webp"
             fit="cover"
             widths={[640, 940, 1600]}
             sizes="(min-width: 960px) 940px, 100vw"

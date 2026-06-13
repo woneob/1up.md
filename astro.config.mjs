@@ -19,7 +19,7 @@ export default defineConfig({
     enabled: false,
   },
   image: {
-    layout: 'constrained',
+    layout: 'none',
   },
   markdown: {
     processor: unified({

@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { Picture } from 'astro:assets';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
 import { formatDate } from '~/utils/formatDate';
@@ -11,13 +11,14 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
 <article class:list={['postCard', { 'postCard--indexed': seqLabel != null }]}>
   {showCover && post.cover && (
     <figure class="cover">
-      <Image
+      <Picture
         src={post.cover}
         width={960}
         height={320}
         alt={post.title}
         class="cover"
-        format="webp"
+        formats={['avif', 'webp']}
+        fallbackFormat="webp"
         fit="cover"
         widths={[320, 640, 1000]}
         sizes="auto"
