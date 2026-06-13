@@ -75,7 +75,7 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 - [src/data/site.config.yml](src/data/site.config.yml) — 사이트명, 태그라인, 언어, 저자, SNS, 테마 색상, `siteIcons` 배열의 단일 출처. `@rollup/plugin-yaml`로 로드.
 - [src/data/navigation.json](src/data/navigation.json) — 헤더 내비게이션. 각 항목은 `label`(body의 page id로도 사용), `base`(`DefaultLayout`에서 `Astro.url.pathname`과 접두사 매칭), `path`(href)로 구성.
-- [src/pages/manifest.json.js](src/pages/manifest.json.js), [src/pages/robots.txt.js](src/pages/robots.txt.js), [src/pages/humans.txt.js](src/pages/humans.txt.js), [src/pages/rss.xml.js](src/pages/rss.xml.js) 모두 `site.config.yml` 에서 파생 — 엔드포인트가 아닌 YAML을 수정할 것.
+- [src/pages/manifest.json.js](src/pages/manifest.json.js), [src/pages/robots.txt.js](src/pages/robots.txt.js), [src/pages/humans.txt.js](src/pages/humans.txt.js), [src/pages/rss.xml.js](src/pages/rss.xml.js), [src/pages/llms.txt.js](src/pages/llms.txt.js) 모두 `site.config.yml` 에서 파생 — 엔드포인트가 아닌 YAML을 수정할 것.
 
 ## 레이아웃 / page-id 규약
 
