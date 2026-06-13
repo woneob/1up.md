@@ -67,7 +67,6 @@ body {
     justify-content: center;
     gap: 10px;
     text-align: center;
-    display: none;
 
     &::before,
     &::after {
@@ -307,6 +306,12 @@ body {
         span {
           position: relative;
           z-index: 2;
+
+          &:hover {
+            color: #222;
+            text-decoration: underline dotted #666 1px;
+            text-decoration-skip-ink: auto;
+          }
         }
       }
     }
