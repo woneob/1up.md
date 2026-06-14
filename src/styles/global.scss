@@ -761,3 +761,37 @@ body {
     }
   }
 }
+
+#page-404 {
+  .notFound {
+    padding: rem(160) 0;
+    text-align: center;
+
+    h1 {
+      font-size: rem(32);
+      font-weight: normal;
+      color: #333;
+    }
+
+    p {
+      margin: rem(4) 0 rem(24);
+      color: #666;
+    }
+
+    a {
+      display: inline-block;
+      padding: rem(8) rem(20);
+      background-color: #eee;
+      border: 1px solid #ddd;
+      border-radius: rem(3);
+      font-size: rem(15);
+      text-decoration: none;
+      color: #555;
+
+      &:hover {
+        background-color: #ddd;
+        color: #333;
+      }
+    }
+  }
+}
