@@ -89,6 +89,8 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 [src/components/Head.astro](src/components/Head.astro)의 `<ClientRouter />`(astro:transitions)가 SPA 스타일 네비게이션을 담당 — 헤더가 다시 로드되며 발생하는 플리커링 방지가 도입 목적. 시각적 전환 효과 의도는 없으며, [src/styles/global.scss](src/styles/global.scss)의 `::view-transition-old/new(root) { animation: none }` 규칙이 `document.startViewTransition()`의 기본 cross-fade를 끔.
 
+`<ClientRouter />`는 `import.meta.env.PROD` 가드로 **프로덕션 빌드에서만** 렌더링됨. dev에서는 라우터의 트랜지션 스왑이 SCSS HMR과 충돌해 이전 CSS가 남아 깜빡이는데, ClientRouter는 배포 사이트 네비게이션용이라 dev에 불필요하므로 제외함. SPA 네비게이션을 실제로 확인하려면 `npm run preview`(빌드 결과, PROD)로 볼 것.
+
 `<ClientRouter />`가 끌어오는 `transitions-*` 가상 모듈은 Vite 초기 dep 스캔에 안 잡혀, 콜드 스타트 첫 로드 때 뒤늦게 발견되며 재최적화 → 리로드를 유발함(부작용으로 dev-toolbar entrypoint가 `504 Outdated Optimize Dep`로 고착). 이를 막기 위해 [astro.config.mjs](astro.config.mjs)의 `vite.optimizeDeps.include`에 해당 모듈들을 미리 포함시켜 둠 — 제거하지 말 것.
 
 ## 빌드 타임 상수

@@ -52,5 +52,6 @@ const canonicalURL = new URL(canonicalPath, Astro.site);
 
   <link rel="author" href="/humans.txt" />
 
-  <ClientRouter />
+  {/* dev에서는 ClientRouter의 트랜지션 스왑이 SCSS HMR과 충돌해 이전 CSS가 남아 깜빡이므로 프로덕션 빌드에서만 렌더링. ClientRouter는 배포 사이트의 SPA 네비게이션 헤더 플리커 방지용이라 dev에 필요 없음. */}
+  {import.meta.env.PROD && <ClientRouter />}
 </head>
