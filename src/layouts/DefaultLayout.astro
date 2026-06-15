@@ -4,7 +4,6 @@ import Head from '~/components/Head.astro';
 import Logo from '~/components/Logo.astro';
 import Navigation from '~/components/Navigation.astro';
 import Footer from '~/components/Footer.astro';
-import SiteAside from '~/components/SiteAside.astro';
 
 import { truncate } from '~/utils/truncate';
 import site from '~/data/site.config.yml';
@@ -29,7 +28,6 @@ const pageId = pageIdProp ?? getPageId(currentPath);
 const pageTitle = title ? `${title} | ${site.siteName}` : site.siteName;
 const pageDescription = truncate(description ?? site.tagline);
 const layoutType = (currentPath === '/' || currentPath === '/index.html') ? 'main' : 'sub';
-const showAside = pageId !== 'post' && pageId !== 'posts' && pageId !== '404';
 ---
 
 <html lang={site.language.code}>
@@ -61,7 +59,6 @@ const showAside = pageId !== 'post' && pageId !== 'posts' && pageId !== '404';
       <main>
         <slot />
       </main>
-      {showAside && <SiteAside />}
     </div>
 
     <Footer />
