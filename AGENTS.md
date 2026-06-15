@@ -108,3 +108,17 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 - Shiki 테마: `nord` ([astro.config.mjs](astro.config.mjs)에서 설정).
 - 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 마크다운 raw HTML(`<iframe>`, `<img>` 등)의 `src`/`href` 상대 경로를 빌드 시 포스트 슬러그 기준 절대 경로로 자동 치환 (예: `<iframe src="demos/foo/">` → `<iframe src="/<post-slug>/demos/foo">`). 경로의 trailing slash 는 [URL 정책](#url-정책)에 따라 제거. 절대 경로(`/`), 프로토콜 (`http:`, `mailto:` 등), 앵커(`#`)는 변환 대상 아님. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization)를 따르며 이 플러그인의 영향을 받지 않음.
 - 커스텀 remark 플러그인 [src/plugins/strip-h1.mjs](src/plugins/strip-h1.mjs) 가 본문의 H1(`# 제목`)을 **모두 제거**. 페이지 제목의 단일 출처는 frontmatter `title` 이며, 본문 H1 은 raw 마크다운을 뷰어로 볼 때의 가독성용 장식일 뿐 사이트에서는 의미가 없음. frontmatter `title` 과 내용이 다르거나 H1 이 복수여도 상관없이 전부 제거. remark(mdast) 단계라 Astro 의 heading 수집(rehype)보다 앞서므로 본문뿐 아니라 `getHeadings()` / 목차([PostToc](src/components/PostToc.astro))에도 H1 이 잡히지 않음.
+
+## 조회수 (View Count)
+
+포스트별 누적 조회수를 메타 영역(`[눈 아이콘] 1,234 views`)에 표시. 정적 사이트는 그대로 두고 **Cloudflare Pages Functions + D1**(서버리스 SQLite)로 카운트를 관리.
+
+- **저장소**: Cloudflare D1(`1up-views` DB). 무료 티어(읽기 500만/일, 쓰기 10만/일)로 운영. KV는 쓰기 1천/일 한도라 카운터에 부적합해 채택 안 함. 스키마는 [migrations/0001_create_views.sql](migrations/0001_create_views.sql) (`views(slug PK, count)`). 바인딩 `DB` 는 [wrangler.toml](wrangler.toml)에 정의 — **`database_id` 는 실제 발급값으로 채워야 배포 동작**.
+- **API**: [functions/api/views/[slug].js](functions/api/views/[slug].js) — `GET` 조회 / `POST` 원자적 +1(`INSERT ... ON CONFLICT DO UPDATE ... RETURNING`). [functions/api/views/index.js](functions/api/views/index.js) — `GET /api/views?slugs=a,b,c` 배치 조회(목록 페이지가 1요청으로 N개 카드 채움). `functions/` 디렉토리는 Astro 빌드와 무관하며 Pages 가 Worker 로 자동 서빙.
+- **컴포넌트**: [src/components/ViewCount.astro](src/components/ViewCount.astro). [PostMeta](src/components/PostMeta.astro)(상세 + 비인덱스 카드)와 [PostCard](src/components/PostCard.astro) 인덱스 카드의 인라인 메타에 삽입. 아이콘은 기존 `data-type` 패턴(`metaIcon_views.svg`, global.scss 의 `$meta-names`)을 그대로 따름.
+- **카운트 시점**: **상세 페이지 진입 시에만** +1. `increment` prop 이 true 인 인스턴스(상세 페이지의 해당 포스트)만 `POST`. 목록/카드는 표시만(`GET`). 중복 방지는 `localStorage['views:seen:<slug>']` 가드 — **새로고침·재방문은 재증가 안 함**.
+- **환경별 표시 분기**(`import.meta.env`, 빌드 시점 결정):
+  1. 운영 빌드(`astro build`, PROD) → API 호출, 실제 데이터
+  2. 운영 + API 오류 → `N/A`
+  3. 개발(`astro dev` / `dev:draft`, DEV) → **API 호출 없이** 슬러그 FNV-1a 해시 기반 고정 임의값(새로고침해도 동일). 로컬엔 Functions 가 없으므로 별개 데이터.
+- ClientRouter(PROD 전용)와 호환: 스크립트는 `astro:page-load` 로 매 네비게이션 재실행, dev 에서는 `DOMContentLoaded` 로 1회 실행.

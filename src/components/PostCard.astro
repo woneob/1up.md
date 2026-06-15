@@ -2,6 +2,7 @@
 import { Picture } from 'astro:assets';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
+import ViewCount from '~/components/ViewCount.astro';
 import { formatDate } from '~/utils/formatDate';
 
 const { post, showCover = false, seq = null } = Astro.props;
@@ -46,6 +47,7 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
               </dd>
             </div>
           )}
+          <ViewCount slug={post.slug} />
         </dl>
       </div>
 
@@ -72,7 +74,7 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
         </a>
       </h2>
 
-      <PostMeta pubDate={post.pubDate} stats={post.stats} />
+      <PostMeta pubDate={post.pubDate} stats={post.stats} slug={post.slug} />
 
       <div class="postBody">
         <p>{post.description}</p>

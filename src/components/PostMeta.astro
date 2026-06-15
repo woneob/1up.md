@@ -1,7 +1,8 @@
 ---
 import { formatDate } from '~/utils/formatDate';
+import ViewCount from '~/components/ViewCount.astro';
 
-const { pubDate, stats } = Astro.props;
+const { pubDate, stats, slug, increment = false } = Astro.props;
 ---
 
 <dl class="postMeta">
@@ -23,4 +24,6 @@ const { pubDate, stats } = Astro.props;
       </dd>
     </div>
   )}
+
+  {slug && <ViewCount {slug} {increment} />}
 </dl>

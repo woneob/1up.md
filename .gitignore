@@ -20,6 +20,9 @@ vite.config.ts.timestamp-*
 # Build generated files
 /dist
 
+# Wrangler local state (pages dev / local D1)
+.wrangler/
+
 # Local-only draft posts (npm run dev:draft)
 /src/content.draft/
 

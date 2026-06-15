@@ -28,7 +28,7 @@ const cover = post.cover;
   <article>
     <header class="postHeader">
       <h1>{title}</h1>
-      <PostMeta {pubDate} {stats} />
+      <PostMeta {pubDate} {stats} {slug} increment />
       <PostTags {tags} />
     </header>
     <div class="postContent">

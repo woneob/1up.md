@@ -1,0 +1,11 @@
+# Cloudflare Pages 설정 — 정적 출력(dist) + Pages Functions(functions/) 바인딩.
+# Astro 자체는 정적 빌드(output: 'static')이며, 이 파일은 배포 시 Functions 의 D1 바인딩 용도.
+name = "1up-md"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+# 조회수 저장용 D1. database_id 는 `wrangler d1 create` / 대시보드에서 발급된 값.
+[[d1_databases]]
+binding = "DB"
+database_name = "1up-views"
+database_id = "a2d7d5e9-1830-40f2-ac9f-eac6deec4788"

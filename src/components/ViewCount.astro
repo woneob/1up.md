@@ -1,0 +1,104 @@
+---
+// 조회수 메타 항목. 숫자는 클라이언트에서 채움.
+// - 운영(astro build): /api/views 호출 → 실제 데이터, 오류 시 N/A
+// - 개발(astro dev / dev:draft): API 호출 없이 슬러그 기반 고정 임의값
+// increment=true 인 인스턴스(상세 페이지의 해당 포스트)만 진입 시 +1 (localStorage 가드)
+const { slug, increment = false } = Astro.props;
+---
+
+<div class="postMetaItem" data-type="views">
+  <dt>Views</dt>
+  <dd
+    class="viewCount"
+    data-views
+    data-slug={slug}
+    data-views-increment={increment ? 'true' : undefined}
+    aria-busy="true"
+  >
+    <span class="viewCount__num" data-views-num>&mdash;</span> views
+  </dd>
+</div>
+
+<script>
+  const DEV = import.meta.env.DEV;
+
+  // FNV-1a 해시 → 슬러그마다 안정적인(새로고침해도 동일) 임의값 생성
+  function fakeCount(slug) {
+    let h = 2166136261;
+    for (let i = 0; i < slug.length; i++) {
+      h ^= slug.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return 100 + ((h >>> 0) % 49900); // 100 ~ 49,999
+  }
+
+  function setNum(el, n) {
+    const t = el.querySelector('[data-views-num]');
+    if (t) t.textContent = Number(n).toLocaleString();
+    el.removeAttribute('aria-busy');
+    el.dataset.viewsState = 'ready';
+  }
+
+  function setNA(el) {
+    const t = el.querySelector('[data-views-num]');
+    if (t) t.textContent = 'N/A';
+    el.removeAttribute('aria-busy');
+    el.dataset.viewsState = 'error';
+  }
+
+  async function render() {
+    const els = [...document.querySelectorAll('[data-views]')];
+    if (!els.length) return;
+
+    if (DEV) {
+      for (const el of els) setNum(el, fakeCount(el.dataset.slug));
+      return;
+    }
+
+    // 운영: 1) increment 대상 포스트는 진입 시 +1 (이미 본 적 있으면 건너뜀)
+    const handled = new Set();
+    for (const el of els.filter((e) => e.dataset.viewsIncrement === 'true')) {
+      const slug = el.dataset.slug;
+      const key = 'views:seen:' + slug;
+      if (localStorage.getItem(key)) continue; // 새로고침/재방문은 중복 카운트 안 함
+      try {
+        const r = await fetch('/api/views/' + encodeURIComponent(slug), { method: 'POST' });
+        if (!r.ok) throw new Error(String(r.status));
+        const d = await r.json();
+        setNum(el, d.count);
+        localStorage.setItem(key, '1');
+        handled.add(slug);
+      } catch {
+        setNA(el);
+        handled.add(slug); // 오류 시 N/A 고정, 아래 배치 조회에서 덮어쓰지 않음
+      }
+    }
+
+    // 2) 나머지는 배치 조회 (목록/카드 + 이미 본 적 있는 상세)
+    const rest = [...new Set(els.map((e) => e.dataset.slug))].filter((s) => !handled.has(s));
+    if (!rest.length) return;
+    try {
+      const r = await fetch('/api/views?slugs=' + rest.map(encodeURIComponent).join(','));
+      if (!r.ok) throw new Error(String(r.status));
+      const d = await r.json();
+      for (const el of els) {
+        if (handled.has(el.dataset.slug)) continue;
+        setNum(el, d.counts[el.dataset.slug] ?? 0);
+      }
+    } catch {
+      for (const el of els) {
+        if (!handled.has(el.dataset.slug)) setNA(el);
+      }
+    }
+  }
+
+  // ClientRouter(운영)는 astro:page-load 로 매 네비게이션마다 재실행.
+  // dev 에는 ClientRouter 가 없어 이벤트가 안 오므로 직접 한 번 실행.
+  if (import.meta.env.PROD) {
+    document.addEventListener('astro:page-load', render);
+  } else if (document.readyState !== 'loading') {
+    render();
+  } else {
+    document.addEventListener('DOMContentLoaded', render);
+  }
+</script>
