@@ -396,7 +396,7 @@ button.shareBtn {
   }
 }
 
-// 채움 #f7f7f7 + 가는 외곽선(#888). overflow:visible 로 stroke 가 viewBox 끝에서 안 잘리게.
+// 연한 회색 채움 + 가는 외곽선. overflow:visible 로 stroke 가 viewBox 끝에서 안 잘리게.
 .likeBtn .ico,
 .shareBtn .ico {
   fill: #c2c2c2;

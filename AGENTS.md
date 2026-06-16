@@ -139,7 +139,7 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 
 - **저장소**: 같은 `1up-views` D1(바인딩 `DB`)에 별도 테이블 `likes(slug PK, count)`. 스키마 [migrations/0002_create_likes.sql](migrations/0002_create_likes.sql) — 배포 전 `wrangler d1 migrations apply` 로 적용 필요(조회수 마이그레이션과 별개 파일).
 - **API**: [functions/api/likes/[slug].js](functions/api/likes/[slug].js) — `GET` 조회 / `POST` +1 / `DELETE` -1(`MAX(0, count-1)` 로 음수 방지). [functions/api/likes/index.js](functions/api/likes/index.js) — `GET /api/likes?slugs=a,b,c` 배치 조회. 구조는 views 엔드포인트와 동일.
-- **컴포넌트**: [src/components/LikeButton.astro](src/components/LikeButton.astro) — **원 없이 하트 아이콘만**(Material Symbols `favorite` 단색 SVG 1장). 평소 `fill: #f7f7f7` + 가는 외곽선(`stroke: #888`, `stroke-width: 32`), 좋아요 상태면 빨간 채움(`#f43f5e`, 외곽선 제거) — `data-liked` 로 CSS 가 전환. 스타일은 메타 아이콘 패턴이 아닌 별도 `.likeBox`/`.likeBtn`(global.scss, `.shareBtn` 과 `.ico` 규칙 공유). 상세 페이지([src/pages/[slug].astro](src/pages/[slug].astro))와 인덱스 카드([PostCard](src/components/PostCard.astro), 우측 컬럼 `.cardLike`) **모두 `interactive`(클릭 토글)** — 동일 스타일·동작. 단 카드는 `.articles article` 의 `h2 a::before { inset:0 }` 링크 오버레이가 카드 전체를 덮으므로, 버튼이 클릭되려면 `.cardLike` 를 오버레이 위(`z-index`)로 올려야 함.
+- **컴포넌트**: [src/components/LikeButton.astro](src/components/LikeButton.astro) — **원 없이 하트 아이콘만**(Material Symbols `favorite` 단색 SVG 1장). 평소 연한 회색 채움 + 가는 외곽선(`fill`/`stroke`, `stroke-width: 32` — 색은 튜닝 대상이라 코드 참조), 좋아요 상태면 빨간 채움(`#f43f5e`, 외곽선 제거) — `data-liked` 로 CSS 가 전환. 스타일은 메타 아이콘 패턴이 아닌 별도 `.likeBox`/`.likeBtn`(global.scss, `.shareBtn` 과 `.ico` 규칙 공유). 버튼 클릭 영역은 아이콘만이 아니라 **아이콘 + 텍스트(likes 수) 전체** + 패딩. 상세 페이지([src/pages/[slug].astro](src/pages/[slug].astro))와 인덱스 카드([PostCard](src/components/PostCard.astro), 우측 컬럼 `.cardLike`) **모두 `interactive`(클릭 토글)** — 동일 스타일·동작. 단 카드는 `.articles article` 의 `h2 a::before { inset:0 }` 링크 오버레이가 카드 전체를 덮으므로, 버튼이 클릭되려면 `.cardLike` 를 오버레이 위(`z-index`)로 올려야 함.
 - **토글 시점**: `interactive` 인스턴스가 클릭으로 `POST`(좋아요)/`DELETE`(취소) — 상세·목록 동일. (조회수와 달리 좋아요는 목록 카드에서도 토글 가능.) 좋아요 여부·상태 복원은 `localStorage['likes:liked:<slug>']` 가드 — 재방문 시 활성 상태로 렌더. **로그인 없으니 브라우저 단위**(조회수와 동일 한계).
 - **환경별 표시 분기**: 조회수와 동일(PROD=실데이터/오류 N/A, DEV=FNV-1a 해시 고정값, API 미호출). DEV 토글은 API 없이 localStorage+숫자만 즉시 갱신. DEV 표시값은 좋아요 상태면 베이스+1 로 보정해 운영과 일관.
 - **상세 헤더 레이아웃**: 제목은 중앙, 그 아래 `.postHeaderBar` 가 메타·태그(좌, `.postHeaderInfo`) ↔ 좋아요·공유(우, `.postActions`)를 양끝 배치(모바일 600px 이하 세로 스택). 좋아요 우측에 공유 버튼([공유](#공유-share)).
@@ -149,6 +149,6 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 
 상세 페이지 전용 공유 버튼 — 좋아요 버튼 우측에 같은 세로 구성(아이콘 + 라벨)으로 배치. D1/서버 무관, 순수 클라이언트.
 
-- **컴포넌트**: [src/components/ShareButton.astro](src/components/ShareButton.astro) — Material Symbols `share` 단색 SVG 1장. 좋아요 하트와 동일하게 `fill: #f7f7f7` + 가는 외곽선(`.ico` 규칙을 `.likeBtn`/`.shareBtn` 공유)이라 세 원도 같은 색으로 채워짐.
+- **컴포넌트**: [src/components/ShareButton.astro](src/components/ShareButton.astro) — Material Symbols `share` 단색 SVG 1장. 좋아요 하트와 동일하게 연한 회색 채움 + 가는 외곽선(`.ico` 규칙을 `.likeBtn`/`.shareBtn` 공유)이라 세 원도 같은 색으로 채워짐.
 - **동작**: 클릭 시 `navigator.share`(Web Share API, 주로 모바일) 우선 → 미지원 시 `navigator.clipboard.writeText(location.href)` 폴백 후 라벨에 "복사됨" 1.5초 피드백. 둘 다 Baseline 안정 기능이라 기능 감지만으로 처리(폴백 외 별도 처리 없음).
 - ClientRouter(PROD)와 호환: `astro:page-load` 로 매 네비게이션 재바인딩(`dataset.bound` 중복 방지), dev 는 `DOMContentLoaded` 1회.
