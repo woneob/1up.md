@@ -7,7 +7,8 @@ import PostToc from '~/components/PostToc.astro';
 import { getAllPosts, getPostBySlug } from '~/utils/posts.js';
 
 export function getStaticPaths() {
-  return getAllPosts().map(({ slug }) => ({ params: { slug } }));
+  // unlisted 포스트도 페이지는 생성해야 직접 URL 로 열람 가능 — includeUnlisted.
+  return getAllPosts({ includeUnlisted: true }).map(({ slug }) => ({ params: { slug } }));
 }
 
 const { slug } = Astro.params;

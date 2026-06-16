@@ -3,18 +3,48 @@ import { unified } from '@astrojs/markdown-remark';
 import yaml from '@rollup/plugin-yaml';
 import sitemap from '@astrojs/sitemap';
 import path from 'path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
 import stripH1 from './src/plugins/strip-h1.mjs';
 
+const SITE = 'https://1up.md';
+
+// 사이트맵 제외 대상: 프론트매터 `unlisted: true` 인 포스트(운영 발행됐지만 모든 연결점에서
+// 숨김, 직접 URL 로만 열람). astro.config 컨텍스트는 import.meta.glob(=posts.js)을 못 쓰므로
+// 포스트 소스를 fs 로 직접 스캔해 제외 URL 집합을 만든다. 배포(content)·초안(content.draft)
+// 두 소스를 모두 훑는다 — 슬러그 URL 만 모으므로, 그 빌드에 실제 존재하지 않는 라우트가
+// 섞여도 sitemap.filter 입장에선 no-op(운영 빌드의 초안 항목 등).
+function unlistedPostUrls() {
+  const dirs = ['./src/content/posts', './src/content.draft/posts'];
+  const urls = new Set();
+  for (const rel of dirs) {
+    const postsDir = fileURLToPath(new URL(rel, import.meta.url));
+    if (!fs.existsSync(postsDir)) continue;
+    for (const entry of fs.readdirSync(postsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const match = entry.name.match(/^\d{4}-\d{2}-\d{2}\.(.+)$/);
+      if (!match) continue;
+      const indexPath = path.join(postsDir, entry.name, 'index.md');
+      if (!fs.existsSync(indexPath)) continue;
+      const fm = fs.readFileSync(indexPath, 'utf8').match(/^---\r?\n([\s\S]*?)\r?\n---/);
+      if (fm && /^unlisted:\s*true\s*$/m.test(fm[1])) urls.add(`${SITE}/${match[1]}`);
+    }
+  }
+  return urls;
+}
+
+const unlistedUrls = unlistedPostUrls();
+
 export default defineConfig({
-  site: 'https://1up.md',
+  site: SITE,
   base: '/',
   output: 'static',
   trailingSlash: 'never',
   build: {
     format: 'file',
   },
-  integrations: [sitemap()],
+  integrations: [sitemap({ filter: page => !unlistedUrls.has(page.replace(/\/$/, '')) })],
   devToolbar: {
     enabled: false,
   },

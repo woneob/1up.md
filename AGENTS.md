@@ -35,7 +35,7 @@ src/content/posts/
 
 - **URL 슬러그**는 날짜 뒤의 부분만 사용 (예: `2025-11-24.bulkhead-pattern` → `/bulkhead-pattern`).
 - `YYYY-MM-DD.slug` 형식에 맞지 않는 폴더는 빌드 시 에러 발생 — [src/pages/[slug].astro](src/pages/[slug].astro), [src/pages/index.astro](src/pages/index.astro) 참조.
-- 템플릿에서 사용하는 프론트매터 필드: `title`, `description`, `pubDate`(ISO + 타임존), `tags`(배열), 선택적 `robots`.
+- 템플릿에서 사용하는 프론트매터 필드: `title`, `description`, `pubDate`(ISO + 타임존), `tags`(배열), 선택적 `robots`, 선택적 `unlisted`([비공개 발행](#비공개-발행--unlisted) 참조).
 - **멀티라인 제목**: `title` 을 YAML 블록 스칼라 `|-` 로 여러 줄 작성하면(값에 `\n` 포함) 상세 페이지 [src/pages/[slug].astro](src/pages/[slug].astro)가 `title.includes('\n')` 로 자동 감지해 h1 에 `multilineTitle` 클래스 부여 → `white-space: pre-line` 으로 줄바꿈 + `::first-line` 으로 첫 줄 작게 표시. 별도 플래그 불필요.
 - 커버 이미지는 [src/utils/posts.js](src/utils/posts.js)의 `import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}')` 로 **디렉토리 단위** 매칭 — 포스트 직속 `images/cover.*` 경로에 있는 파일만 인식됨 (데모 폴더 등 하위는 잡히지 않음).
 
@@ -51,6 +51,15 @@ src/content/posts/
 ### 포스트 로딩 메커니즘
 
 모든 포스트 접근은 [src/utils/posts.js](src/utils/posts.js)의 `getAllPosts()` / `getPostBySlug(slug)` 를 거침 — 이 모듈이 `import.meta.glob('/src/content/posts/*/index.md', { eager: true })` 의 단일 출처이며, 폴더명 정규식 파싱(`/^(\d{4}-\d{2}-\d{2})\.(.+)$/`), 커버 이미지 매칭, `pubDate` 내림차순 정렬, `readingTime` 계산을 모두 수행. 반환 객체는 `{ slug, date, dir, frontmatter, module, cover, stats }` 형태. **Content Collections 설정 없음** (`src/content.config.ts` 미존재); `getCollection()`과 `astro:content`는 의도적으로 사용하지 않음. RSS 피드는 프론트매터(`title`, `description`, `pubDate`, `tags`)를 직접 읽어 RSS 2.0 XML을 수동 생성 — Astro 6 / Zod 4 비호환 문제([withastro/astro#15792](https://github.com/withastro/astro/issues/15792))를 회피하기 위해 `@astrojs/rss` 의존성을 제거한 것임. 새로운 포스트 탐색 코드를 추가할 때는 페이지/엔드포인트에서 `import.meta.glob` 을 다시 호출하지 말고 이 헬퍼를 통해 접근할 것.
+
+### 비공개 발행 — `unlisted`
+
+프론트매터에 `unlisted: true` 를 지정하면 **운영에 발행된 상태지만 모든 연결점에서 제외**되고 **포스트 URL 직접 입력 시에만** 정상 열람됨 (운영환경 최종 확인용).
+
+- 제외 범위: 인덱스 목록·태그 목록/태그별 페이지·RSS·llms.txt·사이트맵. 모두 [src/utils/posts.js](src/utils/posts.js) `getAllPosts()` 단일 출처를 거치므로, `getAllPosts()` 가 **기본적으로 `unlisted` 를 필터링**하여 한 번에 처리됨.
+- 직접 URL 열람: `getPostBySlug(slug)` 는 `unlisted` 와 무관하게 찾고, [src/pages/[slug].astro](src/pages/[slug].astro)의 `getStaticPaths` 만 `getAllPosts({ includeUnlisted: true })` 로 호출해 **상세 페이지 자체는 생성**됨 → 슬러그 URL 로 접근 가능.
+- 사이트맵: `@astrojs/sitemap` 은 빌드된 라우트에서 자동 생성되므로 `getAllPosts()` 필터가 닿지 않음. [astro.config.mjs](astro.config.mjs)의 `sitemap({ filter })` 가 별도로 제외함 — config 컨텍스트는 `import.meta.glob`(posts.js)을 못 쓰므로 `content`·`content.draft` 포스트 디렉토리를 fs 로 직접 스캔해 `unlisted: true` 슬러그 URL 집합을 만들어 거른다(프론트매터 정규식 매칭은 posts.js 와 별개로 중복 존재).
+- 검색엔진 비색인까지 원하면 `robots: noindex` 를 함께 지정(별개 필드, 자동 연동 아님).
 
 ## 데모 페이지
 

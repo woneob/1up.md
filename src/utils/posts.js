@@ -59,10 +59,15 @@ function loadPosts() {
   return cachedPosts;
 }
 
-export function getAllPosts() {
-  return loadPosts();
+// 기본은 unlisted(프론트매터 `unlisted: true`) 포스트를 제외 — 목록·태그·RSS·llms 등
+// getAllPosts()를 거치는 모든 연결점에서 자동으로 빠진다. includeUnlisted=true 는
+// 페이지 자체는 생성해야 하는 [slug].astro 의 getStaticPaths 전용.
+export function getAllPosts({ includeUnlisted = false } = {}) {
+  const posts = loadPosts();
+  return includeUnlisted ? posts : posts.filter(post => !post.frontmatter.unlisted);
 }
 
+// 직접 URL 접근용 — unlisted 여부와 무관하게 슬러그로 찾는다(상세 페이지는 항상 열람 가능).
 export function getPostBySlug(slug) {
   return loadPosts().find(post => post.slug === slug) ?? null;
 }
