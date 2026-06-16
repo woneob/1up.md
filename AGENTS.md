@@ -36,6 +36,7 @@ src/content/posts/
 - **URL 슬러그**는 날짜 뒤의 부분만 사용 (예: `2025-11-24.bulkhead-pattern` → `/bulkhead-pattern`).
 - `YYYY-MM-DD.slug` 형식에 맞지 않는 폴더는 빌드 시 에러 발생 — [src/pages/[slug].astro](src/pages/[slug].astro), [src/pages/index.astro](src/pages/index.astro) 참조.
 - 템플릿에서 사용하는 프론트매터 필드: `title`, `description`, `pubDate`(ISO + 타임존), `tags`(배열), 선택적 `robots`.
+- **멀티라인 제목**: `title` 을 YAML 블록 스칼라 `|-` 로 여러 줄 작성하면(값에 `\n` 포함) 상세 페이지 [src/pages/[slug].astro](src/pages/[slug].astro)가 `title.includes('\n')` 로 자동 감지해 h1 에 `multilineTitle` 클래스 부여 → `white-space: pre-line` 으로 줄바꿈 + `::first-line` 으로 첫 줄 작게 표시. 별도 플래그 불필요.
 - 커버 이미지는 [src/utils/posts.js](src/utils/posts.js)의 `import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}')` 로 **디렉토리 단위** 매칭 — 포스트 직속 `images/cover.*` 경로에 있는 파일만 인식됨 (데모 폴더 등 하위는 잡히지 않음).
 
 ### 콘텐츠 소스 — 배포용 vs 로컬 초안
