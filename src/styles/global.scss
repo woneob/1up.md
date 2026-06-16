@@ -338,6 +338,91 @@ body {
 }
 
 
+// 좋아요 / 공유 버튼 — 원 없이 아이콘만(Material Symbols Outlined 스타일).
+// 좋아요: 평소 회색 아웃라인 하트, 활성(localStorage 기준)이면 빨간 채움 하트.
+// data-liked 는 LikeButton.astro 의 reflectLiked() 가 설정.
+.likeBox,
+.shareBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.likeBox[aria-busy="true"] .likeBtn {
+  opacity: 0.5;
+}
+
+// 버튼은 아이콘 + 텍스트 전체가 클릭 영역이며, 패딩으로 실제 영역을 더 넓게 둠.
+.likeBtn,
+.shareBtn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: rem(70);
+  padding: 0 rem(4);
+  border: none;
+  border-radius: rem(10);
+  background: none;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+
+  &--static {
+    cursor: default;
+  }
+
+  &__icon {
+    display: inline-flex;
+    flex: none;
+    width: rem(24);
+    height: rem(24);
+
+    .ico {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+button.likeBtn,
+button.shareBtn {
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:disabled {
+    cursor: progress;
+  }
+}
+
+// 채움 #f7f7f7 + 가는 외곽선(#888). overflow:visible 로 stroke 가 viewBox 끝에서 안 잘리게.
+.likeBtn .ico,
+.shareBtn .ico {
+  fill: #c2c2c2;
+  stroke: #bbb;
+  stroke-width: 32;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+// 좋아요 상태: 빨강 채움(외곽선 제거)
+.likeBox[data-liked="true"] .likeBtn .ico {
+  fill: #f43f5e;
+  stroke: none;
+}
+
+button.shareBtn:hover .ico {
+  stroke: #555;
+}
+
+.likeBox__count,
+.shareBox__label {
+  font-size: rem(13);
+  color: #666;
+}
+
+
 .siteFooter {
   margin-top: rem(40);
   padding: rem(50) 0 rem(100);
@@ -425,27 +510,24 @@ body {
       .postBody {
         margin-top: rem(12);
       }
+
+      // 태그는 본문요약 하단으로 이동, 가로 배치(.postTags 기본값) + 윗여백만 부여
+      .postTags {
+        margin-top: rem(14);
+      }
     }
 
-    .cardTags {
+    .cardLike {
       grid-column: 3;
       min-width: 0;
+      display: flex;
+      justify-content: right;
+      align-items: flex-start;
+      padding-top: rem(2);
 
-      .postTags {
-        margin-top: 0;
-
-        li {
-          display: block;
-          margin-right: 0;
-
-          + li {
-            margin-top: rem(2);
-          }
-
-          a {
-            font-size: rem(14);
-          }
-        }
+      button {
+        position: relative;
+        z-index: 2;
       }
     }
 
@@ -456,9 +538,9 @@ body {
         row-gap: 0;
       }
 
-      // 제목 → 메타 → 본문요약 → 태그 순으로 보이도록 재배치.
-      // 제목과 본문요약은 .cardMain 안에 묶여 있으므로 박스를 풀어 그리드 직속 항목으로 만든 뒤
-      // 그 사이에 카운트+메타(.cardSeq)를 끼워 넣음
+      // 제목 → 메타 → 본문요약 → 태그 → 좋아요 순으로 보이도록 재배치.
+      // 제목·본문요약·태그는 .cardMain 안에 묶여 있으므로 박스를 풀어(display:contents)
+      // 그리드 직속 항목으로 만든 뒤 그 사이에 카운트+메타(.cardSeq)를 끼워 넣음
       .cardMain {
         display: contents;
       }
@@ -483,19 +565,18 @@ body {
         margin-top: rem(16);
       }
 
-      .cardTags {
+      .cardMain .postTags {
         order: 4;
         grid-column: 1;
-        margin-top: rem(10);
+        margin-top: rem(12);
+      }
 
-        .postTags li {
-          display: inline-block;
-          margin-right: rem(6);
-
-          + li {
-            margin-top: 0;
-          }
-        }
+      .cardLike {
+        order: 5;
+        grid-column: 1;
+        margin-top: rem(18);
+        justify-content: flex-start;
+        padding-top: 0;
       }
 
       .cardSeqNum {
@@ -518,14 +599,13 @@ body {
 #page-post {
   article {
     .postHeader {
-      padding: rem(50) 0;
-      text-align: center;
-
       h1 {
+        padding: rem(80) 0 rem(60);
         font-size: rem(42);
         font-weight: normal;
         line-height: 1.3;
         word-break: keep-all;
+        text-align: center;
 
         &.multilineTitle {
           white-space: pre-line;
@@ -536,22 +616,55 @@ body {
         }
       }
 
-      .postMeta {
-        justify-content: center;
+      // 제목 아래: 메타/태그(좌) ↔ 좋아요/공유(우)
+      .postHeaderBar {
+        margin-top: rem(30);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: rem(24);
       }
 
-      .postTags {
-        text-align: center;
+      .postHeaderInfo {
+        min-width: 0;
 
-        li {
-          float: none;
-          margin: 0 3px;
+        .postMeta {
+          justify-content: flex-start;
+        }
+
+        .postTags {
+          text-align: left;
+
+          li {
+            float: none;
+            margin: 0 rem(8) 0 0;
+          }
+        }
+      }
+
+      .postActions {
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-start;
+        gap: rem(4);
+      }
+
+      @media (max-width: 600px) {
+        .postHeaderBar {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: rem(20);
+        }
+
+        .postActions {
+          align-self: stretch;
+          justify-content: flex-start;
         }
       }
     }
 
     .postContent {
-      margin-top: 30px;
+      margin-top: rem(20);
       display: grid;
       grid-template-columns: minmax(0, 1fr) rem(140);
       grid-auto-flow: dense;

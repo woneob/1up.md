@@ -4,6 +4,8 @@ import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
 import PostToc from '~/components/PostToc.astro';
+import LikeButton from '~/components/LikeButton.astro';
+import ShareButton from '~/components/ShareButton.astro';
 import { getAllPosts, getPostBySlug } from '~/utils/posts.js';
 
 export function getStaticPaths() {
@@ -30,8 +32,16 @@ const cover = post.cover;
   <article>
     <header class="postHeader">
       <h1 class:list={[{ multilineTitle }]}>{title}</h1>
-      <PostMeta {pubDate} {stats} {slug} increment />
-      <PostTags {tags} />
+      <div class="postHeaderBar">
+        <div class="postHeaderInfo">
+          <PostMeta {pubDate} {stats} {slug} increment />
+          <PostTags {tags} />
+        </div>
+        <div class="postActions">
+          <LikeButton {slug} interactive />
+          <ShareButton {title} />
+        </div>
+      </div>
     </header>
     <div class="postContent">
       {cover && (

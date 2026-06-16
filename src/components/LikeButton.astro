@@ -1,0 +1,152 @@
+---
+// 좋아요 버튼. 숫자/활성상태는 클라이언트에서 채움.
+// - 운영(astro build): /api/likes 호출 → 실제 데이터, 오류 시 N/A
+// - 개발(astro dev / dev:draft): API 호출 없이 슬러그 기반 고정 임의값
+// interactive=true 인 인스턴스(상세 페이지)만 클릭으로 토글 (+1 / -1).
+//   목록 카드는 표시 전용(클릭 불가). 좋아요 여부는 localStorage['likes:liked:<slug>'] 가드.
+const { slug, interactive = false } = Astro.props;
+
+// 단색 하트(favorite, Material Symbols). 내부는 CSS 로 #f7f7f7 채움 + 가는 외곽선,
+// 좋아요 상태면 빨강 채움(global.scss 의 .ico / [data-liked] 규칙).
+const heart = `<svg class="ico" viewBox="0 -960 960 960" aria-hidden="true"><path d="m480-120-58-52q-101-91-167-157T150-447.5Q111-500 95.5-544T80-634q0-94 63-157t157-63q52 0 99 22t81 62q34-40 81-62t99-22q94 0 157 63t63 157q0 46-15.5 90T810-447.5Q771-395 705-329T538-172l-58 52Z"/></svg>`;
+---
+
+<div class="likeBox" data-like data-slug={slug} aria-busy="true">
+  {interactive ? (
+    <button type="button" class="likeBtn" data-like-btn aria-pressed="false" aria-label="좋아요">
+      <span class="likeBtn__icon" set:html={heart} />
+      <span class="likeBox__count">
+        <span class="likeBox__num" data-like-num>&mdash;</span> likes
+      </span>
+    </button>
+  ) : (
+    <span class="likeBtn likeBtn--static" aria-hidden="true">
+      <span class="likeBtn__icon" set:html={heart} />
+      <span class="likeBox__count">
+        <span class="likeBox__num" data-like-num>&mdash;</span> likes
+      </span>
+    </span>
+  )}
+</div>
+
+<script>
+  const DEV = import.meta.env.DEV;
+
+  // FNV-1a 해시 → 슬러그마다 안정적인(새로고침해도 동일) 임의값 생성
+  function fakeCount(slug) {
+    let h = 2166136261;
+    for (let i = 0; i < slug.length; i++) {
+      h ^= slug.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return 10 + ((h >>> 0) % 990); // 10 ~ 999
+  }
+
+  function setNum(el, n) {
+    const t = el.querySelector('[data-like-num]');
+    if (t) t.textContent = Number(n).toLocaleString();
+    el.removeAttribute('aria-busy');
+    el.dataset.likeState = 'ready';
+  }
+
+  function setNA(el) {
+    const t = el.querySelector('[data-like-num]');
+    if (t) t.textContent = 'N/A';
+    el.removeAttribute('aria-busy');
+    el.dataset.likeState = 'error';
+  }
+
+  function key(slug) {
+    return 'likes:liked:' + slug;
+  }
+
+  function reflectLiked(el) {
+    const liked = !!localStorage.getItem(key(el.dataset.slug));
+    el.dataset.liked = liked ? 'true' : 'false';
+    const btn = el.querySelector('[data-like-btn]');
+    if (btn) btn.setAttribute('aria-pressed', liked ? 'true' : 'false');
+    return liked;
+  }
+
+  // 상세 페이지 인터랙티브 버튼에 토글 핸들러 부착 (중복 부착 방지)
+  function bindToggle(el) {
+    const btn = el.querySelector('[data-like-btn]');
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+
+    btn.addEventListener('click', async () => {
+      if (btn.disabled) return;
+      const slug = el.dataset.slug;
+      const liked = el.dataset.liked === 'true';
+      const cur = Number(
+        (el.querySelector('[data-like-num]')?.textContent || '0').replace(/[^0-9]/g, '')
+      );
+
+      if (DEV) {
+        // 로컬: API 없이 즉시 토글
+        if (liked) localStorage.removeItem(key(slug));
+        else localStorage.setItem(key(slug), '1');
+        setNum(el, Math.max(0, cur + (liked ? -1 : 1)));
+        reflectLiked(el);
+        return;
+      }
+
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/likes/' + encodeURIComponent(slug), {
+          method: liked ? 'DELETE' : 'POST',
+        });
+        if (!r.ok) throw new Error(String(r.status));
+        const d = await r.json();
+        if (liked) localStorage.removeItem(key(slug));
+        else localStorage.setItem(key(slug), '1');
+        setNum(el, d.count);
+        reflectLiked(el);
+      } catch {
+        // 실패 시 상태 유지 (낙관적 갱신 안 함)
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  async function render() {
+    const els = [...document.querySelectorAll('[data-like]')];
+    if (!els.length) return;
+
+    for (const el of els) {
+      reflectLiked(el);
+      bindToggle(el);
+    }
+
+    if (DEV) {
+      // 로컬은 D1 이 없어 해시 기반 고정 베이스값. 좋아요 상태면 +1 해 운영과 동일하게 일관 표시.
+      for (const el of els) {
+        const liked = el.dataset.liked === 'true';
+        setNum(el, fakeCount(el.dataset.slug) + (liked ? 1 : 0));
+      }
+      return;
+    }
+
+    // 운영: 슬러그별 좋아요 수 배치 조회 (표시 전용 — 로드 시 증감 없음)
+    const slugs = [...new Set(els.map((e) => e.dataset.slug))];
+    try {
+      const r = await fetch('/api/likes?slugs=' + slugs.map(encodeURIComponent).join(','));
+      if (!r.ok) throw new Error(String(r.status));
+      const d = await r.json();
+      for (const el of els) setNum(el, d.counts[el.dataset.slug] ?? 0);
+    } catch {
+      for (const el of els) setNA(el);
+    }
+  }
+
+  // ClientRouter(운영)는 astro:page-load 로 매 네비게이션마다 재실행.
+  // dev 에는 ClientRouter 가 없어 이벤트가 안 오므로 직접 한 번 실행.
+  if (import.meta.env.PROD) {
+    document.addEventListener('astro:page-load', render);
+  } else if (document.readyState !== 'loading') {
+    render();
+  } else {
+    document.addEventListener('DOMContentLoaded', render);
+  }
+</script>

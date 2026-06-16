@@ -1,0 +1,63 @@
+---
+// 공유 버튼 (상세 페이지 전용). 좋아요 버튼과 같은 세로 구성(아이콘 + 라벨).
+// 클릭 시 Web Share API → 미지원 시 클립보드 복사 폴백.
+// Material Symbols Outlined 'share' 아이콘.
+const { title = '' } = Astro.props;
+
+const share = `<svg class="ico" viewBox="0 -960 960 960" aria-hidden="true"><path d="M680-80q-50 0-85-35t-35-85q0-6 3-28L282-392q-16 15-37 23.5t-45 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q24 0 45 8.5t37 23.5l281-164q-2-7-2.5-13.5T560-760q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-24 0-45-8.5T583-672L302-508q2 7 2.5 13.5t.5 14.5q0 7-.5 14.5T302-452l281 164q16-15 37-23.5t45-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Z"/></svg>`;
+---
+
+<div class="shareBox">
+  <button type="button" class="shareBtn" data-share data-title={title} aria-label="공유">
+    <span class="shareBtn__icon" set:html={share} />
+    <span class="shareBox__label" data-share-label>Share</span>
+  </button>
+</div>
+
+<script>
+  function bind() {
+    for (const btn of document.querySelectorAll('[data-share]')) {
+      if (btn.dataset.bound) continue;
+      btn.dataset.bound = '1';
+
+      btn.addEventListener('click', async () => {
+        const url = location.href;
+        const title = btn.dataset.title || document.title;
+
+        // 1) Web Share API (모바일/지원 브라우저): 네이티브 공유 시트
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, url });
+          } catch {
+            // 사용자가 취소했거나 실패 — 무시
+          }
+          return;
+        }
+
+        // 2) 폴백: 클립보드에 URL 복사 + 라벨에 잠깐 피드백
+        const label = btn.closest('.shareBox')?.querySelector('[data-share-label]');
+        try {
+          await navigator.clipboard.writeText(url);
+          if (label) {
+            const prev = label.textContent;
+            label.textContent = '복사됨';
+            setTimeout(() => {
+              label.textContent = prev;
+            }, 1500);
+          }
+        } catch {
+          // 클립보드 접근 불가 — 무시
+        }
+      });
+    }
+  }
+
+  // ClientRouter(운영)는 astro:page-load 로 매 네비게이션 재바인딩.
+  if (import.meta.env.PROD) {
+    document.addEventListener('astro:page-load', bind);
+  } else if (document.readyState !== 'loading') {
+    bind();
+  } else {
+    document.addEventListener('DOMContentLoaded', bind);
+  }
+</script>

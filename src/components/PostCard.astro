@@ -3,6 +3,7 @@ import { Picture } from 'astro:assets';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
 import ViewCount from '~/components/ViewCount.astro';
+import LikeButton from '~/components/LikeButton.astro';
 import { formatDate } from '~/utils/formatDate';
 
 const { post, showCover = false, seq = null } = Astro.props;
@@ -60,10 +61,11 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
         <div class="postBody">
           <p>{post.description}</p>
         </div>
+        <PostTags tags={post.tags} />
       </div>
 
-      <div class="cardTags">
-        <PostTags tags={post.tags} />
+      <div class="cardLike">
+        <LikeButton slug={post.slug} interactive />
       </div>
     </div>
   ) : (
