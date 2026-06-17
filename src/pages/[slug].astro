@@ -38,8 +38,8 @@ const cover = post.cover;
           <PostTags {tags} />
         </div>
         <div class="postActions">
-          <LikeButton {slug} interactive />
           <ShareButton {title} />
+          <LikeButton {slug} interactive />
         </div>
       </div>
     </header>
@@ -51,12 +51,14 @@ const cover = post.cover;
             width={940}
             height={382}
             alt={title}
-            formats={['avif', 'webp']}
+            formats={['avif']}
             fallbackFormat="webp"
             fit="cover"
             widths={[640, 940, 1600]}
             sizes="(min-width: 960px) 940px, 100vw"
+            fetchpriority="high"
             loading="eager"
+            decoding="sync"
           />
         </figure>
       )}

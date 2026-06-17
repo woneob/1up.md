@@ -6,7 +6,7 @@ import ViewCount from '~/components/ViewCount.astro';
 import LikeButton from '~/components/LikeButton.astro';
 import { formatDate } from '~/utils/formatDate';
 
-const { post, showCover = false, seq = null } = Astro.props;
+const { post, showCover = false, seq = null, eager = false } = Astro.props;
 const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
 ---
 
@@ -15,16 +15,17 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
     <figure class="cover">
       <Picture
         src={post.cover}
-        width={960}
+        width={940}
         height={320}
         alt={post.title}
         class="cover"
-        formats={['avif', 'webp']}
+        formats={['avif']}
         fallbackFormat="webp"
         fit="cover"
-        widths={[320, 640, 1000]}
-        sizes="auto"
-        loading="lazy"
+        widths={[640, 940, 1600]}
+        sizes="(min-width: 960px) 940px, 100vw"
+        loading={eager ? 'eager' : 'lazy'}
+        fetchpriority={eager ? 'high' : undefined}
       />
     </figure>
   )}

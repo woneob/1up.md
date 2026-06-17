@@ -19,8 +19,8 @@ const posts = all.map(({ slug, frontmatter, cover, stats }, i) => ({
 
 <DefaultLayout>
   <div class="articles">
-    {posts.map(post => (
-      <PostCard {post} showCover seq={post.seq} />
+    {posts.map((post, i) => (
+      <PostCard {post} showCover seq={post.seq} eager={i === 0} />
     ))}
 
     {posts.length === 0 && (
