@@ -363,7 +363,7 @@ body {
   border: none;
   border-radius: rem(10);
   background: none;
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition: transform 0.1s ease;
 
   &--static {
     cursor: default;
@@ -385,6 +385,7 @@ body {
 
 button.likeBtn,
 button.shareBtn {
+  position: relative;
   cursor: pointer;
 
   &:active {
@@ -399,21 +400,47 @@ button.shareBtn {
 // 연한 회색 채움 + 가는 외곽선. overflow:visible 로 stroke 가 viewBox 끝에서 안 잘리게.
 .likeBtn .ico,
 .shareBtn .ico {
-  fill: #c2c2c2;
-  stroke: #bbb;
+  fill: #d8d8d8;
+  stroke: #bcbcbc;
   stroke-width: 32;
   stroke-linejoin: round;
   overflow: visible;
+  transition: fill 0.15s ease, stroke 0.15s ease;
 }
 
-// 좋아요 상태: 빨강 채움(외곽선 제거)
-.likeBox[data-liked="true"] .likeBtn .ico {
-  fill: #f43f5e;
-  stroke: none;
-}
+.likeBox[data-liked="true"] .likeBtn  {
+  &::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    aspect-ratio: 1;
+    inset: -22px 0 0;
+    display: none;
+    background: radial-gradient(circle at center, rgba(244, 63, 94, 0.4) 0%, transparent 60%);
+    animation: none;
+    pointer-events: none;
+  }
 
-button.shareBtn:hover .ico {
-  stroke: #555;
+  &:focus::before {
+    display: block;
+    animation: likeBurst 0.4s ease-out 1 forwards;
+  }
+
+  @keyframes likeBurst {
+    0% {
+      transform: scale(0.5);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  .ico {
+    fill: #f43f5e;
+    stroke: none;
+  }
 }
 
 .likeBox__count,
@@ -421,7 +448,6 @@ button.shareBtn:hover .ico {
   font-size: rem(13);
   color: #666;
 }
-
 
 .siteFooter {
   margin-top: rem(40);
@@ -468,7 +494,6 @@ button.shareBtn:hover .ico {
 
     .cardSeq {
       grid-column: 1;
-      padding-top: rem(2);
     }
 
     .cardSeqNum {
@@ -523,7 +548,7 @@ button.shareBtn:hover .ico {
       display: flex;
       justify-content: right;
       align-items: flex-start;
-      padding-top: rem(2);
+      padding-top: rem(5);
 
       button {
         position: relative;
