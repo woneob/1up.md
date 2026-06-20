@@ -89,7 +89,7 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 ## 레이아웃 / page-id 규약
 
-[src/layouts/DefaultLayout.astro](src/layouts/DefaultLayout.astro)는 `navigation.json`의 `base`와 `Astro.url.pathname`을 매칭하여 `<body id="page-{label}" data-layout-type="main|sub">` 를 설정. [src/styles/](src/styles/) 의 스타일은 이 id를 타겟으로 함 — 새 최상위 섹션을 추가할 때 nav 항목도 함께 추가해야 body id가 `page-unknown`이 되지 않음.
+[src/layouts/DefaultLayout.astro](src/layouts/DefaultLayout.astro)는 `navigation.json`의 `base`와 `Astro.url.pathname`을 매칭하여 `<body id="page-{label}">` 를 설정. [src/styles/](src/styles/) 의 스타일은 이 id를 타겟으로 함 — 새 최상위 섹션을 추가할 때 nav 항목도 함께 추가해야 body id가 `page-unknown`이 되지 않음.
 
 ## 스타일
 
@@ -111,7 +111,7 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 `trailingSlash: 'never'` + `build.format: 'file'` 로 설정되어 있어 정적 출력은 `/foo/index.html` 가 아닌 `/foo.html` 형태이며 캐노니컬 URL은 `/foo`. 내부 링크 작성 시 항상 슬래시 없이 작성하고, 마크다운 raw HTML에서 `demos/foo/` 처럼 끝 슬래시를 넣어도 [resolve-post-relative-urls 플러그인](src/plugins/resolve-post-relative-urls.mjs)이 빌드 시 제거함.
 
-**`build.format: 'file'` 부작용 — `Astro.url.pathname`이 파일 경로를 반환함:** 정적 빌드 시 `Astro.url.pathname`은 라우트 경로(`/`, `/about`) 대신 출력 파일 경로(`/index.html`, `/about.html`)를 반환함. `DefaultLayout.astro`의 `getPageId`와 `layoutType` 계산에서 `/index.html`을 루트로 처리하는 조건이 이 때문에 추가되어 있음. 경로 비교 로직을 추가할 때 이 점에 유의할 것.
+**`build.format: 'file'` 부작용 — `Astro.url.pathname`이 파일 경로를 반환함:** 정적 빌드 시 `Astro.url.pathname`은 라우트 경로(`/`, `/about`) 대신 출력 파일 경로(`/index.html`, `/about.html`)를 반환함. `DefaultLayout.astro`의 `getPageId` 계산에서 `/index.html`을 루트로 처리하는 조건이 이 때문에 추가되어 있음. 경로 비교 로직을 추가할 때 이 점에 유의할 것.
 
 ## 마크다운 렌더링
 

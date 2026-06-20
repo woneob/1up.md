@@ -1,15 +1,5 @@
 [
   {
-    "label": "posts",
-    "base": "/posts",
-    "path": "/"
-  },
-  {
-    "label": "tags",
-    "base": "/tags",
-    "path": "/tags"
-  },
-  {
     "label": "about",
     "base": "/about",
     "path": "/about"

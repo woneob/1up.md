@@ -1,5 +1,6 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
+import site from '~/data/site.config.yml';
 import PostCard from '~/components/PostCard.astro';
 import { getAllPosts } from '~/utils/posts.js';
 
@@ -18,6 +19,11 @@ const posts = all.map(({ slug, frontmatter, cover, stats }, i) => ({
 ---
 
 <DefaultLayout>
+  <div class="symbol">
+    <h1>{site.siteName}</h1>
+    <p class="tagline">{site.tagline}</p>
+  </div>
+
   <div class="articles">
     {posts.map((post, i) => (
       <PostCard {post} showCover seq={post.seq} eager={i === 0} />

@@ -19,13 +19,29 @@ body {
 }
 
 .siteHeader {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   width: 100%;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.14);
+  animation: header-border linear both;
+  animation-timeline: scroll();
+  animation-range: 0 rem(100);
+
+  @keyframes header-border {
+    from {
+      box-shadow: none;
+    }
+  }
 
   .siteHeaderInner {
     display: flex;
     max-width: rem(980);
     margin: 0 auto;
-    padding: rem(40) rem(10);
+    padding: rem(6) rem(20);
+    justify-content: space-between;
+    align-items: center;
   }
 
   .logo {
@@ -44,6 +60,7 @@ body {
     .brand {
       a {
         font-weight: 700;
+        font-size: rem(16);
         color: #666;
 
         &::before {
@@ -55,6 +72,8 @@ body {
     }
 
     .tagline {
+      display: none;
+
       &::before {
         content: "\00B7";
       }
@@ -65,15 +84,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
     text-align: center;
 
-    &::before,
-    &::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: #ddd;
+    li {
+      display: inline-block;
     }
 
     .mainNav {
@@ -88,33 +102,15 @@ body {
 
       li {
         flex: 1 1 0;
-        min-width: 54px;
         text-align: center;
 
         a {
           display: block;
           text-decoration: none;
-          padding: 4px 12px;
-          font-size: 11px;
+          padding: 4px 6px;
+          font-size: 12px;
           color: #666;
           text-transform: capitalize;
-
-          &::before {
-            content: "";
-            display: block;
-            width: 26px;
-            margin: 0 auto;
-            aspect-ratio: 1 / 1;
-            background-repeat: no-repeat;
-            background-size: 100%;
-            opacity: .4;
-            transition: scale .1s;
-          }
-
-          &:hover::before {
-            opacity: .5;
-            scale: 1.1;
-          }
 
           &[aria-current="page"] {
             color: #333;
@@ -125,68 +121,10 @@ body {
           }
         }
 
-        $nav-names: ("posts", "tags", "about", "search", "RSS");
-
-        @each $name in $nav-names {
-          &[data-type="#{$name}"] a::before {
-            background-image: url("/images/navIcons/icon_#{$name}.svg");
-          }
-        }
       }
     }
   }
 
-  [data-layout-type="main"] & {
-    .siteHeaderInner {
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: rem(100) rem(10) rem(80);
-
-      @media (max-width: 959px) {
-        padding: rem(80) rem(10) rem(60);
-      }
-    }
-
-    .logo {
-      &::before {
-        content: "";
-        display: block;
-        width: rem(120);
-        height: rem(120);
-        margin: 0 auto 8px;
-        background: #ddd;
-        background: url("/images/1up.png") center /contain no-repeat;
-        image-rendering: pixelated;
-        border-radius: 50%;
-
-        @media (max-width: 959px) {
-          width: rem(100);
-          height: rem(100);
-        }
-      }
-
-      &:has(.brand a:hover) {
-        opacity: .96;
-      }
-    }
-  }
-
-  [data-layout-type="sub"] & {
-    .siteHeaderInner {
-      padding: rem(10);
-      border-bottom: 1px solid #ddd;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .navigation {
-      li {
-        display: inline-block;
-        margin-left: rem(10);
-      }
-    }
-  }
 }
 
 .siteBody {
@@ -196,6 +134,45 @@ body {
 
   > main {
     min-width: 0;
+  }
+}
+
+.symbol {
+  text-align: center;
+  margin: rem(100) 0 rem(114);
+
+  &::before {
+    content: "";
+    display: block;
+    width: rem(120);
+    height: rem(120);
+    margin: 0 auto 8px;
+    background: #ddd;
+    background: url("/images/1up.png") center /contain no-repeat;
+    image-rendering: pixelated;
+    border-radius: 50%;
+
+    @media (max-width: 959px) {
+      width: rem(100);
+      height: rem(100);
+    }
+  }
+
+  h1 {
+    display: inline-block;
+    font-size: rem(13);
+    font-weight: bold;
+    word-break: keep-all;
+  }
+
+  .tagline {
+    display: inline-block;
+    font-size: rem(13);
+    color: #666;
+
+    &::before {
+      content: "\00B7";
+    }
   }
 }
 
@@ -502,13 +479,13 @@ button.shareBtn {
       font-weight: 200;
       font-size: rem(35);
       line-height: 1;
-      color: #888;
+      color: #777;
     }
 
     // .postMeta 를 그대로 써서 상세 페이지와 동일한 아이콘(published/readingTime)을 재사용,
     // 다만 좁은 컬럼에 맞춰 세로 1줄씩 배치
     .cardSeqMeta {
-      margin: rem(14) 0 0;
+      margin: rem(16) 0 0;
       flex-direction: column;
 
       .postMetaItem {
