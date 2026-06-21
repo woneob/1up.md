@@ -124,6 +124,24 @@ body {
           }
         }
 
+        // search 항목: 링크가 아닌 검색 레이어를 여는 버튼. nav 링크와 동일한 외형.
+        .navSearchBtn {
+          display: block;
+          width: 100%;
+          margin: 0;
+          padding: 4px 6px;
+          border: 0;
+          background: none;
+          font: inherit;
+          font-size: 12px;
+          color: #666;
+          text-transform: capitalize;
+          cursor: pointer;
+
+          &:hover {
+            color: #333;
+          }
+        }
       }
     }
   }
@@ -867,4 +885,198 @@ button.shareBtn {
       }
     }
   }
+}
+
+
+// 검색 레이어 (SearchDialog.astro). 네이티브 <dialog> + showModal().
+// 데스크톱: 상단 중앙 카드 / 모바일(≤600px): 풀페이지 (Pagefind 기본 UX 결).
+.searchDialog {
+  width: min(640px, calc(100vw - #{rem(32)}));
+  max-width: none;
+  max-height: calc(100vh - #{rem(120)});
+  margin: rem(72) auto auto;
+  padding: 0;
+  border: 0;
+  border-radius: rem(12);
+  background: #fff;
+  box-shadow: 0 rem(16) rem(48) rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  .searchDialog__inner {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+  }
+
+  .searchDialog__bar {
+    display: flex;
+    align-items: center;
+    gap: rem(10);
+    padding: rem(12) rem(16);
+    border-bottom: 1px solid #eee;
+  }
+
+  .searchDialog__icon {
+    display: flex;
+    flex: none;
+    color: #999;
+
+    svg {
+      width: rem(20);
+      height: rem(20);
+    }
+  }
+
+  .searchDialog__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: rem(16); // iOS 자동 줌 방지(≥16px)
+    color: #222;
+
+    &::placeholder {
+      color: #aaa;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    // 검색 인풋 기본 X 버튼 숨김(커스텀 reset 버튼으로 대체)
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
+  }
+
+  // reset(X) 버튼: 흰색 X 가 든 동그란 회색 버튼. 입력이 있을 때(:valid)만 노출.
+  .searchDialog__reset {
+    display: none;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: rem(18);
+    height: rem(18);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #c4c4c4;
+    color: #fff;
+    cursor: pointer;
+
+    span {
+      display: flex;
+    }
+
+    svg {
+      width: rem(11);
+      height: rem(11);
+    }
+
+    &:hover {
+      background: #aaa;
+    }
+  }
+
+  // required + 입력 있음 → :valid → reset 노출(빈 값이면 :invalid 라 숨김).
+  .searchDialog__input:valid ~ .searchDialog__reset {
+    display: inline-flex;
+  }
+
+  .searchDialog__close {
+    flex: none;
+    padding: rem(2) rem(8);
+    border: 1px solid #ddd;
+    border-radius: rem(6);
+    background: #f7f7f7;
+    font-size: rem(11);
+    color: #888;
+    cursor: pointer;
+
+    &:hover {
+      color: #555;
+    }
+  }
+
+  .searchDialog__results {
+    padding: rem(8);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .searchDialog__note {
+    margin: 0;
+    padding: rem(24) rem(12);
+    text-align: center;
+    font-size: rem(14);
+    color: #999;
+  }
+
+  .searchResult {
+    display: block;
+    padding: rem(12) rem(12);
+    border-radius: rem(8);
+    text-decoration: none;
+    color: inherit;
+
+    &:hover,
+    &:focus-visible,
+    &.is-active {
+      background: #f4f5f7;
+      outline: none;
+    }
+
+    .searchResult__title {
+      display: block;
+      font-size: rem(20);
+      font-weight: 40;
+      line-height: 1.3;
+      word-break: keep-all;
+      color: #222;
+    }
+
+    .searchResult__excerpt {
+      display: block;
+      margin-top: rem(4);
+      font-size: rem(13);
+      line-height: 1.5;
+      color: #777;
+
+      mark {
+        background: #fff1a8;
+        color: inherit;
+      }
+    }
+  }
+
+  @media (max-width: $bp-mobile) {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+
+    .searchDialog__inner {
+      max-height: 100%;
+      height: 100%;
+    }
+
+    .searchDialog__results {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+// 검색 레이어가 열려 있는 동안 배경 스크롤 잠금.
+html:has(.searchDialog[open]) {
+  overflow: hidden;
 }

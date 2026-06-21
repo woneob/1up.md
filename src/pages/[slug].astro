@@ -20,7 +20,7 @@ if (!post) {
   throw new Error(`포스트를 찾을 수 없습니다: ${slug}`);
 }
 
-const { title, description, pubDate, tags, robots } = post.frontmatter;
+const { title, description, pubDate, tags, robots, unlisted } = post.frontmatter;
 const multilineTitle = title.includes('\n');
 const Content = post.module.default;
 const stats = post.stats;
@@ -29,10 +29,13 @@ const cover = post.cover;
 ---
 
 <DefaultLayout {title} {description} {robots} pageId="post">
-  <article>
+  {/* data-pagefind-body 가 있는 페이지만 Pagefind 인덱싱 대상 → 포스트 본문만 검색됨.
+      unlisted 포스트는 속성을 생략해 검색 인덱스에서 제외(다른 표면과 동일하게 숨김). */}
+  <article data-pagefind-body={!unlisted || undefined}>
     <header class="postHeader">
       <h1 class:list={[{ multilineTitle }]}>{title}</h1>
-      <div class="postHeaderBar">
+      {/* 메타·태그·공유·좋아요는 검색 발췌 노이즈라 인덱싱에서 제외(제목 h1 은 인덱싱됨). */}
+      <div class="postHeaderBar" data-pagefind-ignore>
         <div class="postHeaderInfo">
           <PostMeta {pubDate} {stats} {slug} increment />
           <PostTags {tags} />

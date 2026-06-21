@@ -9,11 +9,14 @@
 ## 명령어
 
 ```bash
-npm run dev        # astro dev — http://localhost:4321 (host: true, LAN 공개). 배포용 src/content/posts 로드
-npm run dev:draft  # astro dev --mode draft — gitignore된 src/content.draft/posts(로컬 초안)만 로드
-npm run build      # astro build — /dist 에 정적 파일 출력
-npm run preview    # astro preview — 빌드 결과 미리보기
+npm run dev          # astro dev — http://localhost:4321 (host: true, LAN 공개). 배포용 src/content/posts 로드
+npm run dev:draft    # astro dev --mode draft — gitignore된 src/content.draft/posts(로컬 초안)만 로드
+npm run build        # astro build && pagefind --site dist — /dist 에 정적 파일 + 검색 인덱스 출력
+npm run index:draft  # astro build --mode draft && pagefind --site dist — 초안으로 dist/pagefind 생성(dev 검색 확인용)
+npm run preview      # astro preview — 빌드 결과 미리보기
 ```
+
+> `npm run build` 가 `pagefind --site dist` 까지 포함하므로 Cloudflare Pages 빌드 커맨드도 그대로 사용([검색](#검색--search) 참조).
 
 > 콘텐츠 소스 선택은 [콘텐츠 모델](#콘텐츠-모델--포스트) 참조.
 
@@ -152,3 +155,17 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 - **컴포넌트**: [src/components/ShareButton.astro](src/components/ShareButton.astro) — Material Symbols `share` 단색 SVG 1장. 좋아요 하트와 동일하게 연한 회색 채움 + 가는 외곽선(`.ico` 규칙을 `.likeBtn`/`.shareBtn` 공유)이라 세 원도 같은 색으로 채워짐.
 - **동작**: 클릭 시 `navigator.share`(Web Share API, 주로 모바일) 우선 → 미지원 시 `navigator.clipboard.writeText(location.href)` 폴백 후 라벨에 "복사됨" 1.5초 피드백. 둘 다 Baseline 안정 기능이라 기능 감지만으로 처리(폴백 외 별도 처리 없음).
 - ClientRouter(PROD)와 호환: `astro:page-load` 로 매 네비게이션 재바인딩(`dataset.bound` 중복 방지), dev 는 `DOMContentLoaded` 1회.
+
+## 검색 (Search)
+
+[Pagefind](https://pagefind.app/)(빌드 타임 정적 검색, MIT, 외부 서비스·런타임 서버 없음) 기반. 헤더 `search` 버튼 클릭 시 **현재 페이지에서 레이어(모달)로** 검색창이 열림 — 별도 `/search` 라우트 없음. 데스크톱은 상단 중앙 카드, **모바일(≤`$bp-mobile`)은 풀페이지**(Pagefind 기본 UX 결).
+
+- **인덱스 생성**: 소스가 아니라 **빌드된 `dist/` HTML 을 후처리**. `npm run build` 가 `astro build && pagefind --site dist` 로 `dist/pagefind/` 에 인덱스를 생성([명령어](#명령어) 참조). `pagefind` 는 devDependency. `dist` 는 gitignore 되므로 `public/` 은 건드리지 않음.
+- **인덱싱 범위**: [src/pages/[slug].astro](src/pages/[slug].astro)의 `<article>` 에 `data-pagefind-body` 가 있는 **포스트 본문만** 인덱싱(이 속성이 한 곳이라도 있으면 Pagefind 는 없는 페이지를 전부 제외 → about·tags·demos 등 자동 제외). 제목 `h1` 은 인덱싱되어 결과 타이틀이 됨. 메타·태그·공유·좋아요 묶음(`.postHeaderBar`)은 발췌 노이즈라 `data-pagefind-ignore`.
+- **`unlisted` 제외**: `data-pagefind-body` 를 `!unlisted || undefined` 로 조건부 출력 → `unlisted` 포스트는 속성이 빠져 **검색 인덱스에서 제외**([비공개 발행](#비공개-발행--unlisted)과 동일 취지). 상세 페이지 자체는 직접 URL 로 여전히 열람 가능.
+- **컴포넌트**: [src/components/SearchDialog.astro](src/components/SearchDialog.astro) — 네이티브 `<dialog closedby="any">` 를 `showModal()` 로 염(top layer·포커스 트랩·Esc 무료). 백드롭 클릭/플랫폼 닫기는 `closedby` 미지원(Safari) 대비 콘텐츠 밖 클릭 폴백 포함. 입력은 Pagefind `debouncedSearch`(내부 디바운스+최신호출 우선)로 검색하고 상위 8건을 `r.data()` 로 렌더(`excerpt` 는 `<mark>` 하이라이트 HTML). 결과 `url` 의 `.html`/`index.html` 은 캐노니컬(`/foo`, `/`)로 보정([URL 정책](#url-정책)의 `build.format: 'file'` 부작용 대응). [DefaultLayout](src/layouts/DefaultLayout.astro)에 1회 포함. [Navigation.astro](src/components/Navigation.astro)는 `search` 항목만 링크가 아닌 `[data-search-open]` 버튼으로 렌더.
+- **키보드 내비게이션**: combobox 패턴 — 인풋에 포커스를 유지한 채 `↑`/`↓` 로 결과 항목 활성 이동(`.is-active` 하이라이트 + `aria-activedescendant`, 끝에서 순환), `Enter` 로 활성 결과 이동. 인풋 `role="combobox"` + 결과 컨테이너 `role="listbox"`/항목 `role="option"`.
+- **reset(X) 버튼**: 인풋에 `required` 를 주어 `:valid`(=입력 있음)일 때만 CSS 로 reset 버튼(흰 X 동그란 버튼) 노출. `required` 의 제출 경고 툴팁은 `<form novalidate>` 로 차단(`:valid` 의사클래스는 그대로 동작). 클릭 시 인풋 비우고 결과 초기화 + 포커스 유지.
+- **dev 동작**: `astro dev` 는 `dist/` 를 서빙하지 않아 그대로는 `/pagefind/` 가 없음. [astro.config.mjs](astro.config.mjs)의 Vite 플러그인 `pagefindDevServer`(`apply: 'serve'`)가 `dist/pagefind/` 를 `/pagefind/` 로 직접 서빙(Content-Type 매핑 포함). 따라서 dev 검색은 **마지막 빌드 스냅샷**이라 최신 콘텐츠로 보려면 `npm run index:draft` 재실행 필요. Pagefind 런타임 import 는 Vite 변환을 피하려 `/* @vite-ignore */` 사용.
+- **환경 분기 없음**: 조회수·좋아요와 달리 별도 DEV 가짜데이터 분기 없이, dev/prod 모두 동일하게 실제 Pagefind 인덱스를 사용(미들웨어 vs 정적 자산 차이뿐). 인덱스가 없으면(빌드 전) 레이어에 안내 문구 표시. ClientRouter(PROD) 호환: `astro:page-load` 재바인딩, 트리거 버튼은 `dataset.bound`, 다이얼로그는 클릭 시점에 `getElementById` 로 조회.
+- **한국어**: Pagefind Extended 빌드가 `<html lang="ko">` 를 감지해 CJK 분절 적용. 단 ko 는 stemming 미지원(어근 매칭 없음) — 빌드 로그에 안내가 뜨는 정상 동작.

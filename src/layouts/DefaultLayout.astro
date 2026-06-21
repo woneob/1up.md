@@ -3,6 +3,7 @@ import Banner from '~/components/Banner.astro';
 import Head from '~/components/Head.astro';
 import Logo from '~/components/Logo.astro';
 import Navigation from '~/components/Navigation.astro';
+import SearchDialog from '~/components/SearchDialog.astro';
 import Footer from '~/components/Footer.astro';
 
 import { truncate } from '~/utils/truncate';
@@ -58,5 +59,7 @@ const pageDescription = truncate(description ?? site.tagline);
     </div>
 
     <Footer />
+
+    <SearchDialog />
   </body>
 </html>

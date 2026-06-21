@@ -7,6 +7,17 @@ const  { nav, currentPageId } = Astro.props;
     {nav.map(item => {
       const isActive = currentPageId === item.label;
 
+      // search 는 페이지 이동이 아니라 검색 레이어(SearchDialog)를 여는 버튼.
+      if (item.label === 'search') {
+        return (
+          <li data-type="search">
+            <button type="button" class="navSearchBtn" data-search-open aria-haspopup="dialog">
+              {item.label}
+            </button>
+          </li>
+        );
+      }
+
       return (
         <li data-type={item.label}>
           <a href={item.path} aria-current={isActive ? 'page' : undefined}>

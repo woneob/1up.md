@@ -1,0 +1,209 @@
+---
+// 검색 레이어 (전 페이지 공통). 헤더의 search 버튼([data-search-open])이 showModal() 로 연다.
+// Pagefind 빌드 산출물(/pagefind)을 클라이언트에서 lazy 로드해 제목·본문을 검색.
+// 데스크톱: 상단 중앙 레이어 / 모바일(≤600px): 풀페이지 — Pagefind 기본 UX 와 동일한 결.
+// dev 에서는 astro.config 의 pagefind-dev-server 미들웨어가 인덱스를 서빙(최소 1회 빌드 필요).
+const searchIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>`;
+const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>`;
+---
+
+<dialog id="searchDialog" class="searchDialog" closedby="any" aria-label="검색">
+  <div class="searchDialog__inner">
+    {/* required 로 :valid(=입력 있음) 시 reset 버튼 노출. novalidate 로 제출 시 경고 툴팁 차단(:valid 의사클래스는 유지). */}
+    <form class="searchDialog__bar" role="search" data-search-form novalidate onsubmit="return false">
+      <span class="searchDialog__icon" set:html={searchIcon} />
+      <input
+        type="search"
+        class="searchDialog__input"
+        data-search-input
+        placeholder="검색어를 입력하세요"
+        required
+        autocomplete="off"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        enterkeyhint="search"
+        role="combobox"
+        aria-label="검색어"
+        aria-autocomplete="list"
+        aria-expanded="false"
+        aria-controls="searchResults" />
+      <button type="button" class="searchDialog__reset" data-search-reset aria-label="검색어 지우기">
+        <span set:html={clearIcon} />
+      </button>
+      <button type="button" class="searchDialog__close" data-search-close aria-label="검색 닫기">닫기</button>
+    </form>
+    <div id="searchResults" class="searchDialog__results" data-search-results role="listbox" aria-label="검색 결과" aria-live="polite">
+      <p class="searchDialog__note" data-search-note>제목과 본문에서 검색합니다.</p>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  const PAGEFIND_URL = '/pagefind/pagefind.js';
+
+  let pagefind = null;
+  let pagefindError = false;
+
+  // Pagefind 런타임을 한 번만 로드(모듈 스코프 캐시). 빌드 산출물(/pagefind)이 없으면 실패로 표시.
+  async function loadPagefind() {
+    if (pagefind || pagefindError) return pagefind;
+    try {
+      pagefind = await import(/* @vite-ignore */ PAGEFIND_URL);
+      await pagefind.init?.();
+    } catch {
+      pagefindError = true;
+      pagefind = null;
+    }
+    return pagefind;
+  }
+
+  // build.format: 'file' 산출물의 결과 URL(/foo.html, /index.html)을 캐노니컬(/foo, /)로 보정.
+  function cleanUrl(u) {
+    return u.replace(/\/index\.html$/, '/').replace(/\.html$/, '') || '/';
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  function setNote(resultsEl, text) {
+    resultsEl.innerHTML = `<p class="searchDialog__note">${escapeHtml(text)}</p>`;
+  }
+
+  // 키보드 내비게이션 상태 초기화(새 검색/초기화 시).
+  function resetActive(input) {
+    input.removeAttribute('aria-activedescendant');
+  }
+
+  function setActive(input, options, i) {
+    options.forEach((o, idx) => o.classList.toggle('is-active', idx === i));
+    const el = options[i];
+    if (!el) return;
+    el.scrollIntoView({ block: 'nearest' });
+    input.setAttribute('aria-activedescendant', el.id);
+  }
+
+  async function runSearch(query, input, resultsEl) {
+    query = query.trim();
+    resetActive(input);
+
+    if (!query) {
+      input.setAttribute('aria-expanded', 'false');
+      setNote(resultsEl, '제목과 본문에서 검색합니다.');
+      return;
+    }
+
+    const pf = await loadPagefind();
+    if (!pf) {
+      input.setAttribute('aria-expanded', 'false');
+      setNote(resultsEl, '검색 인덱스를 불러오지 못했습니다. (로컬은 `npm run build` 후 이용)');
+      return;
+    }
+
+    // debouncedSearch: 입력 도중 호출은 내부적으로 디바운스되고, 더 최신 호출에 밀리면 null 반환.
+    const search = await pf.debouncedSearch(query);
+    if (search === null) return;
+
+    if (!search.results.length) {
+      input.setAttribute('aria-expanded', 'false');
+      setNote(resultsEl, `'${query}' 에 대한 결과가 없습니다.`);
+      return;
+    }
+
+    const items = await Promise.all(search.results.slice(0, 8).map(r => r.data()));
+    resultsEl.innerHTML = items.map((d, i) => (
+      `<a class="searchResult" role="option" id="searchResult-${i}" href="${cleanUrl(d.url)}">` +
+        `<span class="searchResult__title">${escapeHtml(d.meta?.title || '제목 없음')}</span>` +
+        `<span class="searchResult__excerpt">${d.excerpt}</span>` +
+      `</a>`
+    )).join('');
+    input.setAttribute('aria-expanded', 'true');
+  }
+
+  function openSearch() {
+    const dialog = document.getElementById('searchDialog');
+    if (!dialog || dialog.open) return;
+    dialog.showModal();
+    dialog.querySelector('[data-search-input]')?.focus();
+  }
+
+  function bind() {
+    // 검색 열기 트리거(헤더 등 transition:persist 영역 — 버튼은 1회만 바인딩).
+    for (const btn of document.querySelectorAll('[data-search-open]')) {
+      if (btn.dataset.bound) continue;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', openSearch);
+    }
+
+    // 다이얼로그 내부(페이지마다 새로 렌더 → dialog 기준으로 1회 바인딩).
+    const dialog = document.getElementById('searchDialog');
+    if (!dialog || dialog.dataset.bound) return;
+    dialog.dataset.bound = '1';
+
+    const input = dialog.querySelector('[data-search-input]');
+    const results = dialog.querySelector('[data-search-results]');
+
+    input.addEventListener('input', () => runSearch(input.value, input, results));
+
+    // 위/아래로 결과 이동(포커스는 인풋에 유지 — combobox 패턴), Enter 로 활성 결과 이동.
+    input.addEventListener('keydown', (e) => {
+      const options = [...results.querySelectorAll('.searchResult')];
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (!options.length) return;
+        e.preventDefault();
+        let i = options.findIndex(o => o.classList.contains('is-active'));
+        if (e.key === 'ArrowDown') i = i < options.length - 1 ? i + 1 : 0;
+        else i = i > 0 ? i - 1 : options.length - 1;
+        setActive(input, options, i);
+        return;
+      }
+
+      if (e.key === 'Enter') {
+        const active = results.querySelector('.searchResult.is-active');
+        if (active) {
+          e.preventDefault();
+          active.click();
+        }
+      }
+    });
+
+    // reset(X) 버튼: 입력 비우고 결과 초기화, 포커스는 인풋에 유지.
+    dialog.querySelector('[data-search-reset]')?.addEventListener('click', () => {
+      input.value = '';
+      runSearch('', input, results);
+      input.focus();
+    });
+
+    dialog.querySelector('[data-search-close]')?.addEventListener('click', () => dialog.close());
+
+    // closedby="any"(백드롭 클릭/플랫폼 닫기) 미지원(Safari) 폴백: 콘텐츠 밖 클릭 시 닫기.
+    if (!('closedBy' in HTMLDialogElement.prototype)) {
+      dialog.addEventListener('click', (e) => {
+        if (e.target !== dialog) return;
+        const r = dialog.getBoundingClientRect();
+        const inside = r.top <= e.clientY && e.clientY <= r.top + r.height &&
+                       r.left <= e.clientX && e.clientX <= r.left + r.width;
+        if (!inside) dialog.close();
+      });
+    }
+
+    // 닫으면 입력/결과 초기화.
+    dialog.addEventListener('close', () => {
+      input.value = '';
+      runSearch('', input, results);
+    });
+  }
+
+  // ClientRouter(운영)는 astro:page-load 로 매 네비게이션 재바인딩, dev 는 1회.
+  if (import.meta.env.PROD) {
+    document.addEventListener('astro:page-load', bind);
+  } else if (document.readyState !== 'loading') {
+    bind();
+  } else {
+    document.addEventListener('DOMContentLoaded', bind);
+  }
+</script>

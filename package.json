@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "dev:draft": "astro dev --mode draft",
-    "build": "astro build",
+    "build": "astro build && pagefind --site dist",
+    "index:draft": "astro build --mode draft && pagefind --site dist",
     "preview": "astro preview"
   },
   "repository": {
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@astrojs/sitemap": "3.7.3",
     "@rollup/plugin-yaml": "5.0.0",
+    "pagefind": "1.5.2",
     "reading-time": "1.5.0",
     "sass": "1.100.0"
   }
