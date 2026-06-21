@@ -93,7 +93,7 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 ## 스타일
 
-`@use` 모듈 방식의 Sass. 진입점: [src/styles/global.scss](src/styles/global.scss)(`functions`, `reset`, `font` 임포트).
+`@use` 모듈 방식의 Sass. 진입점: [src/styles/global.scss](src/styles/global.scss)(`variables`, `functions`, `reset`, `font` 임포트). 브레이크포인트는 [src/styles/_variables.scss](src/styles/_variables.scss)의 `$bp-content`(971px = 콘텐츠 폭 972 미만), `$bp-mobile`(600px) Sass 변수로 관리 — 미디어 쿼리에 하드코딩하지 말 것.
 
 ## SPA 전환
 

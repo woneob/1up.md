@@ -1,3 +1,4 @@
+@use "variables" as *;
 @use "functions" as *;
 @use "reset" as *;
 @use "font" as *;
@@ -130,9 +131,10 @@ body {
 }
 
 .siteBody {
-  max-width: rem(980);
+  box-sizing: content-box;
+  max-width: rem(940);
   margin: 0 auto;
-  padding: rem(10) rem(20);
+  padding: rem(10) rem(16);
 
   > main {
     min-width: 0;
@@ -142,6 +144,10 @@ body {
 .symbol {
   text-align: center;
   margin: rem(100) 0 rem(114);
+
+  @media (max-width: $bp-content) {
+    margin: rem(48) 0 rem(56);
+  }
 
   &::before {
     content: "";
@@ -154,9 +160,10 @@ body {
     image-rendering: pixelated;
     border-radius: 50%;
 
-    @media (max-width: 959px) {
-      width: rem(100);
-      height: rem(100);
+    @media (max-width: $bp-content) {
+      width: rem(80);
+      height: rem(80);
+      margin: 0 auto 4px;
     }
   }
 
@@ -185,7 +192,7 @@ body {
     + article {
       margin-top: rem(80);
 
-      @media (max-width: 959px) {
+      @media (max-width: $bp-content) {
         margin-top: rem(50);
       }
     }
@@ -194,6 +201,11 @@ body {
       img {
         width: 100%;
         height: auto;
+
+        @media (max-width: $bp-mobile) {
+          aspect-ratio: 21 / 9;
+          object-fit: cover;
+        }
       }
     }
 
@@ -535,7 +547,7 @@ button.shareBtn {
       }
     }
 
-    @media (max-width: 959px) {
+    @media (max-width: $bp-content) {
       .cardGrid {
         grid-template-columns: minmax(0, 1fr);
         // 요소마다 간격이 달라 균일 row-gap 대신 각 항목의 margin-top으로 개별 제어
@@ -653,7 +665,7 @@ button.shareBtn {
         gap: rem(4);
       }
 
-      @media (max-width: 600px) {
+      @media (max-width: $bp-mobile) {
         .postHeaderBar {
           flex-direction: column;
           align-items: flex-start;
@@ -806,7 +818,7 @@ button.shareBtn {
         }
       }
 
-      @media (max-width: 959px) {
+      @media (max-width: $bp-content) {
         grid-template-columns: minmax(0, 1fr);
         row-gap: rem(24);
 
