@@ -44,6 +44,9 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
   let pagefind = null;
   let pagefindError = false;
+  // 검색 호출 세대 토큰: 더 최신 runSearch 가 시작되면 이전(비동기 진행 중) 호출의 렌더를 무효화.
+  // 특히 빈 쿼리로 즉시 return 할 때, 이미 떠 있던 debouncedSearch 가 뒤늦게 resolve 해 결과를 덮는 것을 막음.
+  let searchSeq = 0;
 
   // Pagefind 런타임을 한 번만 로드(모듈 스코프 캐시). 빌드 산출물(/pagefind)이 없으면 실패로 표시.
   async function loadPagefind() {
@@ -89,6 +92,7 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
   async function runSearch(query, input, resultsEl) {
     query = query.trim();
     resetActive(input);
+    const seq = ++searchSeq; // 이 호출 이후 시작된 검색이 있으면(아래 await 뒤) 이 호출은 stale.
 
     if (!query) {
       input.setAttribute('aria-expanded', 'false');
@@ -97,6 +101,7 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
     }
 
     const pf = await loadPagefind();
+    if (seq !== searchSeq) return;
     if (!pf) {
       input.setAttribute('aria-expanded', 'false');
       setNote(resultsEl, '검색 인덱스를 불러오지 못했습니다. (로컬은 `npm run build` 후 이용)');
@@ -105,7 +110,7 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
     // debouncedSearch: 입력 도중 호출은 내부적으로 디바운스되고, 더 최신 호출에 밀리면 null 반환.
     const search = await pf.debouncedSearch(query);
-    if (search === null) return;
+    if (search === null || seq !== searchSeq) return;
 
     if (!search.results.length) {
       input.setAttribute('aria-expanded', 'false');
@@ -114,6 +119,7 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
     }
 
     const items = await Promise.all(search.results.slice(0, 8).map(r => r.data()));
+    if (seq !== searchSeq) return;
     resultsEl.innerHTML = items.map((d, i) => (
       `<a class="searchResult" role="option" id="searchResult-${i}" href="${cleanUrl(d.url)}">` +
         `<span class="searchResult__title">${escapeHtml(d.meta?.title || '제목 없음')}</span>` +
