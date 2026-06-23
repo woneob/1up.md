@@ -4,10 +4,10 @@
   "description": "Blog for 1up.md",
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "dev:draft": "astro dev --mode draft",
+    "dev": "npm run build && astro dev",
+    "dev:draft": "npm run build:draft && astro dev --mode draft",
     "build": "astro build && pagefind --site dist",
-    "index:draft": "astro build --mode draft && pagefind --site dist",
+    "build:draft": "astro build --mode draft && pagefind --site dist",
     "preview": "astro preview"
   },
   "repository": {
