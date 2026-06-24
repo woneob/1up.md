@@ -4,8 +4,8 @@
   "description": "Blog for 1up.md",
   "type": "module",
   "scripts": {
-    "dev": "npm run build && astro dev",
-    "dev:draft": "npm run build:draft && astro dev --mode draft",
+    "dev": "node scripts/dev-with-search-index.mjs",
+    "dev:draft": "node scripts/dev-with-search-index.mjs --draft",
     "build": "astro build && pagefind --site dist",
     "build:draft": "astro build --mode draft && pagefind --site dist",
     "preview": "astro preview"
