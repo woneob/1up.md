@@ -192,7 +192,7 @@ body {
   margin: rem(100) 0 rem(114);
 
   @media (max-width: $bp-content) {
-    margin: rem(48) 0 rem(56);
+    margin: rem(40) 0 rem(56);
   }
 
   &::before {
@@ -594,36 +594,49 @@ button.shareBtn {
     }
 
     @media (max-width: $bp-content) {
+      // 제목·메타는 좌측, 좋아요는 우측에서 제목+메타 두 줄에 세로로 걸침.
+      // 본문요약·태그는 그 아래 전체 폭으로 깔림.
       .cardGrid {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) auto;
+        column-gap: rem(20);
         // 요소마다 간격이 달라 균일 row-gap 대신 각 항목의 margin-top으로 개별 제어
         row-gap: 0;
+        align-items: start;
       }
 
-      // 제목 → 메타 → 본문요약 → 태그 → 좋아요 순으로 보이도록 재배치.
       // 제목·본문요약·태그는 .cardMain 안에 묶여 있으므로 박스를 풀어(display:contents)
-      // 그리드 직속 항목으로 만든 뒤 그 사이에 카운트+메타(.cardSeq)를 끼워 넣음
+      // 그리드 직속 항목으로 만든 뒤 명시적 row/column 으로 재배치
       .cardMain {
         display: contents;
       }
 
       .cardMain h2 {
-        order: 1;
         grid-column: 1;
+        grid-row: 1;
         font-size: rem(24);
       }
 
       .cardSeq {
-        order: 2;
         grid-column: 1;
+        grid-row: 2;
         display: flex;
         align-items: baseline;
         column-gap: rem(16);
       }
 
+      // 우측 컬럼에서 제목+메타(1~2행)에 걸쳐 상단 정렬
+      .cardLike {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        align-self: start;
+        justify-content: flex-end;
+        margin-top: 0;
+        padding-top: rem(5);
+      }
+
       .cardMain .postBody {
-        order: 3;
-        grid-column: 1;
+        grid-column: 1 / -1;
+        grid-row: 3;
         margin-top: rem(16);
       }
 
@@ -638,17 +651,9 @@ button.shareBtn {
       }
 
       .cardMain .postTags {
-        order: 4;
-        grid-column: 1;
+        grid-column: 1 / -1;
+        grid-row: 4;
         margin-top: rem(12);
-      }
-
-      .cardLike {
-        order: 5;
-        grid-column: 1;
-        margin-top: rem(18);
-        justify-content: flex-start;
-        padding-top: 0;
       }
 
       .cardSeqNum {
@@ -663,6 +668,26 @@ button.shareBtn {
         .postMetaItem + .postMetaItem {
           margin-top: 0;
         }
+      }
+    }
+
+    // 모바일에서는 메타가 줄바꿈되기 쉬워 카드 날짜·조회수를 축약형으로 표시
+    // (Jan 4, 2026 / 28K views). 실제 텍스트(전체형, 시멘틱)는 font-size:0 으로 숨기고
+    // 축약값을 담은 ::before(attr) 만 노출 — 폰트크기는 메타 dd 와 동일하게 복원.
+    @media (max-width: $bp-mobile) {
+      .cardSeqMeta .metaDate,
+      .cardSeqMeta .viewCount__num {
+        font-size: 0;
+      }
+
+      .cardSeqMeta .metaDate::before {
+        content: attr(data-date-short);
+        font-size: 13px;
+      }
+
+      .cardSeqMeta .viewCount__num::before {
+        content: attr(data-num-short);
+        font-size: 13px;
       }
     }
   }

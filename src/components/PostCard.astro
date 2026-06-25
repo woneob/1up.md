@@ -38,7 +38,11 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
           <div class="postMetaItem" data-type="published">
             <dt>Published</dt>
             <dd>
-              <time datetime={post.pubDate}>{formatDate(post.pubDate)}</time>
+              <time
+                class="metaDate"
+                datetime={post.pubDate}
+                data-date-short={formatDate(post.pubDate, { short: true })}
+              >{formatDate(post.pubDate)}</time>
             </dd>
           </div>
           {post.stats && (

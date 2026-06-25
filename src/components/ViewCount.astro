@@ -15,7 +15,7 @@ const { slug, increment = false } = Astro.props;
     data-views-increment={increment ? 'true' : undefined}
     aria-busy="true"
   >
-    <span class="viewCount__num" data-views-num>&mdash;</span> views
+    <span class="viewCount__num" data-views-num data-num-short="—">&mdash;</span> views
   </dd>
 </div>
 
@@ -32,16 +32,35 @@ const { slug, increment = false } = Astro.props;
     return 100 + ((h >>> 0) % 49900); // 100 ~ 49,999
   }
 
+  // 1,200 → 1.2K, 28,000 → 28K, 1,500,000 → 1.5M (모바일 카드 축약 표기용)
+  function abbr(n) {
+    if (n < 1000) return String(n);
+    if (n < 1_000_000) {
+      const k = n / 1000;
+      return (k < 10 ? k.toFixed(1).replace(/\.0$/, '') : Math.round(k)) + 'K';
+    }
+    const m = n / 1_000_000;
+    return (m < 10 ? m.toFixed(1).replace(/\.0$/, '') : Math.round(m)) + 'M';
+  }
+
+  // 전체형은 실제 textContent(시멘틱 유지), 축약형은 data-num-short 에. 표시 전환은
+  // CSS 담당 — 모바일 카드에서만 실제 텍스트를 숨기고 ::before(attr) 를 노출(global.scss).
   function setNum(el, n) {
     const t = el.querySelector('[data-views-num]');
-    if (t) t.textContent = Number(n).toLocaleString();
+    if (t) {
+      t.textContent = Number(n).toLocaleString();
+      t.dataset.numShort = abbr(Number(n));
+    }
     el.removeAttribute('aria-busy');
     el.dataset.viewsState = 'ready';
   }
 
   function setNA(el) {
     const t = el.querySelector('[data-views-num]');
-    if (t) t.textContent = 'N/A';
+    if (t) {
+      t.textContent = 'N/A';
+      t.dataset.numShort = 'N/A';
+    }
     el.removeAttribute('aria-busy');
     el.dataset.viewsState = 'error';
   }

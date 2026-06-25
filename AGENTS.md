@@ -146,7 +146,9 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 - **토글 시점**: `interactive` 인스턴스가 클릭으로 `POST`(좋아요)/`DELETE`(취소) — 상세·목록 동일. (조회수와 달리 좋아요는 목록 카드에서도 토글 가능.) 좋아요 여부·상태 복원은 `localStorage['likes:liked:<slug>']` 가드 — 재방문 시 활성 상태로 렌더. **로그인 없으니 브라우저 단위**(조회수와 동일 한계).
 - **환경별 표시 분기**: 조회수와 동일(PROD=실데이터/오류 N/A, DEV=FNV-1a 해시 고정값, API 미호출). DEV 토글은 API 없이 localStorage+숫자만 즉시 갱신. DEV 표시값은 좋아요 상태면 베이스+1 로 보정해 운영과 일관.
 - **상세 헤더 레이아웃**: 제목은 중앙, 그 아래 `.postHeaderBar` 가 메타·태그(좌, `.postHeaderInfo`) ↔ 공유·좋아요(우, `.postActions`)를 양끝 배치(모바일 600px 이하 세로 스택). `.postActions` 내 순서는 공유([공유](#공유-share)) 좌, 좋아요 우.
-- **인덱스 카드 레이아웃 변경**: 좋아요를 우측 컬럼에 넣으면서 기존 우측 컬럼의 태그(`.cardTags`)는 제거, 태그는 본문요약 하단(`.cardMain` 내부)으로 이동해 가로 배치. 모바일에서는 제목→메타→본문요약→태그→좋아요 순. (목록엔 공유 버튼 없음.)
+- **인덱스 카드 레이아웃 변경**: 좋아요를 우측 컬럼에 넣으면서 기존 우측 컬럼의 태그(`.cardTags`)는 제거, 태그는 본문요약 하단(`.cardMain` 내부)으로 이동해 가로 배치. (목록엔 공유 버튼 없음.)
+  - **태블릿 이하(`$bp-content`)**: `.cardMain` 을 `display:contents` 로 풀고 2단 그리드(`minmax(0,1fr) auto`)로 재배치 — 제목(1행)·메타(2행)는 좌측, 좋아요(`.cardLike`)는 우측 컬럼에서 제목+메타 두 줄에 걸쳐(`grid-row: 1 / span 2`) 상단 정렬, 본문요약·태그는 그 아래 전체 폭. (이전엔 좋아요가 맨 아래로 처졌음.)
+  - **모바일(`$bp-mobile`) 메타 축약**: 메타가 줄바꿈되기 쉬워 카드의 날짜·조회수를 축약형(`Jan 4, 2026` / `28K views`)으로 표시. 시멘틱 유지를 위해 **실제 전체값은 텍스트노드에 그대로 두고**(`<time>` 본문, `.viewCount__num` 의 `textContent`), 모바일 카드에서만 `font-size:0` 으로 숨긴 뒤 축약값을 담은 `::before`(`attr(data-date-short)` / `attr(data-num-short)`)를 노출. **전환은 100% CSS 미디어쿼리** — JS는 화면폭을 보지 않음(조회수 JS는 `textContent`+`data-num-short` 양쪽만 채움). 날짜 축약형은 [src/utils/formatDate.js](src/utils/formatDate.js)의 `{ short: true }`(`month: 'short'`), 조회수 축약은 [ViewCount.astro](src/components/ViewCount.astro)의 `abbr()`(K/M).
 
 ## 공유 (Share)
 
