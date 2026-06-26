@@ -2,7 +2,11 @@
 import { ClientRouter } from 'astro:transitions';
 import '~/styles/global.scss';
 import site from '~/data/site.config.yml';
-const { title, description, robots } = Astro.props;
+import JsonLd from '~/components/JsonLd.astro';
+import { baseGraph } from '~/utils/jsonld.js';
+const { title, description, robots, jsonLd } = Astro.props;
+// 베이스 노드(WebSite/Person/로고)를 전 페이지에 깔고 페이지별 노드를 합친다.
+const graph = [...baseGraph(), ...(jsonLd ?? [])];
 const canonicalPath = Astro.url.pathname
   .replace(/\/index\.html$/, '/')
   .replace(/\.html$/, '');
@@ -51,6 +55,8 @@ const canonicalURL = new URL(canonicalPath, Astro.site);
     href={new URL('rss.xml', Astro.site)} />
 
   <link rel="author" href="/humans.txt" />
+
+  <JsonLd graph={graph} />
 
   {/* dev에서는 ClientRouter의 트랜지션 스왑이 SCSS HMR과 충돌해 이전 CSS가 남아 깜빡이므로 프로덕션 빌드에서만 렌더링. ClientRouter는 배포 사이트의 SPA 네비게이션 헤더 플리커 방지용이라 dev에 필요 없음. */}
   {import.meta.env.PROD && <ClientRouter />}

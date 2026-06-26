@@ -38,7 +38,7 @@ src/content/posts/
 
 - **URL 슬러그**는 날짜 뒤의 부분만 사용 (예: `2025-11-24.bulkhead-pattern` → `/bulkhead-pattern`).
 - `YYYY-MM-DD.slug` 형식에 맞지 않는 폴더는 빌드 시 에러 발생 — [src/pages/[slug].astro](src/pages/[slug].astro), [src/pages/index.astro](src/pages/index.astro) 참조.
-- 템플릿에서 사용하는 프론트매터 필드: `title`, `description`, `pubDate`(ISO + 타임존), `tags`(배열), 선택적 `robots`, 선택적 `unlisted`([비공개 발행](#비공개-발행--unlisted) 참조).
+- 템플릿에서 사용하는 프론트매터 필드: `title`, `description`, `pubDate`(ISO + 타임존), `tags`(배열), 선택적 `robots`, 선택적 `unlisted`([비공개 발행](#비공개-발행--unlisted) 참조), 선택적 `updatedDate`(수정일, ISO + 타임존 — JSON-LD `dateModified` 로 사용. 없거나 비면 `pubDate` 와 동일 값. [구조화 데이터](#구조화-데이터--json-ld) 참조).
 - **멀티라인 제목**: `title` 을 YAML 블록 스칼라 `|-` 로 여러 줄 작성하면(값에 `\n` 포함) 상세 페이지 [src/pages/[slug].astro](src/pages/[slug].astro)가 `title.includes('\n')` 로 자동 감지해 h1 에 `multilineTitle` 클래스 부여 → `white-space: pre-line` 으로 줄바꿈 + `::first-line` 으로 첫 줄 작게 표시. 별도 플래그 불필요.
 - 커버 이미지는 [src/utils/posts.js](src/utils/posts.js)의 `import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}')` 로 **디렉토리 단위** 매칭 — 포스트 직속 `images/cover.*` 경로에 있는 파일만 인식됨 (데모 폴더 등 하위는 잡히지 않음).
 
@@ -121,6 +121,17 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 - Shiki 테마: `nord` ([astro.config.mjs](astro.config.mjs)에서 설정).
 - 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 마크다운 raw HTML(`<iframe>`, `<img>` 등)의 `src`/`href` 상대 경로를 빌드 시 포스트 슬러그 기준 절대 경로로 자동 치환 (예: `<iframe src="demos/foo/">` → `<iframe src="/<post-slug>/demos/foo">`). 경로의 trailing slash 는 [URL 정책](#url-정책)에 따라 제거. 절대 경로(`/`), 프로토콜 (`http:`, `mailto:` 등), 앵커(`#`)는 변환 대상 아님. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization)를 따르며 이 플러그인의 영향을 받지 않음.
 - 커스텀 remark 플러그인 [src/plugins/strip-h1.mjs](src/plugins/strip-h1.mjs) 가 본문의 H1(`# 제목`)을 **모두 제거**. 페이지 제목의 단일 출처는 frontmatter `title` 이며, 본문 H1 은 raw 마크다운을 뷰어로 볼 때의 가독성용 장식일 뿐 사이트에서는 의미가 없음. frontmatter `title` 과 내용이 다르거나 H1 이 복수여도 상관없이 전부 제거. remark(mdast) 단계라 Astro 의 heading 수집(rehype)보다 앞서므로 본문뿐 아니라 `getHeadings()` / 목차([PostToc](src/components/PostToc.astro))에도 H1 이 잡히지 않음.
+
+## 구조화 데이터 — JSON-LD
+
+검색엔진/소셜용 schema.org 구조화 데이터를 `<head>` 의 `application/ld+json` 으로 출력. 빌더 단일 출처는 [src/utils/jsonld.js](src/utils/jsonld.js), 렌더는 [src/components/JsonLd.astro](src/components/JsonLd.astro).
+
+- **노드 그래프(`@graph` + `@id`)**: 페이지마다 노드를 따로 두지 않고 안정적인 `@id`(해시 URI: `…/#website`, `…/#person`, 포스트 `…/<slug>#article` 등)로 서로 참조. Google 은 페이지 단위로 평가하므로, 참조가 같은 페이지 안에서 풀리도록 **베이스 그래프(`baseGraph()` = WebSite + Person + 로고 ImageObject)를 전 페이지에 주입**한다.
+- **배선**: 각 페이지가 빌더로 페이지별 노드 배열을 만들어 `DefaultLayout` 에 `jsonLd` prop 으로 넘기면 → [Head.astro](src/components/Head.astro) 가 `baseGraph()` 와 합쳐 `<JsonLd>` 로 출력. 베이스 노드는 Head 가 항상 깔므로 페이지는 **자기 노드만** 만들면 됨.
+- **단일 저자 = 발행자**: 개인 블로그라 `publisher` 를 `Organization` 이 아니라 **`Person`(1UP)** 으로. `Person.sameAs` 는 `site.config.yml` 의 `author.social`(x, github)에서 파생 — 엔드포인트들처럼 **YAML 이 단일 출처**.
+- **페이지별 노드**: 홈 `blogGraph()`(`Blog`+`CollectionPage`), 포스트 `postGraph()`(`BlogPosting`+`BreadcrumbList`), about `profileGraph()`(`ProfilePage`, 주체는 공유 `Person @id`), 태그 목록/태그별 `collectionGraph()`(`CollectionPage`+`BreadcrumbList`).
+- **`BlogPosting` 매핑 주의**: `headline` 은 멀티라인 `title` 의 `\n` 을 공백으로 정규화(`oneLine`). 커버는 `new URL(cover.src, Astro.site)` 로 **절대 URL** 화([slug].astro), 없으면 로고 `@id` 로 대체. `dateModified` 는 frontmatter `updatedDate` ← 없으면 `pubDate`. `keywords` 는 `tags`, `inLanguage` 는 `site.language.locale`(`ko_KR`→`ko-KR`).
+- **출력 형태**: `JsonLd.astro` 는 `type="application/ld+json"` 스크립트라 Astro 가 JS 로 번들/변환하지 않고 그대로 둠. head 에 있어 Pagefind 인덱싱([검색](#검색--search))과 무관하고 ClientRouter(head 스왑)와도 호환.
 
 ## 조회수 (View Count)
 

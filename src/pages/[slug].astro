@@ -7,6 +7,7 @@ import PostToc from '~/components/PostToc.astro';
 import LikeButton from '~/components/LikeButton.astro';
 import ShareButton from '~/components/ShareButton.astro';
 import { getAllPosts, getPostBySlug } from '~/utils/posts.js';
+import { postGraph } from '~/utils/jsonld.js';
 
 export function getStaticPaths() {
   // unlisted 포스트도 페이지는 생성해야 직접 URL 로 열람 가능 — includeUnlisted.
@@ -26,9 +27,13 @@ const Content = post.module.default;
 const stats = post.stats;
 const headings = typeof post.module.getHeadings === 'function' ? post.module.getHeadings() : [];
 const cover = post.cover;
+
+const canonicalUrl = new URL(slug, Astro.site).href;
+const coverUrl = cover ? new URL(cover.src, Astro.site).href : null;
+const jsonLd = postGraph(post, { url: canonicalUrl, coverUrl });
 ---
 
-<DefaultLayout {title} {description} {robots} pageId="post">
+<DefaultLayout {title} {description} {robots} pageId="post" {jsonLd}>
   {/* data-pagefind-body 가 있는 페이지만 Pagefind 인덱싱 대상 → 포스트 본문만 검색됨.
       unlisted 포스트는 속성을 생략해 검색 인덱스에서 제외(다른 표면과 동일하게 숨김). */}
   <article data-pagefind-body={!unlisted || undefined}>

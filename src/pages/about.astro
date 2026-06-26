@@ -1,9 +1,11 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
+import { profileGraph } from '~/utils/jsonld.js';
 
 const layoutProps = {
   title: "about",
-  description: "description..."
+  description: "description...",
+  jsonLd: profileGraph(),
 };
 ---
 <DefaultLayout {...layoutProps}>

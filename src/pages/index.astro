@@ -3,8 +3,10 @@ import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import site from '~/data/site.config.yml';
 import PostCard from '~/components/PostCard.astro';
 import { getAllPosts } from '~/utils/posts.js';
+import { blogGraph } from '~/utils/jsonld.js';
 
 const all = getAllPosts();
+const jsonLd = blogGraph(all);
 const total = all.length;
 const posts = all.map(({ slug, frontmatter, cover, stats }, i) => ({
   slug,
@@ -18,7 +20,7 @@ const posts = all.map(({ slug, frontmatter, cover, stats }, i) => ({
 }));
 ---
 
-<DefaultLayout>
+<DefaultLayout {jsonLd}>
   <div class="symbol">
     <h1>{site.siteName}</h1>
     <p class="tagline">{site.tagline}</p>

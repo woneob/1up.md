@@ -1,6 +1,7 @@
 ---
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import { getAllPosts } from '~/utils/posts.js';
+import { collectionGraph } from '~/utils/jsonld.js';
 
 const tagSet = new Set();
 getAllPosts().forEach(({ frontmatter }) => {
@@ -10,9 +11,19 @@ const tags = Array.from(tagSet);
 
 const title = "Tags";
 const description = "태그 목록";
+
+const jsonLd = collectionGraph({
+  url: new URL('tags', Astro.site).href,
+  name: title,
+  description,
+  breadcrumb: [
+    { name: 'Home', item: new URL('/', Astro.site).href.replace(/\/$/, '') },
+    { name: 'Tags' },
+  ],
+});
 ---
 
-<DefaultLayout {title} {description}>
+<DefaultLayout {title} {description} {jsonLd}>
   <h2>태그 목록</h2>
   <ul>
     {tags.map(tag => (

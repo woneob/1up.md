@@ -2,6 +2,7 @@
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostCard from '~/components/PostCard.astro';
 import { getAllPosts } from '~/utils/posts.js';
+import { collectionGraph } from '~/utils/jsonld.js';
 
 export function getStaticPaths() {
   const tagSet = new Set();
@@ -26,9 +27,21 @@ const filtered = getAllPosts()
 
 const title = `Tag: ${tag}`;
 const description = `"${tag}" 태그를 가진 게시물`;
+
+const jsonLd = collectionGraph({
+  url: new URL(`tags/${tag}`, Astro.site).href,
+  name: title,
+  description,
+  slugs: filtered.map(p => p.slug),
+  breadcrumb: [
+    { name: 'Home', item: new URL('/', Astro.site).href.replace(/\/$/, '') },
+    { name: 'Tags', item: new URL('tags', Astro.site).href },
+    { name: `#${tag}` },
+  ],
+});
 ---
 
-<DefaultLayout {title} {description}>
+<DefaultLayout {title} {description} {jsonLd}>
   <h2>#{tag}</h2>
 
   {filtered.length === 0 ? (

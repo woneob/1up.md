@@ -1,0 +1,9 @@
+---
+// @graph 배열을 하나의 application/ld+json 스크립트로 출력.
+// type="application/ld+json" 은 Astro 가 JS 로 처리/번들하지 않고 그대로 둠.
+const { graph = [] } = Astro.props;
+const data = { '@context': 'https://schema.org', '@graph': graph };
+---
+{graph.length > 0 && (
+  <script type="application/ld+json" set:html={JSON.stringify(data)} />
+)}

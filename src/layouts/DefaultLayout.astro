@@ -10,7 +10,7 @@ import { truncate } from '~/utils/truncate';
 import site from '~/data/site.config.yml';
 import nav from '~/data/navigation.json';
 
-const { title, description, robots, pageId: pageIdProp } = Astro.props;
+const { title, description, robots, pageId: pageIdProp, jsonLd } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 function getPageId(path) {
@@ -36,7 +36,8 @@ const pageDescription = truncate(description ?? site.tagline);
   <Head
     title={pageTitle}
     description={pageDescription}
-    robots={robots} />
+    robots={robots}
+    jsonLd={jsonLd} />
 
   <body id={'page-' + pageId}>
 
