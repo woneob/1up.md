@@ -14,8 +14,10 @@ export function getStaticPaths() {
 
 const { tag } = Astro.params;
 
-const filtered = getAllPosts()
-  .filter(({ frontmatter }) => (frontmatter.tags ?? []).includes(tag))
+const matched = getAllPosts()
+  .filter(({ frontmatter }) => (frontmatter.tags ?? []).includes(tag));
+
+const filtered = matched
   .map(({ slug, frontmatter, stats }) => ({
     slug,
     title: frontmatter.title || slug,
@@ -32,7 +34,7 @@ const jsonLd = collectionGraph({
   url: new URL(`tags/${tag}`, Astro.site).href,
   name: title,
   description,
-  slugs: filtered.map(p => p.slug),
+  posts: matched,
   breadcrumb: [
     { name: 'Home', item: new URL('/', Astro.site).href.replace(/\/$/, '') },
     { name: 'Tags', item: new URL('tags', Astro.site).href },

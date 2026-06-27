@@ -28,9 +28,7 @@ const stats = post.stats;
 const headings = typeof post.module.getHeadings === 'function' ? post.module.getHeadings() : [];
 const cover = post.cover;
 
-const canonicalUrl = new URL(slug, Astro.site).href;
-const coverUrl = cover ? new URL(cover.src, Astro.site).href : null;
-const jsonLd = postGraph(post, { url: canonicalUrl, coverUrl });
+const jsonLd = postGraph(post);
 ---
 
 <DefaultLayout {title} {description} {robots} pageId="post" {jsonLd}>

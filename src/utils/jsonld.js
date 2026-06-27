@@ -78,43 +78,45 @@ function breadcrumbNode(pageUrl, items) {
   };
 }
 
-// 목록 페이지에서 글을 가리키는 최소 BlogPosting 스텁(@id 로 상세 페이지 노드와 병합).
-function postStub(slug) {
+// 커버 이미지 절대 URL. import 된 에셋의 .src 는 루트 상대(`/_astro/...`)라 도메인 결합.
+function absoluteCover(cover) {
+  if (!cover?.src) return null;
+  return /^https?:/.test(cover.src) ? cover.src : `${SITE_URL}${cover.src}`;
+}
+
+// 완결적 BlogPosting 노드. 목록(blogPost/hasPart)·상세가 같은 @id 로 이 노드를 공유하므로
+// image/author/headline 등 권장 필드를 항상 채운다(리치 결과 경고 방지). detail=true 면
+// 상세 페이지 전용 필드(isPartOf, mainEntityOfPage)도 포함.
+function blogPostingNode(post, { detail = false } = {}) {
+  const fm = post.frontmatter;
+  const pageUrl = `${SITE_URL}/${post.slug}`;
+  const coverUrl = absoluteCover(post.cover);
+
   return {
     '@type': 'BlogPosting',
-    '@id': `${SITE_URL}/${slug}#article`,
-    url: `${SITE_URL}/${slug}`,
+    '@id': `${pageUrl}#article`,
+    ...(detail ? { isPartOf: { '@id': ID.website }, mainEntityOfPage: pageUrl } : {}),
+    url: pageUrl,
+    headline: oneLine(fm.title),
+    ...(fm.description ? { description: oneLine(fm.description) } : {}),
+    datePublished: fm.pubDate,
+    // dateModified: updatedDate 가 없으면 datePublished 와 동일 값.
+    dateModified: fm.updatedDate || fm.pubDate,
+    author: { '@id': ID.person },
+    publisher: { '@id': ID.person },
+    ...(fm.tags?.length ? { keywords: fm.tags } : {}),
+    image: coverUrl ?? { '@id': ID.logo },
+    inLanguage: LOCALE,
   };
 }
 
 // 포스트 상세 — BlogPosting + BreadcrumbList.
-export function postGraph(post, { url, coverUrl } = {}) {
-  const fm = post.frontmatter;
-  const pageUrl = (url ?? `${SITE_URL}/${post.slug}`).replace(/\/$/, '');
-  const headline = oneLine(fm.title);
-  // dateModified: updatedDate 가 없으면 datePublished 와 동일 값.
-  const modified = fm.updatedDate || fm.pubDate;
-
+export function postGraph(post) {
   return [
-    {
-      '@type': 'BlogPosting',
-      '@id': `${pageUrl}#article`,
-      isPartOf: { '@id': ID.website },
-      mainEntityOfPage: pageUrl,
-      url: pageUrl,
-      headline,
-      ...(fm.description ? { description: oneLine(fm.description) } : {}),
-      datePublished: fm.pubDate,
-      dateModified: modified,
-      author: { '@id': ID.person },
-      publisher: { '@id': ID.person },
-      ...(fm.tags?.length ? { keywords: fm.tags } : {}),
-      ...(coverUrl ? { image: coverUrl } : { image: { '@id': ID.logo } }),
-      inLanguage: LOCALE,
-    },
-    breadcrumbNode(pageUrl, [
+    blogPostingNode(post, { detail: true }),
+    breadcrumbNode(`${SITE_URL}/${post.slug}`, [
       { name: 'Home', item: SITE_URL },
-      { name: headline },
+      { name: oneLine(post.frontmatter.title) },
     ]),
   ];
 }
@@ -131,7 +133,7 @@ export function blogGraph(posts = []) {
       isPartOf: { '@id': ID.website },
       inLanguage: LOCALE,
       mainEntity: { '@id': ID.person },
-      blogPost: posts.map((p) => postStub(p.slug)),
+      blogPost: posts.map((p) => blogPostingNode(p)),
     },
   ];
 }
@@ -157,8 +159,9 @@ export function profileGraph() {
 }
 
 // 태그 목록/태그별 페이지 — CollectionPage + BreadcrumbList.
-// breadcrumb: [{name,item?}, ...] (마지막 항목은 현재 페이지, item 생략).
-export function collectionGraph({ url, name, description, slugs = [], breadcrumb = [] }) {
+// posts: getAllPosts() 형태의 글 객체 배열(hasPart 용). breadcrumb: [{name,item?}, ...]
+// (마지막 항목은 현재 페이지, item 생략).
+export function collectionGraph({ url, name, description, posts = [], breadcrumb = [] }) {
   const pageUrl = url.replace(/\/$/, '');
   return [
     {
@@ -169,7 +172,7 @@ export function collectionGraph({ url, name, description, slugs = [], breadcrumb
       ...(description ? { description: oneLine(description) } : {}),
       isPartOf: { '@id': ID.website },
       inLanguage: LOCALE,
-      ...(slugs.length ? { hasPart: slugs.map(postStub) } : {}),
+      ...(posts.length ? { hasPart: posts.map((p) => blogPostingNode(p)) } : {}),
     },
     breadcrumbNode(pageUrl, breadcrumb),
   ];
