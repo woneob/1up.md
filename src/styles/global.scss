@@ -598,7 +598,7 @@ button.shareBtn {
       // 본문요약·태그는 그 아래 전체 폭으로 깔림.
       .cardGrid {
         grid-template-columns: minmax(0, 1fr) auto;
-        column-gap: rem(20);
+        column-gap: rem(10);
         // 요소마다 간격이 달라 균일 row-gap 대신 각 항목의 margin-top으로 개별 제어
         row-gap: 0;
         align-items: start;
@@ -663,7 +663,7 @@ button.shareBtn {
       .cardSeqMeta {
         margin: 0;
         flex-direction: row;
-        column-gap: rem(14);
+        column-gap: rem(10);
 
         .postMetaItem + .postMetaItem {
           margin-top: 0;
