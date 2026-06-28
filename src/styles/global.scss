@@ -327,6 +327,11 @@ body {
       color: #777;
     }
 
+    .postMetaUpdated {
+      margin-left: rem(4);
+      color: #999;
+    }
+
     &::before {
       content: "";
       position: absolute;

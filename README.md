@@ -63,6 +63,7 @@ description: '...'
 pubDate: '2026-04-20T13:45:00+09:00'
 tags: [tag1, tag2]
 robots: 'noindex'                  # 선택
+updatedDate: '2026-06-28T10:00:00+09:00'  # 선택 — 수정일. 상세 페이지 날짜 뒤 표기 + JSON-LD dateModified
 ---
 ```
 

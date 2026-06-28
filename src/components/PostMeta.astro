@@ -2,7 +2,8 @@
 import { formatDate } from '~/utils/formatDate';
 import ViewCount from '~/components/ViewCount.astro';
 
-const { pubDate, stats, slug, increment = false } = Astro.props;
+const { pubDate, updatedDate, stats, slug, increment = false } = Astro.props;
+const showUpdated = updatedDate && updatedDate !== pubDate;
 ---
 
 <dl class="postMeta">
@@ -12,6 +13,11 @@ const { pubDate, stats, slug, increment = false } = Astro.props;
       <time datetime={pubDate}>
         {formatDate(pubDate)}
       </time>
+      {showUpdated && (
+        <span class="postMetaUpdated">
+          (Updated: <time datetime={updatedDate}>{formatDate(updatedDate)}</time>)
+        </span>
+      )}
     </dd>
   </div>
 
