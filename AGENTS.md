@@ -61,7 +61,9 @@ src/content/posts/
 
 - 제외 범위: 인덱스 목록·태그 목록/태그별 페이지·RSS·llms.txt·사이트맵. 모두 [src/utils/posts.js](src/utils/posts.js) `getAllPosts()` 단일 출처를 거치므로, `getAllPosts()` 가 **기본적으로 `unlisted` 를 필터링**하여 한 번에 처리됨.
 - 직접 URL 열람: `getPostBySlug(slug)` 는 `unlisted` 와 무관하게 찾고, [src/pages/[slug].astro](src/pages/[slug].astro)의 `getStaticPaths` 만 `getAllPosts({ includeUnlisted: true })` 로 호출해 **상세 페이지 자체는 생성**됨 → 슬러그 URL 로 접근 가능.
-- 사이트맵: `@astrojs/sitemap` 은 빌드된 라우트에서 자동 생성되므로 `getAllPosts()` 필터가 닿지 않음. [astro.config.mjs](astro.config.mjs)의 `sitemap({ filter })` 가 별도로 제외함 — config 컨텍스트는 `import.meta.glob`(posts.js)을 못 쓰므로 `content`·`content.draft` 포스트 디렉토리를 fs 로 직접 스캔해 `unlisted: true` 슬러그 URL 집합을 만들어 거른다(프론트매터 정규식 매칭은 posts.js 와 별개로 중복 존재).
+- 사이트맵: `@astrojs/sitemap` 의존성 없이 [src/pages/sitemap.xml.js](src/pages/sitemap.xml.js) 라우트로 직접 생성(robots·rss·llms.txt 와 동일 패턴, [포스트 로딩 메커니즘](#포스트-로딩-메커니즘) 참조). `getAllPosts()` 단일 출처를 거치므로 `unlisted` 제외가 자동으로 따라옴 — config 에서 fs 스캔하던 별도 필터가 불필요해짐. 라우트 집합은 정적 페이지(`/`, `/about`, `/tags`) + 포스트 슬러그 + 태그별 페이지(`/tags/<tag>`)를 **명시적으로 열거**(태그는 `new URL` 로 경로 인코딩). **데모 페이지(`/<slug>/demos/<demo>`)는 애초에 열거하지 않으니 자연히 제외** — 데모는 standalone `noindex` 페이지라 색인 대상이 아님([데모 페이지](#데모-페이지) 참조). `@astrojs/sitemap` 의 자동 라우트 수집을 잃는 대가로, 새 최상위 섹션을 추가하면 이 엔드포인트에도 직접 더해야 함(navigation.json 과 동일한 수동 단일 출처 컨벤션).
+  - **단일 `/sitemap.xml` + dev 서빙**: 라우트라서 `astro dev` 가 `/sitemap.xml` 을 그대로 서빙(별도 Vite 미들웨어·빌드 산출물 의존 없음). 인덱스/청크 분할 없이 단일 `urlset` — URL 수가 사이트맵 사양 한도(50000)에 한참 못 미쳐 충분. [robots.txt](src/pages/robots.txt.js)의 `Sitemap:` 도 `/sitemap.xml` 을 가리킴.
+  - **`<lastmod>`**: 신뢰할 변경 신호가 있는 URL 에만 출력(없으면 생략 — `BUILD_TIME` 같은 가짜 값을 박으면 lastmod 신뢰도만 떨어뜨림). 포스트는 `updatedDate ?? pubDate`(JSON-LD `dateModified` 와 동일 규칙), 태그별 페이지는 그 태그를 단 포스트들의 최신값, 홈·`/tags` 인덱스는 전체 포스트 최신값, `/about` 은 날짜 신호가 없어 생략.
 - 검색엔진 비색인까지 원하면 `robots: noindex` 를 함께 지정(별개 필드, 자동 연동 아님).
 
 ## 데모 페이지
