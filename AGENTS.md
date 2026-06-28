@@ -4,7 +4,7 @@
 
 ## 프로젝트
 
-**1up.md** 정적 블로그 — Astro 6, Cloudflare Pages 배포. 한국어 콘텐츠(`lang: ko`). 테스트 및 린트 도구 없음. Node.js ≥ 22.12.0 필요.
+**1up.md** 정적 블로그 — Astro 7, Cloudflare Pages 배포. 한국어 콘텐츠(`lang: ko`). 테스트 및 린트 도구 없음. Node.js ≥ 22.12.0 필요.
 
 ## 명령어
 
@@ -119,6 +119,7 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 ## 마크다운 렌더링
 
 - Shiki 테마: `nord` ([astro.config.mjs](astro.config.mjs)에서 설정).
+- **마크다운 엔진**: Astro 7 의 기본 마크다운 엔진은 Sätteri(Rust)지만, 이 프로젝트는 아래 커스텀 remark 플러그인을 쓰기 위해 [astro.config.mjs](astro.config.mjs)에서 `markdown.processor: unified(...)`(`@astrojs/markdown-remark`)로 **unified/remark 파이프라인을 명시적으로 opt-in** 한다. Astro 7 부터 `@astrojs/markdown-remark` 는 더 이상 astro 의 transitive 의존성이 아니므로 **devDependency 로 직접 선언**되어 있음([package.json](package.json)) — 제거하면 config 로드가 깨진다. (플러그인은 Sätteri MDAST/HAST 로 포팅 가능하나, Sätteri 가 아직 0.x 라 API 안정화 전까지 unified 유지.)
 - 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 마크다운 raw HTML(`<iframe>`, `<img>` 등)의 `src`/`href` 상대 경로를 빌드 시 포스트 슬러그 기준 절대 경로로 자동 치환 (예: `<iframe src="demos/foo/">` → `<iframe src="/<post-slug>/demos/foo">`). 경로의 trailing slash 는 [URL 정책](#url-정책)에 따라 제거. 절대 경로(`/`), 프로토콜 (`http:`, `mailto:` 등), 앵커(`#`)는 변환 대상 아님. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization)를 따르며 이 플러그인의 영향을 받지 않음.
 - 커스텀 remark 플러그인 [src/plugins/strip-h1.mjs](src/plugins/strip-h1.mjs) 가 본문의 H1(`# 제목`)을 **모두 제거**. 페이지 제목의 단일 출처는 frontmatter `title` 이며, 본문 H1 은 raw 마크다운을 뷰어로 볼 때의 가독성용 장식일 뿐 사이트에서는 의미가 없음. frontmatter `title` 과 내용이 다르거나 H1 이 복수여도 상관없이 전부 제거. remark(mdast) 단계라 Astro 의 heading 수집(rehype)보다 앞서므로 본문뿐 아니라 `getHeadings()` / 목차([PostToc](src/components/PostToc.astro))에도 H1 이 잡히지 않음.
 

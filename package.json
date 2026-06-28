@@ -19,9 +19,10 @@
   "license": "ISC",
   "homepage": "https://1up.md",
   "dependencies": {
-    "astro": "6.4.3"
+    "astro": "7.0.3"
   },
   "devDependencies": {
+    "@astrojs/markdown-remark": "7.2.0",
     "@astrojs/sitemap": "3.7.3",
     "@rollup/plugin-yaml": "5.0.0",
     "pagefind": "1.5.2",

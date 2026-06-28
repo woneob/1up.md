@@ -4,7 +4,7 @@
 
 ## 스택
 
-- [Astro](https://astro.build) v6 — 정적 사이트 빌드
+- [Astro](https://astro.build) v7 — 정적 사이트 빌드
 - Sass (`@use` 모듈 방식)
 - Cloudflare Pages — 배포
 - Node.js ≥ 22.12.0
