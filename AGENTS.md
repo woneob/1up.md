@@ -100,6 +100,17 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 `@use` 모듈 방식의 Sass. 진입점: [src/styles/global.scss](src/styles/global.scss)(`variables`, `functions`, `reset`, `font` 임포트). 브레이크포인트는 [src/styles/_variables.scss](src/styles/_variables.scss)의 `$bp-content`(971px = 콘텐츠 폭 972 미만), `$bp-mobile`(600px) Sass 변수로 관리 — 미디어 쿼리에 하드코딩하지 말 것.
 
+## 사전 로드 (preload) / Early Hints
+
+폰트·CSS를 브라우저가 일찍 받도록 preload를 건다. 두 자산의 선언 위치가 다르다:
+
+- **CSS** — [Head.astro](src/components/Head.astro)에서 `import globalCssUrl from '~/styles/global.scss?url'`로 **번들된 해시 URL**을 받아 `<link rel="preload" as="style">` + `<link rel="stylesheet">`를 **같은 URL**로 출력. `?url`은 해시가 바뀌어도 실제 파일을 가리키므로 정적 하드코딩보다 안전(side-effect `import '~/styles/global.scss'` 대신 `?url`을 쓰는 이유 = preload href로 재사용하기 위함). 이 프로젝트는 컴포넌트 `<style>` 블록이 하나도 없어 `global.scss?url` = 사이트 전체 CSS라 누락 없음. CSS가 Head.astro(=ClientRouter 컴포넌트)에 남아 있어야 SPA 전환 시 스타일이 유지되는 원칙([SPA 전환](#spa-전환))은 `<link>` 형태로도 동일하게 지켜짐.
+- **폰트** — `@font-face`(SCSS `url()` 참조)는 HTML `<link>`가 아니라서 자동 대상이 아니므로 [public/_headers](public/_headers)에 `Link: …; rel=preload; as=font; …; crossorigin`로 직접 선언. 본문 폰트(Pretendard Regular/Bold)는 전 경로(`/*`), 순번 숫자 폰트(Outfit-ExtraLight)는 홈(`/`)만. `@font-face` 요청은 익명 CORS 모드라 `crossorigin` 필수(없으면 preload 파일 재사용 못 하고 중복 다운로드).
+
+**Early Hints(103)**: Cloudflare Pages가 위 `Link:` 응답 헤더와 HTML의 `<link rel=preload/preconnect/modulepreload>`를 **URL별 별도 캐시**에 추출해 두었다가, 다음 요청의 origin 대기시간에 200보다 먼저 `103`으로 발사한다. 이 힌트 캐시는 페이지 본문 캐시(`cf-cache-status`)와 **독립**이라 `DYNAMIC`이어도 발사됨. 존 설정에서 Early Hints가 켜져 있어야 하며, 힌트 조회는 origin 200과 비동기 경쟁이라 origin이 빠르면 생략될 수 있음(정상). 103이 아니어도 `Link:`/`<link>`는 200 응답 시점의 일반 preload로 동작하므로 어느 경우든 사전로드 목적은 달성.
+
+**검증**: `chrome://net-export` 로그의 `HTTP_TRANSACTION_READ_EARLY_HINTS_RESPONSE_HEADERS → HTTP/1.1 103`으로 확인. Git Bash curl(Schannel 빌드, `--http2` 미지원)과 Node `http2` 프로브는 실제 발사되는 103을 못 잡는 false negative를 내니 검증 도구로 쓰지 말 것.
+
 ## SPA 전환
 
 [src/components/Head.astro](src/components/Head.astro)의 `<ClientRouter />`(astro:transitions)가 SPA 스타일 네비게이션을 담당 — 헤더가 다시 로드되며 발생하는 플리커링 방지가 도입 목적. 시각적 전환 효과 의도는 없으며, [src/styles/global.scss](src/styles/global.scss)의 `::view-transition-old/new(root) { animation: none }` 규칙이 `document.startViewTransition()`의 기본 cross-fade를 끔.

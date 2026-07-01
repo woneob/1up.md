@@ -1,6 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import '~/styles/global.scss';
+import globalCssUrl from '~/styles/global.scss?url';
 import site from '~/data/site.config.yml';
 import JsonLd from '~/components/JsonLd.astro';
 import { baseGraph } from '~/utils/jsonld.js';
@@ -19,6 +19,9 @@ const canonicalURL = new URL(canonicalPath, Astro.site);
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content={description} />
+
+  <link rel="preload" href={globalCssUrl} as=style />
+  <link rel="stylesheet" href={globalCssUrl} />
 
   {robots && (
     <meta name="robots" content={robots} />
