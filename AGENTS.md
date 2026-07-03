@@ -102,12 +102,15 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 ## 사전 로드 (preload) / Early Hints
 
-폰트·CSS를 브라우저가 일찍 받도록 preload를 건다. 두 자산의 선언 위치가 다르다:
+폰트·CSS를 브라우저가 일찍 받도록 preload를 건다. **둘 다 `_headers`의 `Link:` 응답 헤더로** 내보낸다 — HTML `<link rel=preload>`는 Cloudflare가 103으로 승격하지 않기 때문(아래 참조).
 
-- **CSS** — [Head.astro](src/components/Head.astro)에서 `import globalCssUrl from '~/styles/global.scss?url'`로 **번들된 해시 URL**을 받아 `<link rel="preload" as="style">` + `<link rel="stylesheet">`를 **같은 URL**로 출력. `?url`은 해시가 바뀌어도 실제 파일을 가리키므로 정적 하드코딩보다 안전(side-effect `import '~/styles/global.scss'` 대신 `?url`을 쓰는 이유 = preload href로 재사용하기 위함). 이 프로젝트는 컴포넌트 `<style>` 블록이 하나도 없어 `global.scss?url` = 사이트 전체 CSS라 누락 없음. CSS가 Head.astro(=ClientRouter 컴포넌트)에 남아 있어야 SPA 전환 시 스타일이 유지되는 원칙([SPA 전환](#spa-전환))은 `<link>` 형태로도 동일하게 지켜짐.
-- **폰트** — `@font-face`(SCSS `url()` 참조)는 HTML `<link>`가 아니라서 자동 대상이 아니므로 [public/_headers](public/_headers)에 `Link: …; rel=preload; as=font; …; crossorigin`로 직접 선언. 본문 폰트(Pretendard Regular/Bold)는 전 경로(`/*`), 순번 숫자 폰트(Outfit-ExtraLight)는 홈(`/`)만. `@font-face` 요청은 익명 CORS 모드라 `crossorigin` 필수(없으면 preload 파일 재사용 못 하고 중복 다운로드).
+- **`_headers` 생성** — [src/pages/[...headers].js](src/pages/[...headers].js)가 빌드 시 `dist/_headers`를 생성하는 단일 라우트. robots.txt/sitemap.xml 등과 같은 "파생 파일 = 엔드포인트" 컨벤션이지만, 파일명이 `_`로 시작하면(`_headers.js`) Astro 페이지 스캔에서 제외되므로, 루트 단일 세그먼트 [src/pages/[slug].astro](src/pages/[slug].astro)와 충돌하지 않는 catch-all `[...headers]`로 `_headers` 하나만 생성한다(`getStaticPaths`가 `_headers`만 반환, 정적 빌드라 그 경로만 출력). `public/_headers` 정적 파일을 두지 않는 이유 = CSS 해시를 담아야 하는데 public은 정적이라 불가(게다가 public이 있으면 우선이라 라우트가 skip됨).
+- **폰트** — 정적 경로라 그대로 선언. 본문 폰트(Pretendard Regular/Bold)는 전 경로(`/*`), 순번 숫자 폰트(Outfit-ExtraLight)는 홈(`/`)만. `@font-face` 요청은 익명 CORS 모드라 `crossorigin` 필수(없으면 preload 파일 재사용 못 하고 중복 다운로드).
+- **CSS** — 엔드포인트가 `import globalCssUrl from '~/styles/global.scss?url'`로 **Astro 실제 컴파일 해시 URL**을 얻어 `Link: <…>; rel=preload; as=style`로 출력. 컴파일된 CSS 기준 해시라 `_variables.scss` 등 `@use` 대상을 바꿔도 자동 갱신(캐시버스팅 정확 — 소스를 직접 해싱하는 "자가 해시"의 partial 누락 문제 없음). [Head.astro](src/components/Head.astro)의 `<link rel="stylesheet" href={globalCssUrl}>`도 **같은 `?url` 모듈**을 참조하므로 링크된 파일 = preload 파일이 항상 일치. (이 프로젝트는 컴포넌트 `<style>` 블록이 없어 `global.scss?url` = 사이트 전체 CSS라 누락 없음. side-effect `import '~/styles/global.scss'` 대신 `?url`을 쓰는 이유 = stylesheet와 preload가 같은 해시를 가리키게 하기 위함.) CSS가 Head.astro(=ClientRouter 컴포넌트)에 `<link>`로 남아 있어야 SPA 전환 시 스타일이 유지되는 원칙([SPA 전환](#spa-전환))도 지켜짐.
 
-**Early Hints(103)**: Cloudflare Pages가 위 `Link:` 응답 헤더와 HTML의 `<link rel=preload/preconnect/modulepreload>`를 **URL별 별도 캐시**에 추출해 두었다가, 다음 요청의 origin 대기시간에 200보다 먼저 `103`으로 발사한다. 이 힌트 캐시는 페이지 본문 캐시(`cf-cache-status`)와 **독립**이라 `DYNAMIC`이어도 발사됨. 존 설정에서 Early Hints가 켜져 있어야 하며, 힌트 조회는 origin 200과 비동기 경쟁이라 origin이 빠르면 생략될 수 있음(정상). 103이 아니어도 `Link:`/`<link>`는 200 응답 시점의 일반 preload로 동작하므로 어느 경우든 사전로드 목적은 달성.
+**Early Hints(103)**: Cloudflare Pages가 `Link:` **응답 헤더**를 URL별 별도 캐시에 추출해 두었다가, 다음 요청의 origin 대기시간에 200보다 먼저 `103`으로 발사한다. 이 힌트 캐시는 페이지 본문 캐시(`cf-cache-status`)와 **독립**이라 `DYNAMIC`이어도 발사됨(실측 확인). 존 설정에서 Early Hints가 켜져 있어야 하며, 힌트 조회는 origin 200과 비동기 경쟁이라 origin이 빠르면 생략될 수 있음(정상). 103이 아니어도 `Link:` 헤더는 200 응답 시점의 일반 preload로 동작하므로 어느 경우든 사전로드 목적은 달성.
+
+> **HTML `<link rel=preload>`는 승격 안 됨(중요)**: Pages 문서는 HTML `<link>`도 자동 추출한다고 하지만, 이 사이트에선 캐시 HIT/DYNAMIC 여부와 무관하게 `Link:` 헤더·103에 반영되지 않음을 실측으로 확인. 그래서 CSS도 HTML이 아니라 `_headers` 응답 헤더로 내보내며, Head.astro에는 CSS `<link rel=preload>`를 두지 않는다(무효·중복). 응답 헤더 `Link:` 방식만 신뢰할 것.
 
 **검증**: `chrome://net-export` 로그의 `HTTP_TRANSACTION_READ_EARLY_HINTS_RESPONSE_HEADERS → HTTP/1.1 103`으로 확인. Git Bash curl(Schannel 빌드, `--http2` 미지원)과 Node `http2` 프로브는 실제 발사되는 103을 못 잡는 false negative를 내니 검증 도구로 쓰지 말 것.
 
