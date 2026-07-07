@@ -81,5 +81,13 @@ const items = headings.filter(h => h.depth >= 2 && h.depth <= 3);
     }, { once: true });
   }
 
-  document.addEventListener('astro:page-load', initPostToc);
+  // ClientRouter(운영)는 astro:page-load 로 매 네비게이션마다 재실행.
+  // dev 에는 ClientRouter 가 없어 이벤트가 안 오므로 직접 한 번 실행.
+  if (import.meta.env.PROD) {
+    document.addEventListener('astro:page-load', initPostToc);
+  } else if (document.readyState !== 'loading') {
+    initPostToc();
+  } else {
+    document.addEventListener('DOMContentLoaded', initPostToc);
+  }
 </script>
