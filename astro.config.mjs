@@ -3,6 +3,7 @@ import { unified } from '@astrojs/markdown-remark';
 import yaml from '@rollup/plugin-yaml';
 import path from 'path';
 import fs from 'node:fs';
+import resolveMissingImages from './src/plugins/resolve-missing-images.mjs';
 import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
 import stripH1 from './src/plugins/strip-h1.mjs';
 
@@ -55,7 +56,7 @@ export default defineConfig({
   },
   markdown: {
     processor: unified({
-      remarkPlugins: [resolvePostRelativeUrls, stripH1],
+      remarkPlugins: [resolveMissingImages, resolvePostRelativeUrls, stripH1],
     }),
     shikiConfig: {
       theme: 'nord',
