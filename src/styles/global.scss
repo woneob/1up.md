@@ -62,7 +62,7 @@ body {
 
     .brand {
       a {
-        font-weight: 700;
+        font-weight: 500;
         font-size: rem(16);
         color: #666;
 
@@ -216,7 +216,7 @@ body {
   h1 {
     display: inline-block;
     font-size: rem(13);
-    font-weight: bold;
+    font-weight: 500;
     word-break: keep-all;
   }
 
@@ -257,7 +257,7 @@ body {
 
     h2 {
       margin-top: rem(10);
-      font-weight: 300;
+      font-weight: 500;
       font-size: rem(28);
       line-height: 1.3;
       word-break: keep-all;
@@ -704,7 +704,7 @@ button.shareBtn {
       h1 {
         padding: rem(80) 0 rem(60);
         font-size: rem(42);
-        font-weight: normal;
+        font-weight: 500;
         line-height: 1.3;
         word-break: keep-all;
         text-align: center;
@@ -798,7 +798,7 @@ button.shareBtn {
         .postTocTitle {
           margin: 0 0 rem(10);
           font-size: rem(11);
-          font-weight: 600;
+          font-weight: 500;
           letter-spacing: .08em;
           text-transform: uppercase;
           color: #999;
@@ -865,12 +865,12 @@ button.shareBtn {
 
         h2 {
           font-size: rem(32);
-          font-weight: normal;
+          font-weight: 500;
         }
 
         h3 {
           font-size: rem(24);
-          font-weight: normal;
+          font-weight: 500;
         }
 
         p {
@@ -889,7 +889,7 @@ button.shareBtn {
         }
 
         dfn {
-          font-weight: bold;
+          font-weight: 500;
           font-style: normal;
         }
 
@@ -928,7 +928,7 @@ button.shareBtn {
 
     h1 {
       font-size: rem(32);
-      font-weight: normal;
+      font-weight: 500;
       color: #333;
     }
 
@@ -1105,7 +1105,7 @@ button.shareBtn {
     .searchResult__title {
       display: block;
       font-size: rem(18);
-      font-weight: 40;
+      font-weight: 500;
       line-height: 1.3;
       word-break: keep-all;
       color: #222;
