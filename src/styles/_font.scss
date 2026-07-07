@@ -1,13 +1,10 @@
+// Pretendard 가변 서브셋 — Adobe-KR-9 Supp0(한글 2780) + 라틴/기호, wght 400~600.
+// 원본 가변폰트(2MB)를 harfbuzz 로 글리프 서브셋 + wght 축을 400:600 으로 제한해
+// 단일 파일(약 365KB)로 축소. 400/500/600 굵기를 이 한 파일이 전부 커버.
 @font-face {
   font-family: 'Pretendard';
-  font-weight: 400;
-  src: url('/fonts/Pretendard-Regular.subset.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Pretendard';
-  font-weight: 500;
-  src: url('/fonts/Pretendard-Medium.subset.woff2') format('woff2');
+  font-weight: 400 600;
+  src: url('/fonts/PretendardVariable.subset.woff2') format('woff2');
 }
 
 // 메인 포스트 순번용 서브셋 — 숫자(0-9) 글리프만 포함

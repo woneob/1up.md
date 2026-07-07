@@ -156,6 +156,15 @@ const spriteUrl = new URL('./images/sprite.png', import.meta.url).href;
 - [src/data/site.config.yml](src/data/site.config.yml) — 사이트명, 태그라인, 언어, 저자, SNS, 테마 색상 등의 단일 출처. `manifest.json`, `robots.txt`, `humans.txt`, `rss.xml` 모두 이 YAML 에서 파생됨.
 - [src/data/navigation.json](src/data/navigation.json) — 헤더 내비게이션. 항목의 `label` 은 body 의 `page-{label}` id 로도 사용된다.
 
+## 폰트
+
+본문은 [Pretendard](https://github.com/orioncactus/pretendard) 가변폰트를 서브셋한 **단일 파일** `public/fonts/PretendardVariable.subset.woff2`(약 365KB)를 사용한다. 원본 가변폰트(약 2MB)를 harfbuzz(`hb-subset`)로 다음과 같이 축소했다.
+
+- **글리프**: [Adobe-KR-9](https://github.com/adobe-type-tools/Adobe-KR) Supplement 0(상용 현대 한글 2,780자) + 라틴·문장부호만 유지
+- **굵기 축**: `wght` 를 400–600 으로 제한 (400 / 500 / 600 사용)
+
+[_font.scss](src/styles/_font.scss) 에서 `font-weight: 400 600` 한 블록으로 선언하며, 세 굵기를 이 한 파일이 모두 커버한다. 초기 렌더 속도를 위해 [_headers](src/pages/[...headers].js) 의 preload(Early Hints) 대상에 포함된다. 메인 포스트 순번용 숫자는 Outfit-ExtraLight 서브셋을 별도로 쓴다.
+
 ## SPA 전환
 
 [src/components/Head.astro](src/components/Head.astro) 의 `<ClientRouter />` (astro:transitions) 가 페이지 간 전환을 처리한다. 헤더 (`<Logo>`, `<Navigation>`) 는 `transition:persist` 로 지정되어 재마운트로 인한 플리커링이 발생하지 않는다.
