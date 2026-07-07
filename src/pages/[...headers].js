@@ -18,8 +18,7 @@ const fontPreload = (file) =>
 export async function GET() {
   const body = [
     '/*',
-    `  ${fontPreload('Pretendard-Regular.subset.woff2')}`,
-    `  ${fontPreload('Pretendard-Medium.subset.woff2')}`,
+    `  ${fontPreload('PretendardVariable.subset.woff2')}`,
     `  Link: <${globalCssUrl}>; rel=preload; as=style`,
     '',
     '/',
