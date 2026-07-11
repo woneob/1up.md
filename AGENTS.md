@@ -6,6 +6,8 @@
 
 **1up.md** 정적 블로그 — Astro 7, Cloudflare Pages 배포. 한국어 콘텐츠(`lang: ko`). 테스트 및 린트 도구 없음. Node.js ≥ 22.12.0 필요.
 
+> **Node 버전 고정([.nvmrc](.nvmrc) = `24`) — 만지기 전에 읽을 것.** Cloudflare Pages 는 빌드에서 `npm ci` 로 의존성을 설치하는데, 이는 `package.json` 과 `package-lock.json` 이 **정확히** 일치해야 한다. lockfile 은 npm 메이저 버전에 따라 optional 의존성 기록 방식이 달라서(`@napi-rs/wasm-runtime` 의 wasm 폴백용 `@emnapi/*` 노드를 npm 11 은 가지치기, npm 10 은 요구 → npm 10 의 `npm ci` 가 `Missing @emnapi/core from lock file` 로 실패), **lockfile 생성 환경과 CI 환경의 npm 메이저가 반드시 같아야 한다.** 그래서 `.nvmrc` 로 빌드 Node 를 24(= npm 11, 로컬 개발 환경과 동일)로 고정한다. **`package-lock.json` 을 다른 npm 메이저(예: npm 10)로 재생성하지 말 것** — 과거 이 불일치로 빌드가 반복 실패했다.
+
 ## 명령어
 
 ```bash
