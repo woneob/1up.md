@@ -6,13 +6,12 @@ import path from 'path';
 import fs from 'node:fs';
 import resolveMissingImages from './src/plugins/resolve-missing-images.mjs';
 import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
-import stripH1 from './src/plugins/strip-h1.mjs';
 
 // 포스트는 전부 .mdx(데모를 컴포넌트로 인라인하기 위함). Astro 7 에서 remark 플러그인의
 // 정식(비deprecated) 설정 경로는 markdown.processor: unified(...) 하나이며
 // (markdown.remarkPlugins·mdx({remarkPlugins}) 는 둘 다 deprecated), @astrojs/mdx 가
 // 이 processor 의 플러그인을 그대로 상속한다. 따라서 플러그인은 processor 한 곳에만 둔다.
-const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls, stripH1];
+const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls];
 
 const SITE = 'https://1up.md';
 
