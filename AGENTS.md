@@ -31,10 +31,13 @@ npm run preview      # astro preview — 빌드 결과 미리보기
 ```
 src/content/posts/
   2025-11-24.bulkhead-pattern/
-    index.md
+    index.mdx                     # 포스트 본문은 전부 MDX (데모 컴포넌트를 인라인 import 하기 위함)
     images/
       cover.{jpg|jpeg|png|webp}   # 선택사항, 인덱스 페이지에서 자동 발견
+    demos/                        # 선택, 인라인 데모 컴포넌트 ([데모](#데모) 참조)
 ```
+
+> **포스트는 `.md` 가 아니라 `.mdx`** — 인터랙티브 데모를 iframe 대신 컴포넌트로 본문에 인라인하기 위해 전 포스트가 MDX다([데모](#데모), [마크다운 렌더링](#마크다운-렌더링) 참조). `.md`/`.mdx` 공존 없음.
 
 - **URL 슬러그**는 날짜 뒤의 부분만 사용 (예: `2025-11-24.bulkhead-pattern` → `/bulkhead-pattern`).
 - `YYYY-MM-DD.slug` 형식에 맞지 않는 폴더는 빌드 시 에러 발생 — [src/pages/[slug].astro](src/pages/[slug].astro), [src/pages/index.astro](src/pages/index.astro) 참조.
@@ -49,11 +52,11 @@ src/content/posts/
 - **`src/content/posts/`** — 배포되는 실제 포스트. 커밋 대상. `npm run dev` / `npm run build` 가 사용.
 - **`src/content.draft/posts/`** — 로컬 테스트용 초안. **gitignore**([.gitignore](.gitignore))되어 커밋·배포되지 않음. `npm run dev:draft`(`astro dev --mode draft`)가 **이것만** 사용 (배포 포스트와 섞이지 않음). 구조는 `content/posts/` 와 동일 (`images/`, `demos/` 포함).
 
-[src/utils/posts.js](src/utils/posts.js)에서 `import.meta.env.MODE === 'draft'` 여부로 소스를 고름. `import.meta.glob` 은 패턴에 변수/템플릿 보간을 허용하지 않으므로(정적 문자열 리터럴만 가능 — `` `/src/${dir}/...` `` 는 빌드 에러), prod/dev 글로브를 **쌍으로 선언**하고 `pick(prod, dev)` 헬퍼로 선택함. 데모 글로브도 같은 방식이며 `getDemoModules()` 로 노출됨.
+[src/utils/posts.js](src/utils/posts.js)에서 `import.meta.env.MODE === 'draft'` 여부로 소스를 고름. `import.meta.glob` 은 패턴에 변수/템플릿 보간을 허용하지 않으므로(정적 문자열 리터럴만 가능 — `` `/src/${dir}/...` `` 는 빌드 에러), prod/dev 글로브를 **쌍으로 선언**하고 `pick(prod, dev)` 헬퍼로 선택함. 포스트 모듈·readingTime 용 `?raw` 원문·커버 글로브 모두 같은 방식으로 pick() 을 거침.
 
 ### 포스트 로딩 메커니즘
 
-모든 포스트 접근은 [src/utils/posts.js](src/utils/posts.js)의 `getAllPosts()` / `getPostBySlug(slug)` 를 거침 — 이 모듈이 `import.meta.glob('/src/content/posts/*/index.md', { eager: true })` 의 단일 출처이며, 폴더명 정규식 파싱(`/^(\d{4}-\d{2}-\d{2})\.(.+)$/`), 커버 이미지 매칭, `pubDate` 내림차순 정렬, `readingTime` 계산을 모두 수행. 반환 객체는 `{ slug, date, dir, frontmatter, module, cover, stats }` 형태. **Content Collections 설정 없음** (`src/content.config.ts` 미존재); `getCollection()`과 `astro:content`는 의도적으로 사용하지 않음. RSS 피드는 프론트매터(`title`, `description`, `pubDate`, `tags`)를 직접 읽어 RSS 2.0 XML을 수동 생성 — Astro 6 / Zod 4 비호환 문제([withastro/astro#15792](https://github.com/withastro/astro/issues/15792))를 회피하기 위해 `@astrojs/rss` 의존성을 제거한 것임. 새로운 포스트 탐색 코드를 추가할 때는 페이지/엔드포인트에서 `import.meta.glob` 을 다시 호출하지 말고 이 헬퍼를 통해 접근할 것.
+모든 포스트 접근은 [src/utils/posts.js](src/utils/posts.js)의 `getAllPosts()` / `getPostBySlug(slug)` 를 거침 — 이 모듈이 `import.meta.glob('/src/content/posts/*/index.mdx', { eager: true })` 의 단일 출처이며, 폴더명 정규식 파싱(`/^(\d{4}-\d{2}-\d{2})\.(.+)$/`), 커버 이미지 매칭, `pubDate` 내림차순 정렬, `readingTime` 계산을 모두 수행. 반환 객체는 `{ slug, date, dir, frontmatter, module, cover, stats }` 형태. **readingTime 은 원문에서 계산하는데, MDX 모듈은 `.md` 와 달리 `rawContent()`/`compiledContent()` 를 export 하지 않으므로** 같은 파일을 `{ query: '?raw' }` 글로브로 한 번 더 로드해(키=파일 경로) 그 텍스트로 계산함. **Content Collections 설정 없음** (`src/content.config.ts` 미존재); `getCollection()`과 `astro:content`는 의도적으로 사용하지 않음. RSS 피드는 프론트매터(`title`, `description`, `pubDate`, `tags`)를 직접 읽어 RSS 2.0 XML을 수동 생성 — Astro 6 / Zod 4 비호환 문제([withastro/astro#15792](https://github.com/withastro/astro/issues/15792))를 회피하기 위해 `@astrojs/rss` 의존성을 제거한 것임. 새로운 포스트 탐색 코드를 추가할 때는 페이지/엔드포인트에서 `import.meta.glob` 을 다시 호출하지 말고 이 헬퍼를 통해 접근할 것.
 
 ### 비공개 발행 — `unlisted`
 
@@ -61,30 +64,38 @@ src/content/posts/
 
 - 제외 범위: 인덱스 목록·태그 목록/태그별 페이지·RSS·llms.txt·사이트맵. 모두 [src/utils/posts.js](src/utils/posts.js) `getAllPosts()` 단일 출처를 거치므로, `getAllPosts()` 가 **기본적으로 `unlisted` 를 필터링**하여 한 번에 처리됨.
 - 직접 URL 열람: `getPostBySlug(slug)` 는 `unlisted` 와 무관하게 찾고, [src/pages/[slug].astro](src/pages/[slug].astro)의 `getStaticPaths` 만 `getAllPosts({ includeUnlisted: true })` 로 호출해 **상세 페이지 자체는 생성**됨 → 슬러그 URL 로 접근 가능.
-- 사이트맵: `@astrojs/sitemap` 의존성 없이 [src/pages/sitemap.xml.js](src/pages/sitemap.xml.js) 라우트로 직접 생성(robots·rss·llms.txt 와 동일 패턴, [포스트 로딩 메커니즘](#포스트-로딩-메커니즘) 참조). `getAllPosts()` 단일 출처를 거치므로 `unlisted` 제외가 자동으로 따라옴 — config 에서 fs 스캔하던 별도 필터가 불필요해짐. 라우트 집합은 정적 페이지(`/`, `/about`, `/tags`) + 포스트 슬러그 + 태그별 페이지(`/tags/<tag>`)를 **명시적으로 열거**(태그는 `new URL` 로 경로 인코딩). **데모 페이지(`/<slug>/demos/<demo>`)는 애초에 열거하지 않으니 자연히 제외** — 데모는 standalone `noindex` 페이지라 색인 대상이 아님([데모 페이지](#데모-페이지) 참조). `@astrojs/sitemap` 의 자동 라우트 수집을 잃는 대가로, 새 최상위 섹션을 추가하면 이 엔드포인트에도 직접 더해야 함(navigation.json 과 동일한 수동 단일 출처 컨벤션).
+- 사이트맵: `@astrojs/sitemap` 의존성 없이 [src/pages/sitemap.xml.js](src/pages/sitemap.xml.js) 라우트로 직접 생성(robots·rss·llms.txt 와 동일 패턴, [포스트 로딩 메커니즘](#포스트-로딩-메커니즘) 참조). `getAllPosts()` 단일 출처를 거치므로 `unlisted` 제외가 자동으로 따라옴 — config 에서 fs 스캔하던 별도 필터가 불필요해짐. 라우트 집합은 정적 페이지(`/`, `/about`, `/tags`) + 포스트 슬러그 + 태그별 페이지(`/tags/<tag>`)를 **명시적으로 열거**(태그는 `new URL` 로 경로 인코딩). **데모는 포스트에 인라인되는 컴포넌트라 독립 URL/라우트가 아예 없으니** 열거 대상 자체가 없음([데모](#데모) 참조). `@astrojs/sitemap` 의 자동 라우트 수집을 잃는 대가로, 새 최상위 섹션을 추가하면 이 엔드포인트에도 직접 더해야 함(navigation.json 과 동일한 수동 단일 출처 컨벤션).
   - **단일 `/sitemap.xml` + dev 서빙**: 라우트라서 `astro dev` 가 `/sitemap.xml` 을 그대로 서빙(별도 Vite 미들웨어·빌드 산출물 의존 없음). 인덱스/청크 분할 없이 단일 `urlset` — URL 수가 사이트맵 사양 한도(50000)에 한참 못 미쳐 충분. [robots.txt](src/pages/robots.txt.js)의 `Sitemap:` 도 `/sitemap.xml` 을 가리킴.
   - **`<lastmod>`**: 신뢰할 변경 신호가 있는 URL 에만 출력(없으면 생략 — `BUILD_TIME` 같은 가짜 값을 박으면 lastmod 신뢰도만 떨어뜨림). 포스트는 `updatedDate ?? pubDate`(JSON-LD `dateModified` 와 동일 규칙), 태그별 페이지는 그 태그를 단 포스트들의 최신값, 홈·`/tags` 인덱스는 전체 포스트 최신값, `/about` 은 날짜 신호가 없어 생략.
 - 검색엔진 비색인까지 원하면 `robots: noindex` 를 함께 지정(별개 필드, 자동 연동 아님).
 
-## 데모 페이지
+## 데모
 
-포스트 본문에 iframe 으로 임베드할 인터랙티브 예제는 포스트 폴더 내부에 둠:
+포스트 본문의 인터랙티브 예제는 **iframe 이 아니라 Astro 컴포넌트로 본문에 인라인**한다. 데모는 포스트 폴더 내부에 둔다:
 
 ```
 src/content/posts/2025-11-24.bulkhead-pattern/
-  index.md
+  index.mdx
   demos/
     <demo-slug>/
-      index.astro     # standalone HTML (DefaultLayout 미사용, <!doctype html>부터 작성)
-      style.scss      # index.astro 에서 `import './style.scss'`
-      script.js       # index.astro 의 <script>import './script.js'</script>
+      index.astro     # 인라인 프래그먼트 (standalone 문서 아님 — doctype/html/head/body 없음)
+      script.js       # 선택, index.astro 의 <script>import './script.js'</script>
       images/         # 선택, 같은 폴더 기준 상대 import 가능
 ```
 
-- 동적 라우트 [src/pages/[slug]/demos/[demoSlug].astro](src/pages/[slug]/demos/[demoSlug].astro) 가 [src/utils/posts.js](src/utils/posts.js)의 `getDemoModules()`(내부적으로 `import.meta.glob('/src/{content,content.draft}/posts/*/demos/*/index.astro', { eager: true })` — [콘텐츠 소스](#콘텐츠-소스--배포용-vs-로컬-초안) 참조)로 발견하여 `/<post-slug>/demos/<demo-slug>` 라우트를 자동 생성. 글로브를 라우트에서 직접 호출하지 않고 헬퍼를 거침.
-- `index.astro` 는 standalone 페이지이므로 `<meta name="robots" content="noindex,nofollow">` 권장.
-- SCSS / JS / 이미지는 같은 폴더 기준 상대 경로 import (Vite 가 번들 처리). 예: `import cover from './images/cover.png'`, SCSS의 `url('./images/bg.png')`. Vite가 절대 경로의 번들 자산으로 치환하므로 [URL 정책](#url-정책)의 영향을 받지 않음.
-- 포스트 본문 (`index.md`) 에서는 상대 경로로 임베드: `<iframe src="demos/<demo-slug>" ...></iframe>`. 빌드 시 자동으로 절대 경로로 변환됨 ([마크다운 렌더링](#마크다운-렌더링) 참조).
+- **임베드**: MDX 포스트가 상대경로로 import 후 본문에 렌더한다.
+
+  ```mdx
+  import MotionMismatch from './demos/motion-mismatch/index.astro';
+
+  ...본문...
+
+  <MotionMismatch />
+  ```
+
+- **인라인 = 제로 CLS**: 컴포넌트가 빌드 시 SSR 되어 **첫 페인트부터 자연 높이**로 그려진다. iframe 처럼 별도 문서 로드→사이징 동기화가 없으므로 높이 점프(layout shift)가 원천적으로 없다. (iframe 시절의 `<meta robots noindex>` standalone 데모 페이지·동적 라우트 `[slug]/demos/[demoSlug].astro`·`getDemoModules()`·본문 iframe 상대경로 치환은 전부 제거됨.)
+- **스타일 격리**: `index.astro` 의 `<style lang="scss">` 블록은 Astro 가 자동 스코프(`data-astro-cid-*`)하므로 포스트 스타일과 섞이지 않는다. iframe 문서 격리를 대체 — 원래 iframe 을 쓴 이유가 격리였으나 프로세스/보안 격리는 불필요해 스코프 스타일로 충분. (별도 `style.scss` side-effect import 는 전역이라 스코프 안 됨 → 스타일은 컴포넌트 `<style>` 안에 둘 것.)
+- **JS/이미지**: `<script>import './script.js'</script>` 로 클라이언트 번들, 이미지는 같은 폴더 기준 상대 import (Vite 가 절대 경로 번들 자산으로 치환 → [URL 정책](#url-정책) 무관). 빈 `script.js` 는 번들에서 자동 제외됨.
 
 ## 사이트 설정
 
@@ -129,16 +140,17 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 ## URL 정책
 
-trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 `trailingSlash: 'never'` + `build.format: 'file'` 로 설정되어 있어 정적 출력은 `/foo/index.html` 가 아닌 `/foo.html` 형태이며 캐노니컬 URL은 `/foo`. 내부 링크 작성 시 항상 슬래시 없이 작성하고, 마크다운 raw HTML에서 `demos/foo/` 처럼 끝 슬래시를 넣어도 [resolve-post-relative-urls 플러그인](src/plugins/resolve-post-relative-urls.mjs)이 빌드 시 제거함.
+trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 `trailingSlash: 'never'` + `build.format: 'file'` 로 설정되어 있어 정적 출력은 `/foo/index.html` 가 아닌 `/foo.html` 형태이며 캐노니컬 URL은 `/foo`. 내부 링크 작성 시 항상 슬래시 없이 작성. 포스트 본문의 raw HTML `html` 노드에 남는 상대 경로 끝 슬래시는 [resolve-post-relative-urls 플러그인](src/plugins/resolve-post-relative-urls.mjs)이 빌드 시 제거하며 슬러그 절대 경로로 바꾼다([마크다운 렌더링](#마크다운-렌더링) 참조).
 
 **`build.format: 'file'` 부작용 — `Astro.url.pathname`이 파일 경로를 반환함:** 정적 빌드 시 `Astro.url.pathname`은 라우트 경로(`/`, `/about`) 대신 출력 파일 경로(`/index.html`, `/about.html`)를 반환함. `DefaultLayout.astro`의 `getPageId` 계산에서 `/index.html`을 루트로 처리하는 조건이 이 때문에 추가되어 있음. 경로 비교 로직을 추가할 때 이 점에 유의할 것.
 
 ## 마크다운 렌더링
 
 - Shiki 테마: `nord` ([astro.config.mjs](astro.config.mjs)에서 설정).
-- **마크다운 엔진**: Astro 7 의 기본 마크다운 엔진은 Sätteri(Rust)지만, 이 프로젝트는 아래 커스텀 remark 플러그인을 쓰기 위해 [astro.config.mjs](astro.config.mjs)에서 `markdown.processor: unified(...)`(`@astrojs/markdown-remark`)로 **unified/remark 파이프라인을 명시적으로 opt-in** 한다. Astro 7 부터 `@astrojs/markdown-remark` 는 더 이상 astro 의 transitive 의존성이 아니므로 **devDependency 로 직접 선언**되어 있음([package.json](package.json)) — 제거하면 config 로드가 깨진다. (플러그인은 Sätteri MDAST/HAST 로 포팅 가능하나, Sätteri 가 아직 0.x 라 API 안정화 전까지 unified 유지.)
-- 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 마크다운 raw HTML(`<iframe>`, `<img>` 등)의 `src`/`href` 상대 경로를 빌드 시 포스트 슬러그 기준 절대 경로로 자동 치환 (예: `<iframe src="demos/foo/">` → `<iframe src="/<post-slug>/demos/foo">`). 경로의 trailing slash 는 [URL 정책](#url-정책)에 따라 제거. 절대 경로(`/`), 프로토콜 (`http:`, `mailto:` 등), 앵커(`#`)는 변환 대상 아님. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization)를 따르며 이 플러그인의 영향을 받지 않음.
-- 커스텀 remark 플러그인 [src/plugins/resolve-missing-images.mjs](src/plugins/resolve-missing-images.mjs) 가 **존재하지 않는 파일을 가리키는 마크다운 이미지(`![](path)`)** 를 빌드 오류 대신 깨진 이미지로 처리. Astro 는 마크다운 이미지를 빌드 시 import 로 변환해 최적화하는데 대상 파일이 없으면 rolldown 이 import resolve 에 실패해 **빌드 전체가 죽는다**(`Rolldown failed to resolve import "images/foo.png"`) — 초안에서 아직 넣지 않은 이미지를 참조할 때 흔함. 이 플러그인은 상대 경로 `image` 노드의 파일이 없을 때만 mdast `image` 를 raw HTML `<img>` 로 치환한다. `@astrojs/markdown-remark` 파이프라인에서 사용자 remark 플러그인은 Astro 의 `remarkCollectImages`(이미지→import 수집) 보다 **먼저** 돌므로, 치환된 노드는 수집 대상에서 빠져 import 가 생성되지 않는다. **존재하는 이미지는 건드리지 않아** 정상 최적화(Picture/avif)를 유지. 치환된 `<img>` 의 상대 src 는 뒤이어 도는 resolve-post-relative-urls 가 슬러그 절대 경로로 변환하므로 `remarkPlugins` 배열에서 **반드시 resolve-post-relative-urls 보다 앞**에 둔다([astro.config.mjs](astro.config.mjs)). 결과적으로 프리뷰엔 깨진 이미지가 노출돼 누락을 바로 인지 가능(빌드 로그에도 경고).
+- **마크다운 엔진 + MDX**: Astro 7 의 기본 마크다운 엔진은 Sätteri(Rust)지만, 커스텀 remark 플러그인을 쓰기 위해 [astro.config.mjs](astro.config.mjs)에서 `markdown.processor: unified(...)`(`@astrojs/markdown-remark`)로 **unified/remark 파이프라인을 명시적으로 opt-in** 한다. 플러그인은 이 `processor` **한 곳**에만 둔다. 포스트는 전부 `.mdx`([데모](#데모) 참조)라 `@astrojs/mdx` 통합(`integrations: [mdx()]`)이 렌더를 담당하는데, **MDX 는 `extendMarkdownConfig`(기본 true)로 `markdown.processor` 의 remark 플러그인과 shikiConfig 를 그대로 상속**하므로 `mdx()` 에는 아무 옵션도 넘기지 않는다.
+  - **⚠️ `processor` 를 "`.md` 용 잔재"로 오해해 지우지 말 것.** Astro 7 에서 remark 플러그인의 **비deprecated 정식 경로는 `markdown.processor: unified(...)` 하나**뿐이다. `markdown.remarkPlugins` 도, `mdx({ remarkPlugins })` 도 **둘 다 deprecated 경고**를 내며 서로 `processor` 를 쓰라고 가리킨다. 그래서 `@astrojs/markdown-remark` 는 transitive 가 아니라 **devDependency 로 직접 선언**([package.json](package.json)) — 제거하면 config 로드가 깨진다.
+- 커스텀 remark 플러그인 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 mdast `html` 노드의 상대 `src`/`href` 를 포스트 슬러그 기준 절대 경로로 치환(끝 슬래시 제거 — [URL 정책](#url-정책)). 절대 경로·프로토콜·앵커는 제외. **주의: MDX 에서 저작자가 직접 쓴 raw HTML 은 JSX(mdxJsxElement)로 파싱돼 `html` 노드가 아니므로 대상 아님** — 실질적으로 아래 resolve-missing-images 가 만든 `<img>` `html` 노드의 src 를 고치는 역할. 마크다운 이미지 문법 (`![](path)`)은 Astro 자체 처리(Image optimization).
+- 커스텀 remark 플러그인 [src/plugins/resolve-missing-images.mjs](src/plugins/resolve-missing-images.mjs) 가 **존재하지 않는 파일을 가리키는 마크다운 이미지(`![](path)`)** 를 빌드 오류 대신 깨진 이미지로 처리. Astro 는 마크다운 이미지를 빌드 시 import 로 변환해 최적화하는데 대상 파일이 없으면 rolldown 이 import resolve 에 실패해 **빌드 전체가 죽는다**(`Rolldown failed to resolve import "images/foo.png"`) — 초안에서 아직 넣지 않은 이미지를 참조할 때 흔함. 이 플러그인은 상대 경로 `image` 노드의 파일이 없을 때만 mdast `image` 를 raw HTML `<img>` 로 치환한다(파일 경로 게이트 정규식은 `index\.mdx?$` 라 `.md`·`.mdx` 모두 대상 — MDX 에서도 동작 확인). 사용자 remark 플러그인은 Astro 의 `remarkCollectImages`(이미지→import 수집) 보다 **먼저** 돌므로, 치환된 노드는 수집 대상에서 빠져 import 가 생성되지 않는다. **존재하는 이미지는 건드리지 않아** 정상 최적화(Picture/avif)를 유지. 치환된 `<img>` 의 상대 src 는 뒤이어 도는 resolve-post-relative-urls 가 슬러그 절대 경로로 변환하므로 `remarkPlugins` 배열에서 **반드시 resolve-post-relative-urls 보다 앞**에 둔다([astro.config.mjs](astro.config.mjs)). 결과적으로 프리뷰엔 깨진 이미지가 노출돼 누락을 바로 인지 가능(빌드 로그에도 경고).
 - 커스텀 remark 플러그인 [src/plugins/strip-h1.mjs](src/plugins/strip-h1.mjs) 가 본문의 H1(`# 제목`)을 **모두 제거**. 페이지 제목의 단일 출처는 frontmatter `title` 이며, 본문 H1 은 raw 마크다운을 뷰어로 볼 때의 가독성용 장식일 뿐 사이트에서는 의미가 없음. frontmatter `title` 과 내용이 다르거나 H1 이 복수여도 상관없이 전부 제거. remark(mdast) 단계라 Astro 의 heading 수집(rehype)보다 앞서므로 본문뿐 아니라 `getHeadings()` / 목차([PostToc](src/components/PostToc.astro))에도 H1 이 잡히지 않음.
 
 ## 구조화 데이터 — JSON-LD
@@ -193,7 +205,7 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 [Pagefind](https://pagefind.app/)(빌드 타임 정적 검색, MIT, 외부 서비스·런타임 서버 없음) 기반. 헤더 `search` 버튼 클릭 시 **현재 페이지에서 레이어(모달)로** 검색창이 열림 — 별도 `/search` 라우트 없음. 데스크톱은 상단 중앙 카드, **모바일(≤`$bp-mobile`)은 풀페이지**(Pagefind 기본 UX 결).
 
 - **인덱스 생성**: 소스가 아니라 **빌드된 `dist/` HTML 을 후처리**. `npm run build` 가 `astro build && pagefind --site dist` 로 `dist/pagefind/` 에 인덱스를 생성([명령어](#명령어) 참조). `pagefind` 는 devDependency. `dist` 는 gitignore 되므로 `public/` 은 건드리지 않음.
-- **인덱싱 범위**: [src/pages/[slug].astro](src/pages/[slug].astro)의 `<article>` 에 `data-pagefind-body` 가 있는 **포스트 본문만** 인덱싱(이 속성이 한 곳이라도 있으면 Pagefind 는 없는 페이지를 전부 제외 → about·tags·demos 등 자동 제외). 제목 `h1` 은 인덱싱되어 결과 타이틀이 됨. 메타·태그·공유·좋아요 묶음(`.postHeaderBar`)은 발췌 노이즈라 `data-pagefind-ignore`.
+- **인덱싱 범위**: [src/pages/[slug].astro](src/pages/[slug].astro)의 `<article>` 에 `data-pagefind-body` 가 있는 **포스트 본문만** 인덱싱(이 속성이 한 곳이라도 있으면 Pagefind 는 없는 페이지를 전부 제외 → about·tags 등 자동 제외). 데모는 본문에 인라인되므로 해당 포스트 본문의 일부로 함께 인덱싱됨(별도 데모 페이지 없음). 제목 `h1` 은 인덱싱되어 결과 타이틀이 됨. 메타·태그·공유·좋아요 묶음(`.postHeaderBar`)은 발췌 노이즈라 `data-pagefind-ignore`.
 - **`unlisted` 제외**: `data-pagefind-body` 를 `!unlisted || undefined` 로 조건부 출력 → `unlisted` 포스트는 속성이 빠져 **검색 인덱스에서 제외**([비공개 발행](#비공개-발행--unlisted)과 동일 취지). 상세 페이지 자체는 직접 URL 로 여전히 열람 가능.
 - **컴포넌트**: [src/components/SearchDialog.astro](src/components/SearchDialog.astro) — 네이티브 `<dialog closedby="any">` 를 `showModal()` 로 염(top layer·포커스 트랩·Esc 무료). 백드롭 클릭/플랫폼 닫기는 `closedby` 미지원(Safari) 대비 콘텐츠 밖 클릭 폴백 포함. 입력은 Pagefind `debouncedSearch`(내부 디바운스+최신호출 우선)로 검색하고 상위 8건을 `r.data()` 로 렌더(`excerpt` 는 `<mark>` 하이라이트 HTML). 결과 `url` 의 `.html`/`index.html` 은 캐노니컬(`/foo`, `/`)로 보정([URL 정책](#url-정책)의 `build.format: 'file'` 부작용 대응). [DefaultLayout](src/layouts/DefaultLayout.astro)에 1회 포함. [Navigation.astro](src/components/Navigation.astro)는 `search` 항목만 링크가 아닌 `[data-search-open]` 버튼으로 렌더.
 - **키보드 내비게이션**: combobox 패턴 — 인풋에 포커스를 유지한 채 `↑`/`↓` 로 결과 항목 활성 이동(`.is-active` 하이라이트 + `aria-activedescendant`, 끝에서 순환), `Enter` 로 활성 결과 이동. 인풋 `role="combobox"` + 결과 컨테이너 `role="listbox"`/항목 `role="option"`.

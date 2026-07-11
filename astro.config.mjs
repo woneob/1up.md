@@ -1,11 +1,18 @@
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
+import mdx from '@astrojs/mdx';
 import yaml from '@rollup/plugin-yaml';
 import path from 'path';
 import fs from 'node:fs';
 import resolveMissingImages from './src/plugins/resolve-missing-images.mjs';
 import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
 import stripH1 from './src/plugins/strip-h1.mjs';
+
+// 포스트는 전부 .mdx(데모를 컴포넌트로 인라인하기 위함). Astro 7 에서 remark 플러그인의
+// 정식(비deprecated) 설정 경로는 markdown.processor: unified(...) 하나이며
+// (markdown.remarkPlugins·mdx({remarkPlugins}) 는 둘 다 deprecated), @astrojs/mdx 가
+// 이 processor 의 플러그인을 그대로 상속한다. 따라서 플러그인은 processor 한 곳에만 둔다.
+const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls, stripH1];
 
 const SITE = 'https://1up.md';
 
@@ -54,10 +61,11 @@ export default defineConfig({
   image: {
     layout: 'none',
   },
+  // mdx 는 markdown 설정을 상속(extendMarkdownConfig 기본 true) — processor 의 remark
+  // 플러그인·shikiConfig 를 그대로 이어받으므로 mdx() 엔 옵션을 넘기지 않는다.
+  integrations: [mdx()],
   markdown: {
-    processor: unified({
-      remarkPlugins: [resolveMissingImages, resolvePostRelativeUrls, stripH1],
-    }),
+    processor: unified({ remarkPlugins }),
     shikiConfig: {
       theme: 'nord',
     },
