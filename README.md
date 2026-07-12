@@ -8,14 +8,15 @@
 - [MDX](https://mdxjs.com) — 포스트 본문(데모 컴포넌트를 인라인)
 - Sass (`@use` 모듈 방식)
 - Cloudflare Pages — 배포
-- Node.js ≥ 22.12.0
+- Node.js ≥ 22.12.0 (빌드 Node 는 `.nvmrc` = 22 고정)
+- **pnpm** — 패키지 매니저. `packageManager` 필드로 버전 고정. **`npm` 을 쓰지 말 것** (이유는 [AGENTS.md](AGENTS.md) 참조)
 
 ## 명령어
 
 ```bash
-npm run dev      # astro dev — http://localhost:4321
-npm run build    # astro build — /dist 정적 빌드
-npm run preview  # 빌드 결과 미리보기
+pnpm run dev      # astro dev — http://localhost:4321
+pnpm run build    # astro build — /dist 정적 빌드
+pnpm run preview  # 빌드 결과 미리보기
 ```
 
 ## 경로 별칭
@@ -93,7 +94,7 @@ src/content/posts/2026-04-20.some-post-name/
 
 ```astro
 ---
-// 외부 라이브러리는 CDN 이 아니라 npm 으로 설치해 번들한다.
+// 외부 라이브러리는 CDN 이 아니라 pnpm 으로 설치해 번들한다.
 import 'swiper/css/bundle';
 import slide1 from './images/slide-1.svg?url';
 ---
@@ -125,7 +126,7 @@ import SomeDemo from './demos/some-demo/index.astro';
 ### 자산 / 외부 라이브러리
 
 - 이미지·SCSS·JS 는 같은 폴더 기준 상대 경로 import (Vite 가 번들). **데모 이미지는 데모 폴더의 `images/`** 에 둔다(포스트 직속 `images/` 는 본문·커버용).
-- Swiper 같은 외부 라이브러리는 `npm install` 후 import 하면 Vite 가 로컬 청크로 번들하므로 런타임 CDN 요청이 없다. 해당 데모가 있는 포스트에만 로드된다.
+- Swiper 같은 외부 라이브러리는 `pnpm add` 후 import 하면 Vite 가 로컬 청크로 번들하므로 런타임 CDN 요청이 없다. 해당 데모가 있는 포스트에만 로드된다.
 
 ## 사이트 설정
 

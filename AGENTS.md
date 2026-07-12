@@ -4,27 +4,31 @@
 
 ## 프로젝트
 
-**1up.md** 정적 블로그 — Astro 7, Cloudflare Pages 배포. 한국어 콘텐츠(`lang: ko`). 테스트 및 린트 도구 없음. Node.js ≥ 22.12.0 필요.
+**1up.md** 정적 블로그 — Astro 7, Cloudflare Pages 배포. 한국어 콘텐츠(`lang: ko`). 테스트 및 린트 도구 없음. Node.js ≥ 22.12.0 필요. 빌드 Node 는 [.nvmrc](.nvmrc) = `22` 로 고정(Cloudflare 기본값과 동일).
 
-> ### ⚠️ package-lock.json 은 반드시 **npm 10** 으로 생성할 것
+## 패키지 매니저 — pnpm (npm 아님)
+
+**pnpm 을 쓴다. `npm install` 을 하지 말 것** — `package-lock.json` 이 생기면 Cloudflare 가 npm 으로 설치해 아래 문제가 되살아난다. 의존성은 `pnpm add` / `pnpm install` 로만 다룬다.
+
+- **버전 고정**: [package.json](package.json)의 `packageManager: "pnpm@10.11.1"`. Cloudflare 빌드 이미지 v3 의 기본 pnpm 도 10.11.1 이라 **로컬과 CI 가 같은 pnpm** 을 쓴다. (드리프트가 걱정되면 Pages 빌드 환경변수 `PNPM_VERSION` 으로 명시 고정 가능.)
+- **왜 npm 을 버렸나**: Cloudflare v3 는 **npm 을 10.9.2 에 고정**하며(Node 를 24 로 올려도 npm 은 그대로), npm 버전을 바꾸는 `NPM_VERSION` 오버라이드는 **v1 빌드 시스템 전용**이라 v3 에선 못 쓴다. 반면 로컬은 npm 11 → `npm install` 이 `@napi-rs/wasm-runtime` 의 optional 의존성 `@emnapi/*` 를 lockfile 에서 가지치기하는데 CI 의 npm 10 은 그 노드를 요구 → `npm ci` 가 `Missing @emnapi/core from lock file` 로 실패했다. **CI 의 npm 메이저를 로컬에 맞출 방법이 없어 구조적으로 재발**하는 문제라, 버전을 양쪽에서 고정할 수 있는 pnpm 으로 옮겼다.
+
+> ### ⚠️ pnpm 특유의 함정 — 아래 둘은 빼면 빌드가 깨진다
 >
-> Cloudflare Pages 빌드는 `npm ci` 로 설치하며, 이는 `package.json` 과 `package-lock.json` 이 **정확히** 일치해야 한다. 그런데 `@napi-rs/wasm-runtime` 의 wasm 폴백 optional 의존성 `@emnapi/*` 를 **npm 11 은 lockfile 에서 가지치기하고, npm 10 은 패키지 노드로 요구**한다. 따라서 **로컬(npm 11)에서 `npm install` 로 lock 을 갱신하면 그 노드가 사라져, Cloudflare(npm 10)의 `npm ci` 가 `Missing @emnapi/core from lock file` 로 실패한다.** 과거 이 문제로 빌드가 반복 실패했다.
->
-> - **의존성을 추가·변경했으면 lock 을 `npx npm@10 install` 로 재생성한 뒤 커밋**할 것. (npm 10 으로 만든 lock 은 npm 10·11 양쪽 `npm ci` 에서 모두 통과함 — 검증됨.)
-> - **`.nvmrc` 로는 npm 을 바꿀 수 없다.** Cloudflare 빌드 이미지(v3)는 Node 버전과 **무관하게 npm 을 10.9.2 에 고정**한다 — `.nvmrc` 를 `24` 로 올려도 빌드 로그는 `nodejs@24.13.1, npm@10.9.2` 로 뜬다(Node 24 자체는 정상 지원됨. "Node 24 미지원" 은 오해였다). npm 메이저를 로컬(11)에 맞추려면 Pages **빌드 환경변수 `NPM_VERSION`** 을 설정해야 한다 — 설정하지 않는 한 CI 는 npm 10 이므로 위 규칙이 유효하다.
-> - 빌드 Node 는 [.nvmrc](.nvmrc) = `22` (Cloudflare 기본값과 동일하게 고정).
+> - **`pnpm.onlyBuiltDependencies`** ([package.json](package.json)): pnpm 10 은 의존성의 build/postinstall 스크립트를 **기본 차단**한다. `@parcel/watcher`·`esbuild`·`sharp` 를 허용목록에 넣지 않으면 네이티브 바이너리가 설치되지 않는다.
+> - **`sharp` 를 직접 의존성으로 선언**: pnpm 의 격리된(심링크) `node_modules` 에서는 Astro 가 **전이 의존성인 sharp 를 resolve 하지 못해** 이미지 최적화가 `MissingSharp` 로 실패한다. 그래서 devDependency 로 명시했다 — 지우지 말 것.
 
 ## 명령어
 
 ```bash
-npm run dev          # node scripts/dev-with-search-index.mjs — astro dev 를 즉시 띄우고(http://localhost:4321, host: true, LAN 공개), 서버 ready 후 백그라운드로 검색 인덱스(dist/pagefind) 생성. 배포용 src/content/posts 로드
-npm run dev:draft    # node scripts/dev-with-search-index.mjs --draft — 위와 동일하되 astro dev --mode draft + 백그라운드 build:draft. gitignore된 src/content.draft/posts(로컬 초안)만 로드
-npm run build        # astro build && pagefind --site dist — /dist 에 정적 파일 + 검색 인덱스 출력
-npm run build:draft  # astro build --mode draft && pagefind --site dist — 초안으로 dist/pagefind 생성(dev 검색 확인용)
-npm run preview      # astro preview — 빌드 결과 미리보기
+pnpm run dev          # node scripts/dev-with-search-index.mjs — astro dev 를 즉시 띄우고(http://localhost:4321, host: true, LAN 공개), 서버 ready 후 백그라운드로 검색 인덱스(dist/pagefind) 생성. 배포용 src/content/posts 로드
+pnpm run dev:draft    # node scripts/dev-with-search-index.mjs --draft — 위와 동일하되 astro dev --mode draft + 백그라운드 build:draft. gitignore된 src/content.draft/posts(로컬 초안)만 로드
+pnpm run build        # astro build && pagefind --site dist — /dist 에 정적 파일 + 검색 인덱스 출력
+pnpm run build:draft  # astro build --mode draft && pagefind --site dist — 초안으로 dist/pagefind 생성(dev 검색 확인용)
+pnpm run preview      # astro preview — 빌드 결과 미리보기
 ```
 
-> `npm run build` 가 `pagefind --site dist` 까지 포함하므로 Cloudflare Pages 빌드 커맨드도 그대로 사용([검색](#검색--search) 참조).
+> `pnpm run build` 가 `pagefind --site dist` 까지 포함하므로 Cloudflare Pages 빌드 커맨드도 그대로 사용([검색](#검색--search) 참조).
 
 > 콘텐츠 소스 선택은 [콘텐츠 모델](#콘텐츠-모델--포스트) 참조.
 
@@ -57,8 +61,8 @@ src/content/posts/
 
 포스트 소스 디렉토리는 실행 모드에 따라 둘 중 하나로 결정됨:
 
-- **`src/content/posts/`** — 배포되는 실제 포스트. 커밋 대상. `npm run dev` / `npm run build` 가 사용.
-- **`src/content.draft/posts/`** — 로컬 테스트용 초안. **gitignore**([.gitignore](.gitignore))되어 커밋·배포되지 않음. `npm run dev:draft`(`astro dev --mode draft`)가 **이것만** 사용 (배포 포스트와 섞이지 않음). 구조는 `content/posts/` 와 동일 (`images/`, `demos/` 포함).
+- **`src/content/posts/`** — 배포되는 실제 포스트. 커밋 대상. `pnpm run dev` / `pnpm run build` 가 사용.
+- **`src/content.draft/posts/`** — 로컬 테스트용 초안. **gitignore**([.gitignore](.gitignore))되어 커밋·배포되지 않음. `pnpm run dev:draft`(`astro dev --mode draft`)가 **이것만** 사용 (배포 포스트와 섞이지 않음). 구조는 `content/posts/` 와 동일 (`images/`, `demos/` 포함).
 
 [src/utils/posts.js](src/utils/posts.js)에서 `import.meta.env.MODE === 'draft'` 여부로 소스를 고름. `import.meta.glob` 은 패턴에 변수/템플릿 보간을 허용하지 않으므로(정적 문자열 리터럴만 가능 — `` `/src/${dir}/...` `` 는 빌드 에러), prod/dev 글로브를 **쌍으로 선언**하고 `pick(prod, dev)` 헬퍼로 선택함. 포스트 모듈·readingTime 용 `?raw` 원문·커버 글로브 모두 같은 방식으로 pick() 을 거침.
 
@@ -138,7 +142,7 @@ src/content/posts/2025-11-24.bulkhead-pattern/
 
 [src/components/Head.astro](src/components/Head.astro)의 `<ClientRouter />`(astro:transitions)가 SPA 스타일 네비게이션을 담당 — 헤더가 다시 로드되며 발생하는 플리커링 방지가 도입 목적. 시각적 전환 효과 의도는 없으며, [src/styles/global.scss](src/styles/global.scss)의 `::view-transition-old/new(root) { animation: none }` 규칙이 `document.startViewTransition()`의 기본 cross-fade를 끔.
 
-`<ClientRouter />`는 `import.meta.env.PROD` 가드로 **프로덕션 빌드에서만** 렌더링됨. dev에서는 라우터의 트랜지션 스왑이 SCSS HMR과 충돌해 이전 CSS가 남아 깜빡이는데, ClientRouter는 배포 사이트 네비게이션용이라 dev에 불필요하므로 제외함. SPA 네비게이션을 실제로 확인하려면 `npm run preview`(빌드 결과, PROD)로 볼 것.
+`<ClientRouter />`는 `import.meta.env.PROD` 가드로 **프로덕션 빌드에서만** 렌더링됨. dev에서는 라우터의 트랜지션 스왑이 SCSS HMR과 충돌해 이전 CSS가 남아 깜빡이는데, ClientRouter는 배포 사이트 네비게이션용이라 dev에 불필요하므로 제외함. SPA 네비게이션을 실제로 확인하려면 `pnpm run preview`(빌드 결과, PROD)로 볼 것.
 
 `<ClientRouter />`가 끌어오는 `transitions-*` 가상 모듈은 Vite 초기 dep 스캔에 안 잡혀, 콜드 스타트 첫 로드 때 뒤늦게 발견되며 재최적화 → 리로드를 유발함(부작용으로 dev-toolbar entrypoint가 `504 Outdated Optimize Dep`로 고착). 이를 막기 위해 [astro.config.mjs](astro.config.mjs)의 `vite.optimizeDeps.include`에 해당 모듈들을 미리 포함시켜 둠 — 제거하지 말 것.
 
@@ -212,12 +216,12 @@ trailing slash 없음으로 통일. [astro.config.mjs](astro.config.mjs) 에서 
 
 [Pagefind](https://pagefind.app/)(빌드 타임 정적 검색, MIT, 외부 서비스·런타임 서버 없음) 기반. 헤더 `search` 버튼 클릭 시 **현재 페이지에서 레이어(모달)로** 검색창이 열림 — 별도 `/search` 라우트 없음. 데스크톱은 상단 중앙 카드, **모바일(≤`$bp-mobile`)은 풀페이지**(Pagefind 기본 UX 결).
 
-- **인덱스 생성**: 소스가 아니라 **빌드된 `dist/` HTML 을 후처리**. `npm run build` 가 `astro build && pagefind --site dist` 로 `dist/pagefind/` 에 인덱스를 생성([명령어](#명령어) 참조). `pagefind` 는 devDependency. `dist` 는 gitignore 되므로 `public/` 은 건드리지 않음.
+- **인덱스 생성**: 소스가 아니라 **빌드된 `dist/` HTML 을 후처리**. `pnpm run build` 가 `astro build && pagefind --site dist` 로 `dist/pagefind/` 에 인덱스를 생성([명령어](#명령어) 참조). `pagefind` 는 devDependency. `dist` 는 gitignore 되므로 `public/` 은 건드리지 않음.
 - **인덱싱 범위**: [src/pages/[slug].astro](src/pages/[slug].astro)의 `<article>` 에 `data-pagefind-body` 가 있는 **포스트 본문만** 인덱싱(이 속성이 한 곳이라도 있으면 Pagefind 는 없는 페이지를 전부 제외 → about·tags 등 자동 제외). 데모는 본문에 인라인되므로 해당 포스트 본문의 일부로 함께 인덱싱됨(별도 데모 페이지 없음). 제목 `h1` 은 인덱싱되어 결과 타이틀이 됨. 메타·태그·공유·좋아요 묶음(`.postHeaderBar`)은 발췌 노이즈라 `data-pagefind-ignore`.
 - **`unlisted` 제외**: `data-pagefind-body` 를 `!unlisted || undefined` 로 조건부 출력 → `unlisted` 포스트는 속성이 빠져 **검색 인덱스에서 제외**([비공개 발행](#비공개-발행--unlisted)과 동일 취지). 상세 페이지 자체는 직접 URL 로 여전히 열람 가능.
 - **컴포넌트**: [src/components/SearchDialog.astro](src/components/SearchDialog.astro) — 네이티브 `<dialog closedby="any">` 를 `showModal()` 로 염(top layer·포커스 트랩·Esc 무료). 백드롭 클릭/플랫폼 닫기는 `closedby` 미지원(Safari) 대비 콘텐츠 밖 클릭 폴백 포함. 입력은 Pagefind `debouncedSearch`(내부 디바운스+최신호출 우선)로 검색하고 상위 8건을 `r.data()` 로 렌더(`excerpt` 는 `<mark>` 하이라이트 HTML). 결과 `url` 의 `.html`/`index.html` 은 캐노니컬(`/foo`, `/`)로 보정([URL 정책](#url-정책)의 `build.format: 'file'` 부작용 대응). [DefaultLayout](src/layouts/DefaultLayout.astro)에 1회 포함. [Navigation.astro](src/components/Navigation.astro)는 `search` 항목만 링크가 아닌 `[data-search-open]` 버튼으로 렌더.
 - **키보드 내비게이션**: combobox 패턴 — 인풋에 포커스를 유지한 채 `↑`/`↓` 로 결과 항목 활성 이동(`.is-active` 하이라이트 + `aria-activedescendant`, 끝에서 순환), `Enter` 로 활성 결과 이동. 인풋 `role="combobox"` + 결과 컨테이너 `role="listbox"`/항목 `role="option"`.
 - **reset(X) 버튼**: 인풋에 `required` 를 주어 `:valid`(=입력 있음)일 때만 CSS 로 reset 버튼(흰 X 동그란 버튼) 노출. `required` 의 제출 경고 툴팁은 `<form novalidate>` 로 차단(`:valid` 의사클래스는 그대로 동작). 클릭 시 인풋 비우고 결과 초기화 + 포커스 유지.
-- **dev 동작**: `astro dev` 는 `dist/` 를 서빙하지 않아 그대로는 `/pagefind/` 가 없음. 그래서 `npm run dev` / `npm run dev:draft` 는 [scripts/dev-with-search-index.mjs](scripts/dev-with-search-index.mjs) 러너를 거친다 — **dev 서버를 먼저 띄우고**(기동 속도 우선, 로컬에선 검색이 주 목적 아님), astro 의 `ready in` stdout 신호를 감지한 **뒤** 백그라운드로 `npm run build` / `npm run build:draft` 를 1회 실행해 `dist/pagefind/` 인덱스를 만든다. 병렬이 아니라 **ready 후 실행**인 이유는 cold-start optimizeDeps 와 `astro build` 가 `.astro`·`.vite` 캐시·`dist` 를 동시에 건드리는 경합을 피하기 위함. 따라서 **서버는 즉시 뜨고, 검색은 백그라운드 빌드가 끝난 시점부터 동작**한다(인덱스 생성 전 검색하면 레이어에 안내 문구). [astro.config.mjs](astro.config.mjs)의 Vite 플러그인 `pagefindDevServer`(`apply: 'serve'`)가 `dist/pagefind/` 를 `/pagefind/` 로 직접 서빙(요청마다 fs 로 읽음 → 백그라운드 인덱스가 완성되면 **재시작 없이** 검색 가능, Content-Type 매핑 포함). dev 검색은 **기동 직후 빌드 스냅샷**이라, dev 도중 추가한 콘텐츠를 검색에 반영하려면 dev 서버를 재시작(재빌드)해야 함. Pagefind 런타임 import 는 Vite 변환을 피하려 `/* @vite-ignore */` 사용.
+- **dev 동작**: `astro dev` 는 `dist/` 를 서빙하지 않아 그대로는 `/pagefind/` 가 없음. 그래서 `pnpm run dev` / `pnpm run dev:draft` 는 [scripts/dev-with-search-index.mjs](scripts/dev-with-search-index.mjs) 러너를 거친다 — **dev 서버를 먼저 띄우고**(기동 속도 우선, 로컬에선 검색이 주 목적 아님), astro 의 `ready in` stdout 신호를 감지한 **뒤** 백그라운드로 `pnpm run build` / `pnpm run build:draft` 를 1회 실행해 `dist/pagefind/` 인덱스를 만든다. 병렬이 아니라 **ready 후 실행**인 이유는 cold-start optimizeDeps 와 `astro build` 가 `.astro`·`.vite` 캐시·`dist` 를 동시에 건드리는 경합을 피하기 위함. 따라서 **서버는 즉시 뜨고, 검색은 백그라운드 빌드가 끝난 시점부터 동작**한다(인덱스 생성 전 검색하면 레이어에 안내 문구). [astro.config.mjs](astro.config.mjs)의 Vite 플러그인 `pagefindDevServer`(`apply: 'serve'`)가 `dist/pagefind/` 를 `/pagefind/` 로 직접 서빙(요청마다 fs 로 읽음 → 백그라운드 인덱스가 완성되면 **재시작 없이** 검색 가능, Content-Type 매핑 포함). dev 검색은 **기동 직후 빌드 스냅샷**이라, dev 도중 추가한 콘텐츠를 검색에 반영하려면 dev 서버를 재시작(재빌드)해야 함. Pagefind 런타임 import 는 Vite 변환을 피하려 `/* @vite-ignore */` 사용.
 - **환경 분기 없음**: 조회수·좋아요와 달리 별도 DEV 가짜데이터 분기 없이, dev/prod 모두 동일하게 실제 Pagefind 인덱스를 사용(미들웨어 vs 정적 자산 차이뿐). 인덱스가 없으면(빌드 전) 레이어에 안내 문구 표시. ClientRouter(PROD) 호환: `astro:page-load` 재바인딩, 트리거 버튼은 `dataset.bound`, 다이얼로그는 클릭 시점에 `getElementById` 로 조회.
 - **한국어**: Pagefind Extended 빌드가 `<html lang="ko">` 를 감지해 CJK 분절 적용. 단 ko 는 stemming 미지원(어근 매칭 없음) — 빌드 로그에 안내가 뜨는 정상 동작.
