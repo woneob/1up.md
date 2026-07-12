@@ -5,6 +5,7 @@
 ## 스택
 
 - [Astro](https://astro.build) v7 — 정적 사이트 빌드
+- [MDX](https://mdxjs.com) — 포스트 본문(데모 컴포넌트를 인라인)
 - Sass (`@use` 모듈 방식)
 - Cloudflare Pages — 배포
 - Node.js ≥ 22.12.0
@@ -42,19 +43,21 @@ src/
 
 ## 포스트
 
-포스트는 단일 `.md` 파일이 아니라 **디렉토리** 단위로 존재한다. 폴더명은 `YYYY-MM-DD.<slug>` 형식이며, 날짜 뒷부분이 URL 슬러그가 된다.
+포스트는 단일 파일이 아니라 **디렉토리** 단위로 존재하며, 본문은 `index.mdx`(전 포스트 MDX — 데모 컴포넌트를 인라인하기 위함)다. 폴더명은 `YYYY-MM-DD.<slug>` 형식이며, 날짜 뒷부분이 URL 슬러그가 된다.
 
 ```
 src/content/posts/
 └── 2026-04-20.some-post-name/
-    ├── index.md
+    ├── index.mdx
     ├── images/
     │   └── cover.png              (선택) 인덱스 카드 커버 이미지
-    └── demos/                     (선택) 데모 페이지 — 아래 참고
+    └── demos/                     (선택) 인라인 데모 컴포넌트 — 아래 참고
         └── ...
 ```
 
-`index.md` 프론트매터:
+본문에는 H1(`# 제목`)을 쓰지 않는다 — 제목의 단일 출처는 프론트매터 `title` 이며 본문은 `## ` 부터 시작한다.
+
+`index.mdx` 프론트매터:
 
 ```yaml
 ---
@@ -67,89 +70,62 @@ updatedDate: '2026-06-28T10:00:00+09:00'  # 선택 — 수정일. 상세 페이�
 ---
 ```
 
-## 데모 페이지
+## 데모
 
-포스트 본문에 인터랙티브 예제를 iframe 으로 임베드할 수 있다. 데모 자체는 포스트 폴더 안에 위치하며, 빌드 시 `/<post-slug>/demos/<demo-slug>/` 라우트로 자동 생성된다.
+포스트 본문의 인터랙티브 예제는 **iframe 이 아니라 Astro 컴포넌트로 본문에 인라인**한다. 데모는 포스트 폴더 안에 두고, MDX 포스트가 import 해서 렌더한다. 빌드 시 SSR 되어 첫 페인트부터 자연스러운 높이로 그려지므로 레이아웃 이동(CLS)이 없고, 별도 라우트도 만들지 않는다.
 
 ### 폴더 구조
 
 ```
 src/content/posts/2026-04-20.some-post-name/
-├── index.md
+├── index.mdx
 └── demos/
     └── some-demo/
-        ├── index.astro            # HTML 컨테이너
-        ├── style.scss
-        ├── script.js
-        └── images/                # (선택) 데모 자산
-            └── sprite.png
+        ├── index.astro           # 인라인 프래그먼트 (standalone 문서 아님)
+        ├── script.js             # (선택) 클라이언트 로직
+        └── images/               # (선택) 데모 자산 — 포스트가 아닌 데모 폴더에 둔다
+            └── slide-1.svg
 ```
 
-### `index.astro` (HTML 컨테이너)
+### `index.astro` (인라인 프래그먼트)
+
+`<!doctype html>`·`<html>`·`<head>`·`<body>` 없이 **조각만** 작성한다. 스타일은 `<style>`(Astro 가 자동 스코프하므로 포스트 스타일과 격리), 로직은 `<script>` 에 둔다.
 
 ```astro
 ---
-import './style.scss';
+// 외부 라이브러리는 CDN 이 아니라 npm 으로 설치해 번들한다.
+import 'swiper/css/bundle';
+import slide1 from './images/slide-1.svg?url';
 ---
-<!doctype html>
-<html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex,nofollow" />
-    <title>데모 제목</title>
-  </head>
-  <body>
-    <div class="stage" data-stage>
-      <!-- 데모 마크업 -->
-    </div>
+<div class="demo">
+  <!-- 데모 마크업 -->
+</div>
 
-    <script>
-      import './script.js';
-    </script>
-  </body>
-</html>
+<style lang="scss">
+  .demo { /* Astro 가 자동 스코프 (data-astro-cid-*) */ }
+</style>
+
+<script>
+  import './script.js';
+</script>
 ```
 
-### 마크다운에서 임베드
+### MDX 에서 임베드
 
-`index.md` 본문에 그냥 상대 경로로 적으면 된다.
+포스트 `index.mdx` 에서 상대 경로로 import 후 본문에 렌더한다.
 
-```markdown
-<iframe
-  src="demos/some-demo/"
-  title="데모 제목"
-  width="100%"
-  height="420"
-  loading="lazy"
-></iframe>
+```mdx
+import SomeDemo from './demos/some-demo/index.astro';
+
+...본문...
+
+<SomeDemo />
 ```
 
-src/href 의 상대 경로는 빌드 시 [src/plugins/resolve-post-relative-urls.mjs](src/plugins/resolve-post-relative-urls.mjs) 가 포스트 슬러그 기준 절대 경로(`/some-post-name/demos/some-demo/`)로 자동 치환한다. **포스트 폴더명을 바꿔도 본문 수정이 필요 없다.**
+### 자산 / 외부 라이브러리
 
-### Assets 사용 (이미지 등)
-
-`index.astro` / `style.scss` / `script.js` 모두 같은 폴더 기준 상대 경로 import 가 가능하다 (Vite 가 번들 처리).
-
-```astro
----
-import { Image } from 'astro:assets';
-import cover from './images/cover.png';
----
-<Image src={cover} alt="..." width={400} height={300} />
-```
-
-```scss
-.hero {
-  background-image: url('./images/bg.png');
-}
-```
-
-```js
-import spriteUrl from './images/sprite.png';
-// 또는
-const spriteUrl = new URL('./images/sprite.png', import.meta.url).href;
-```
+- 이미지·SCSS·JS 는 같은 폴더 기준 상대 경로 import (Vite 가 번들). **데모 이미지는 데모 폴더의 `images/`** 에 둔다(포스트 직속 `images/` 는 본문·커버용).
+- Swiper 같은 외부 라이브러리는 `npm install` 후 import 하면 Vite 가 로컬 청크로 번들하므로 런타임 CDN 요청이 없다. 해당 데모가 있는 포스트에만 로드된다.
 
 ## 사이트 설정
 

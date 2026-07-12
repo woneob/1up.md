@@ -11,8 +11,14 @@ const DRAFT = import.meta.env.MODE === 'draft';
 const pick = (prod, dev) => (DRAFT ? dev : prod);
 
 const postModules = pick(
-  import.meta.glob('/src/content/posts/*/index.md', { eager: true }),
-  import.meta.glob('/src/content.draft/posts/*/index.md', { eager: true }),
+  import.meta.glob('/src/content/posts/*/index.mdx', { eager: true }),
+  import.meta.glob('/src/content.draft/posts/*/index.mdx', { eager: true }),
+);
+// MDX 모듈은 .md 와 달리 rawContent()/compiledContent() 를 export 하지 않으므로,
+// readingTime 계산용 원문을 ?raw 로 별도 로드한다(키는 postModules 와 동일한 파일 경로).
+const postRawModules = pick(
+  import.meta.glob('/src/content/posts/*/index.mdx', { eager: true, query: '?raw', import: 'default' }),
+  import.meta.glob('/src/content.draft/posts/*/index.mdx', { eager: true, query: '?raw', import: 'default' }),
 );
 const coverModules = pick(
   import.meta.glob('/src/content/posts/*/images/cover.{jpg,jpeg,png,webp}', { eager: true, import: 'default' }),
@@ -51,7 +57,7 @@ function loadPosts() {
         frontmatter: mod.frontmatter ?? {},
         module: mod,
         cover: coverByDir[dir] ?? null,
-        stats: readingTime(mod.rawContent()),
+        stats: readingTime(postRawModules[filePath] ?? ''),
       };
     })
     .sort((a, b) => new Date(b.frontmatter.pubDate).getTime() - new Date(a.frontmatter.pubDate).getTime());
@@ -70,12 +76,4 @@ export function getAllPosts({ includeUnlisted = false } = {}) {
 // 직접 URL 접근용 — unlisted 여부와 무관하게 슬러그로 찾는다(상세 페이지는 항상 열람 가능).
 export function getPostBySlug(slug) {
   return loadPosts().find(post => post.slug === slug) ?? null;
-}
-
-// 데모 라우트용 — 콘텐츠 소스 선택은 postModules 와 동일하게 pick() 을 거친다.
-export function getDemoModules() {
-  return pick(
-    import.meta.glob('/src/content/posts/*/demos/*/index.astro', { eager: true }),
-    import.meta.glob('/src/content.draft/posts/*/demos/*/index.astro', { eager: true }),
-  );
 }

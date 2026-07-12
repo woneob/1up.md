@@ -33,7 +33,7 @@ function escapeHtml(value = '') {
 export default function resolveMissingImages() {
   return (tree, file) => {
     const filePath = (file.path ?? '').replace(/\\/g, '/');
-    if (!/\/posts\/\d{4}-\d{2}-\d{2}\.[^/]+\/index\.md$/.test(filePath)) return;
+    if (!/\/posts\/\d{4}-\d{2}-\d{2}\.[^/]+\/index\.mdx?$/.test(filePath)) return;
 
     const baseDir = path.dirname(file.path);
 
