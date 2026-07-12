@@ -6,7 +6,13 @@
 
 **1up.md** 정적 블로그 — Astro 7, Cloudflare Pages 배포. 한국어 콘텐츠(`lang: ko`). 테스트 및 린트 도구 없음. Node.js ≥ 22.12.0 필요.
 
-> **Node 버전 고정([.nvmrc](.nvmrc) = `24`) — 만지기 전에 읽을 것.** Cloudflare Pages 는 빌드에서 `npm ci` 로 의존성을 설치하는데, 이는 `package.json` 과 `package-lock.json` 이 **정확히** 일치해야 한다. lockfile 은 npm 메이저 버전에 따라 optional 의존성 기록 방식이 달라서(`@napi-rs/wasm-runtime` 의 wasm 폴백용 `@emnapi/*` 노드를 npm 11 은 가지치기, npm 10 은 요구 → npm 10 의 `npm ci` 가 `Missing @emnapi/core from lock file` 로 실패), **lockfile 생성 환경과 CI 환경의 npm 메이저가 반드시 같아야 한다.** 그래서 `.nvmrc` 로 빌드 Node 를 24(= npm 11, 로컬 개발 환경과 동일)로 고정한다. **`package-lock.json` 을 다른 npm 메이저(예: npm 10)로 재생성하지 말 것** — 과거 이 불일치로 빌드가 반복 실패했다.
+> ### ⚠️ package-lock.json 은 반드시 **npm 10** 으로 생성할 것
+>
+> Cloudflare Pages 빌드는 `npm ci` 로 설치하며, 이는 `package.json` 과 `package-lock.json` 이 **정확히** 일치해야 한다. 그런데 `@napi-rs/wasm-runtime` 의 wasm 폴백 optional 의존성 `@emnapi/*` 를 **npm 11 은 lockfile 에서 가지치기하고, npm 10 은 패키지 노드로 요구**한다. 따라서 **로컬(npm 11)에서 `npm install` 로 lock 을 갱신하면 그 노드가 사라져, Cloudflare(npm 10)의 `npm ci` 가 `Missing @emnapi/core from lock file` 로 실패한다.** 과거 이 문제로 빌드가 반복 실패했다.
+>
+> - **의존성을 추가·변경했으면 lock 을 `npx npm@10 install` 로 재생성한 뒤 커밋**할 것. (npm 10 으로 만든 lock 은 npm 10·11 양쪽 `npm ci` 에서 모두 통과함 — 검증됨.)
+> - **`.nvmrc` 로는 npm 을 바꿀 수 없다.** Cloudflare 빌드 이미지(v3)는 Node 버전과 **무관하게 npm 을 10.9.2 에 고정**한다 — `.nvmrc` 를 `24` 로 올려도 빌드 로그는 `nodejs@24.13.1, npm@10.9.2` 로 뜬다(Node 24 자체는 정상 지원됨. "Node 24 미지원" 은 오해였다). npm 메이저를 로컬(11)에 맞추려면 Pages **빌드 환경변수 `NPM_VERSION`** 을 설정해야 한다 — 설정하지 않는 한 CI 는 npm 10 이므로 위 규칙이 유효하다.
+> - 빌드 Node 는 [.nvmrc](.nvmrc) = `22` (Cloudflare 기본값과 동일하게 고정).
 
 ## 명령어
 
