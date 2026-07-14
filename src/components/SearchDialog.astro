@@ -41,6 +41,9 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
 <script>
   const PAGEFIND_URL = '/pagefind/pagefind.js';
+  // 인덱스는 `pagefind --force-language en` 으로 en 단일 언어로 생성됨(package.json).
+  // 런타임의 기본 동작은 <html lang> 감지(→ 'ko')라 여기서도 같은 값을 넘겨 인덱스를 명시 선택한다.
+  const PAGEFIND_LANGUAGE = 'en';
 
   let pagefind = null;
   let pagefindError = false;
@@ -53,7 +56,7 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
     if (pagefind || pagefindError) return pagefind;
     try {
       pagefind = await import(/* @vite-ignore */ PAGEFIND_URL);
-      await pagefind.init?.();
+      await pagefind.init?.(PAGEFIND_LANGUAGE);
     } catch {
       pagefindError = true;
       pagefind = null;

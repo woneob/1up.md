@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "node scripts/dev-with-search-index.mjs",
     "dev:draft": "node scripts/dev-with-search-index.mjs --draft",
-    "build": "astro build && pagefind --site dist",
-    "build:draft": "astro build --mode draft && pagefind --site dist",
+    "build": "astro build && pagefind --site dist --force-language en",
+    "build:draft": "astro build --mode draft && pagefind --site dist --force-language en",
     "preview": "astro preview"
   },
   "repository": {
