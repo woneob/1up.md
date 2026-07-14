@@ -14,7 +14,7 @@ import { spawn } from 'node:child_process';
 
 const draft = process.argv.includes('--draft');
 const devCmd = draft ? 'astro dev --mode draft' : 'astro dev';
-const indexCmd = draft ? 'npm run build:draft' : 'npm run build';
+const indexCmd = draft ? 'pnpm run build:draft' : 'pnpm run build';
 
 const log = (msg) => process.stdout.write(`\n[search-index] ${msg}\n`);
 
