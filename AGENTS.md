@@ -4,7 +4,13 @@
 
 ## 프로젝트
 
-**1up.md** 정적 블로그 — Astro 7, Cloudflare Pages 배포. 한국어 콘텐츠(`lang: ko`). 테스트 및 린트 도구 없음. Node.js ≥ 22.12.0 필요. 빌드 Node 는 [.nvmrc](.nvmrc) = `22` 로 고정(Cloudflare 기본값과 동일).
+**1up.md** 정적 블로그 — Astro 7, Cloudflare Pages 배포. 한국어 콘텐츠(`lang: ko`). 테스트 및 린트 도구 없음.
+
+**Node 버전은 두 장치가 서로 다른 일을 한다 — 혼동하지 말 것.**
+
+- **하한 가드** = [package.json](package.json)의 `engines.node: ">=22.12.0"` + [pnpm-workspace.yaml](pnpm-workspace.yaml)의 `engineStrict: true`. 하한값은 astro 7 자신의 `engines.node` 에서 온 것(`@astrojs/mdx` 도 동일). **`engineStrict` 없이는 경고만 뜨고 설치가 그냥 통과한다** — "프로젝트 자신의 engines 는 항상 실패시킨다"는 pnpm 문서 설명은 실측과 다르니 믿지 말 것(pnpm 11.13.0 기준 확인). 상한은 두지 않는다(미래 Node 의 파손을 미리 알 수 없으므로 하한만 선언하는 게 표준).
+- **실제 빌드 Node** = [.nvmrc](.nvmrc) = `22`(Cloudflare v3 이미지 기본값 22.16.0 과 동일). 배포가 Node 메이저를 멋대로 따라 올라가지 않게 막는 건 이쪽이다. 로컬은 그보다 높은 Node(24 등)를 써도 가드만 통과하면 무방.
+- **`devEngines.runtime` 은 쓰지 않는다**: 그건 가드가 아니라 **고정** 장치로, pnpm 이 지정 Node 를 내려받아 스크립트를 그 위에서 실행한다(로컬 Node 를 강제로 끌어내림). 여기선 "하한만 명확히, 최신 Node 사용은 허용" 이 방침이라 목적이 어긋난다.
 
 ## 패키지 매니저 — pnpm (npm 아님)
 
