@@ -10,12 +10,15 @@
 
 **pnpm 을 쓴다. `npm install` 을 하지 말 것** — `package-lock.json` 이 생기면 Cloudflare 가 npm 으로 설치해 아래 문제가 되살아난다. 의존성은 `pnpm add` / `pnpm install` 로만 다룬다.
 
-- **버전 고정**: [package.json](package.json)의 `packageManager: "pnpm@10.11.1"`. Cloudflare 빌드 이미지 v3 의 기본 pnpm 도 10.11.1 이라 **로컬과 CI 가 같은 pnpm** 을 쓴다. (드리프트가 걱정되면 Pages 빌드 환경변수 `PNPM_VERSION` 으로 명시 고정 가능.)
+- **버전의 단일 출처 = `packageManager` 필드**: [package.json](package.json)의 `packageManager: "pnpm@11.13.0"`. pnpm 은 **corepack 없이 스스로** 이 필드를 읽어 해당 버전을 내려받아 실행한다(pnpm 11 의 `pmOnFail: download` 기본값, pnpm 10 에선 `managePackageManagerVersions: true`). 로컬에 깔린 pnpm 이 다른 버전이어도 실제로 도는 건 여기 적힌 버전이며, **Cloudflare 빌드 이미지의 pnpm(v3 기본 10.11.1)도 같은 규칙으로 이 버전을 받아 실행**한다. pnpm 을 올릴 때 **이 값만 고치면** 로컬·CI 가 함께 따라온다.
+  - **`PNPM_VERSION`(Pages 빌드 환경변수)은 일부러 설정하지 않는다**: v3 가 지원하긴 하나, 설정하면 버전이 대시보드와 package.json 두 곳으로 갈라져 업데이트 때마다 둘을 맞춰야 하고 어긋나면 조용히 CI 만 다른 pnpm 을 쓴다. 자동 스위칭에 맡기고 `packageManager` 하나만 둔다.
+  - **corepack 도 쓰지 않는다**: Node.js TSC 결정으로 **corepack 은 Node 25+ 배포판에서 빠졌고**(별도 설치 필요), Cloudflare v3 도 corepack·`engines` 감지를 하지 않는다. pnpm 이 같은 기능을 내장하므로 도입 이득이 없다.
+  - **부트스트랩만 있으면 된다**: 자동 스위칭은 *실행할 pnpm 이 하나라도 있을 때* 동작한다 — 즉 pnpm 이 전혀 없는 환경이라면 런처가 필요하다. 전역 설치(`npm i -g pnpm`, 버전 무관 — 어차피 `packageManager` 버전으로 위임됨) 또는 설치 없이 `npx pnpm install` 로 시작하면 된다. Cloudflare 는 이미지에 pnpm 10.11.1 이 들어 있어 별도 조치가 필요 없다.
 - **왜 npm 을 버렸나**: Cloudflare v3 는 **npm 을 10.9.2 에 고정**하며(Node 를 24 로 올려도 npm 은 그대로), npm 버전을 바꾸는 `NPM_VERSION` 오버라이드는 **v1 빌드 시스템 전용**이라 v3 에선 못 쓴다. 반면 로컬은 npm 11 → `npm install` 이 `@napi-rs/wasm-runtime` 의 optional 의존성 `@emnapi/*` 를 lockfile 에서 가지치기하는데 CI 의 npm 10 은 그 노드를 요구 → `npm ci` 가 `Missing @emnapi/core from lock file` 로 실패했다. **CI 의 npm 메이저를 로컬에 맞출 방법이 없어 구조적으로 재발**하는 문제라, 버전을 양쪽에서 고정할 수 있는 pnpm 으로 옮겼다.
 
 > ### ⚠️ pnpm 특유의 함정 — 아래 둘은 빼면 빌드가 깨진다
 >
-> - **`pnpm.onlyBuiltDependencies`** ([package.json](package.json)): pnpm 10 은 의존성의 build/postinstall 스크립트를 **기본 차단**한다. `@parcel/watcher`·`esbuild`·`sharp` 를 허용목록에 넣지 않으면 네이티브 바이너리가 설치되지 않는다.
+> - **`allowBuilds`** ([pnpm-workspace.yaml](pnpm-workspace.yaml)): pnpm 은 의존성의 build/postinstall 스크립트를 **기본 차단**한다. `@parcel/watcher`·`esbuild`·`sharp` 를 `true` 로 허용하지 않으면 네이티브 바이너리가 설치되지 않는다. 설정 자리는 **pnpm-workspace.yaml** — pnpm 11 은 package.json 의 `pnpm` 필드를 더 이상 읽지 않으며(경고만 내고 무시), 구 이름 `onlyBuiltDependencies` 도 v11 에서 `allowBuilds` 로 대체됐다. 워크스페이스(모노레포)가 아니어도 이 파일이 설정의 집이다.
 > - **`sharp` 를 직접 의존성으로 선언**: pnpm 의 격리된(심링크) `node_modules` 에서는 Astro 가 **전이 의존성인 sharp 를 resolve 하지 못해** 이미지 최적화가 `MissingSharp` 로 실패한다. 그래서 devDependency 로 명시했다 — 지우지 말 것.
 
 ## 명령어
