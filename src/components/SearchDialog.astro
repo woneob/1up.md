@@ -107,7 +107,7 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
     if (seq !== searchSeq) return;
     if (!pf) {
       input.setAttribute('aria-expanded', 'false');
-      setNote(resultsEl, '검색 인덱스를 불러오지 못했습니다. (로컬은 `npm run build` 후 이용)');
+      setNote(resultsEl, '검색 인덱스를 불러오지 못했습니다. (로컬은 `pnpm run build` 후 이용)');
       return;
     }
 

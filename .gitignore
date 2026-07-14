@@ -23,7 +23,7 @@ vite.config.ts.timestamp-*
 # Wrangler local state (pages dev / local D1)
 .wrangler/
 
-# Local-only draft posts (npm run dev:draft)
+# Local-only draft posts (pnpm run dev:draft)
 /src/content.draft/
 
 # Windows image file caches
