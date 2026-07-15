@@ -7,20 +7,14 @@ import fs from 'node:fs';
 import resolveMissingImages from './src/plugins/resolve-missing-images.mjs';
 import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
 
-// 포스트는 전부 .mdx(데모를 컴포넌트로 인라인하기 위함). Astro 7 에서 remark 플러그인의
-// 정식(비deprecated) 설정 경로는 markdown.processor: unified(...) 하나이며
-// (markdown.remarkPlugins·mdx({remarkPlugins}) 는 둘 다 deprecated), @astrojs/mdx 가
-// 이 processor 의 플러그인을 그대로 상속한다. 따라서 플러그인은 processor 한 곳에만 둔다.
+// remark 플러그인은 markdown.processor 한 곳에만 선언 (mdx 가 상속).
+// Astro 7 정식 경로는 processor: unified(...) 하나 — remarkPlugins·mdx({remarkPlugins}) 는 deprecated.
 const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls];
 
 const SITE = 'https://1up.md';
 
-// dev 전용: Pagefind 검색 인덱스는 빌드 산출물(dist/pagefind)에만 존재한다. astro dev 는
-// dist 를 서빙하지 않으므로, /pagefind/* 요청을 dist/pagefind 의 실제 파일로 직접 응답하는
-// 미들웨어를 붙인다. public/ 을 오염시키지 않고(빌드 산출물은 dist 에 그대로 둠), prod 에선
-// 정적 자산으로 배포되므로 이 미들웨어는 불필요 → apply: 'serve'. 인덱스는 마지막 `pnpm run
-// build`(= astro build && pagefind --site dist --force-language en) 시점의 스냅샷이라,
-// 최신화하려면 재빌드한다.
+// dev 전용: astro dev 는 dist 를 안 서빙하므로 /pagefind/* 를 dist/pagefind 실파일로 직접 응답.
+// prod 는 정적 자산 배포라 불필요 → apply: 'serve'. 인덱스는 마지막 build 스냅샷 (최신화하려면 재빌드).
 function pagefindDevServer() {
   const dir = path.resolve('./dist/pagefind');
   const mime = {
@@ -61,8 +55,7 @@ export default defineConfig({
   image: {
     layout: 'none',
   },
-  // mdx 는 markdown 설정을 상속(extendMarkdownConfig 기본 true) — processor 의 remark
-  // 플러그인·shikiConfig 를 그대로 이어받으므로 mdx() 엔 옵션을 넘기지 않는다.
+  // mdx 는 markdown 설정 상속 (extendMarkdownConfig 기본 true) → 옵션 안 넘김.
   integrations: [mdx()],
   markdown: {
     processor: unified({ remarkPlugins }),
@@ -71,10 +64,8 @@ export default defineConfig({
     },
   },
   vite: {
-    // <ClientRouter />의 transitions 가상 모듈을 콜드 스타트에 미리 번들. Head.astro 의
-    // astro:transitions import 는 PROD 렌더 가드와 무관하게 dev 에서도 로드되는데, 초기 dep
-    // 스캔에는 안 잡혀 늦게 발견된다 → 재최적화 → 리로드(그리고 이미 로드된 모듈의 504
-    // Outdated Optimize Dep)로 이어지므로 미리 포함시켜 막는다.
+    // ClientRouter 의 transitions 가상 모듈은 초기 dep 스캔에 안 잡혀 늦게 발견 →
+    // 재최적화·리로드(504 Outdated Optimize Dep) 유발. 콜드 스타트에 미리 번들해 차단.
     optimizeDeps: {
       include: [
         'astro/virtual-modules/transitions-router.js',

@@ -1,15 +1,11 @@
 /**
- * 포스트 본문의 raw HTML(mdast `html` 노드) 에서 상대 경로 src/href 를
- * 포스트 슬러그 기준 절대 경로로 변환한다. trailing slash 는 제거(전역
- * trailingSlash: 'never' 정책).
+ * 포스트 본문 raw HTML(`html` 노드)의 상대 src/href → 슬러그 절대 경로 (trailing slash 제거).
  *
- *   src/content/posts/2026-04-20.digital-sickness/index.mdx
- *     <img src="images/foo.png">   →   <img src="/digital-sickness/images/foo.png">
+ *   posts/2026-04-20.digital-sickness/index.mdx
+ *     <img src="images/foo.png">  →  <img src="/digital-sickness/images/foo.png">
  *
- * 주의: 포스트는 전부 MDX 라 저작자가 직접 쓴 raw HTML 은 JSX(mdxJsxElement)로
- * 파싱되어 `html` 노드가 아니므로 이 플러그인의 대상이 아니다. 실질적으로 이 플러그인은
- * [resolve-missing-images] 가 누락 이미지를 치환해 만든 `<img>` `html` 노드의 상대 src 를
- * 슬러그 절대 경로로 고치는 역할을 한다(그래서 그 플러그인보다 뒤에 등록).
+ * MDX 저작 raw HTML 은 JSX(mdxJsxElement)로 파싱돼 `html` 노드가 아니라 대상 아님.
+ * 실질은 [resolve-missing-images] 가 만든 `<img>` `html` 노드 src 를 고침 (그 뒤에 등록).
  */
 export default function resolvePostRelativeUrls() {
   const ABSOLUTE_OR_SCHEMED = /^(?:[a-z][a-z0-9+.-]*:|\/\/|\/|#)/i;

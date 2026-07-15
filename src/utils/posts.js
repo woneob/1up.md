@@ -3,10 +3,8 @@ import readingTime from 'reading-time';
 
 const POST_DIR_PATTERN = /^(\d{4}-\d{2}-\d{2})\.(.+)$/;
 
-// 콘텐츠 소스: draft 모드(`astro dev --mode draft`)는 gitignore된 content.draft/,
-// 그 외(dev/build)는 배포용 content/ 를 사용. import.meta.glob 은 패턴에 변수/
-// 템플릿 보간을 허용하지 않으므로(정적 리터럴만), prod/dev 글로브를 쌍으로 선언하고
-// pick() 으로 한 곳에서 고른다.
+// 콘텐츠 소스: draft 모드는 gitignore된 content.draft/, 그 외는 배포용 content/.
+// import.meta.glob 은 정적 리터럴만 허용 → prod/dev 글로브를 쌍으로 선언하고 pick() 으로 선택.
 const DRAFT = import.meta.env.MODE === 'draft';
 const pick = (prod, dev) => (DRAFT ? dev : prod);
 
@@ -14,8 +12,8 @@ const postModules = pick(
   import.meta.glob('/src/content/posts/*/index.mdx', { eager: true }),
   import.meta.glob('/src/content.draft/posts/*/index.mdx', { eager: true }),
 );
-// MDX 모듈은 .md 와 달리 rawContent()/compiledContent() 를 export 하지 않으므로,
-// readingTime 계산용 원문을 ?raw 로 별도 로드한다(키는 postModules 와 동일한 파일 경로).
+// MDX 는 rawContent()/compiledContent() 를 export 안 함 → readingTime 용 원문을
+// ?raw 로 별도 로드 (키는 postModules 와 동일한 파일 경로).
 const postRawModules = pick(
   import.meta.glob('/src/content/posts/*/index.mdx', { eager: true, query: '?raw', import: 'default' }),
   import.meta.glob('/src/content.draft/posts/*/index.mdx', { eager: true, query: '?raw', import: 'default' }),
@@ -65,15 +63,14 @@ function loadPosts() {
   return cachedPosts;
 }
 
-// 기본은 unlisted(프론트매터 `unlisted: true`) 포스트를 제외 — 목록·태그·RSS·llms 등
-// getAllPosts()를 거치는 모든 연결점에서 자동으로 빠진다. includeUnlisted=true 는
-// 페이지 자체는 생성해야 하는 [slug].astro 의 getStaticPaths 전용.
+// 기본은 unlisted 포스트 제외 — 목록·태그·RSS·llms 등 getAllPosts() 를 거치는 모든 연결점에서
+// 자동으로 빠짐. includeUnlisted 는 페이지 생성이 필요한 [slug].astro getStaticPaths 전용.
 export function getAllPosts({ includeUnlisted = false } = {}) {
   const posts = loadPosts();
   return includeUnlisted ? posts : posts.filter(post => !post.frontmatter.unlisted);
 }
 
-// 직접 URL 접근용 — unlisted 여부와 무관하게 슬러그로 찾는다(상세 페이지는 항상 열람 가능).
+// 직접 URL 접근용 — unlisted 무관하게 슬러그로 조회 (상세는 항상 열람 가능).
 export function getPostBySlug(slug) {
   return loadPosts().find(post => post.slug === slug) ?? null;
 }

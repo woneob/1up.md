@@ -41,14 +41,14 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
 <script>
   const PAGEFIND_URL = '/pagefind/pagefind.js';
-  // 인덱스는 `pagefind --force-language en` 으로 en 단일 언어로 생성됨(package.json).
-  // 런타임의 기본 동작은 <html lang> 감지(→ 'ko')라 여기서도 같은 값을 넘겨 인덱스를 명시 선택한다.
+  // 인덱스는 en 단일 언어로 생성(package.json 의 --force-language en).
+  // 런타임 기본은 <html lang> 감지(→ 'ko')라 en 을 명시해 인덱스 선택.
   const PAGEFIND_LANGUAGE = 'en';
 
   let pagefind = null;
   let pagefindError = false;
-  // 검색 호출 세대 토큰: 더 최신 runSearch 가 시작되면 이전(비동기 진행 중) 호출의 렌더를 무효화.
-  // 특히 빈 쿼리로 즉시 return 할 때, 이미 떠 있던 debouncedSearch 가 뒤늦게 resolve 해 결과를 덮는 것을 막음.
+  // 검색 호출 세대 토큰: 최신 runSearch 가 시작되면 이전(진행 중) 호출의 렌더 무효화.
+  // 빈 쿼리로 즉시 return 할 때 뒤늦게 resolve 한 debouncedSearch 가 결과를 덮는 것 방지.
   let searchSeq = 0;
 
   // Pagefind 런타임을 한 번만 로드(모듈 스코프 캐시). 빌드 산출물(/pagefind)이 없으면 실패로 표시.

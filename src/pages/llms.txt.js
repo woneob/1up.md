@@ -2,7 +2,7 @@ import site from '~/data/site.config.yml';
 import { getAllPosts } from '~/utils/posts.js';
 
 const MAX_WIDTH = 120;
-// 한글 등 전각 문자는 모노스페이스에서 2컬럼을 차지하므로 시각적 폭으로 계산한다.
+// 전각 문자(한글 등)는 모노스페이스에서 2컬럼 → 시각적 폭으로 계산.
 const WIDE = /[ᄀ-ᅟ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]/u;
 
 function displayWidth(str) {
@@ -11,9 +11,8 @@ function displayWidth(str) {
   return width;
 }
 
-// 컬럼 수로 강제 절단하지 않고, 문장 끝(. ? ! …)이나 쉼표 등 의미 경계에서만
-// 끊는다. 경계 사이 조각을 maxWidth까지 욕심껏 채우되, 한 조각이 폭을 넘겨도
-// 그 안에서는 쪼개지 않는다.
+// 강제 절단 없이 문장 끝(. ? ! …)·쉼표 등 의미 경계에서만 개행.
+// 경계 조각을 maxWidth 까지 채우되, 한 조각이 폭을 넘겨도 그 안에서는 안 쪼갬.
 function wrapLines(text, maxWidth) {
   const chunks = text.trim().split(/(?<=[.?!…,]["'”’)\]]*)\s+/u);
   const lines = [];
@@ -44,7 +43,7 @@ export async function GET(context) {
       `- 등록일: ${date}`,
     ];
     if (frontmatter.description) {
-      // "- 요약: "(8컬럼) 다음 줄들은 같은 폭으로 들여써서 본문 시작 위치에 맞춘다.
+      // "- 요약: "(8컬럼) 이후 줄은 같은 폭으로 들여써 본문 시작 위치에 정렬.
       const indent = ' '.repeat(8);
       const desc = wrapLines(frontmatter.description, MAX_WIDTH - 8)
         .map((line, i) => (i === 0 ? `- 요약: ${line}` : `${indent}${line}`))
