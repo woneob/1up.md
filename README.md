@@ -133,6 +133,23 @@ import SomeDemo from './demos/some-demo/index.astro';
 - [src/data/site.config.yml](src/data/site.config.yml) — 사이트명, 태그라인, 언어, 저자, SNS, 테마 색상 등의 단일 출처. `manifest.json`, `robots.txt`, `humans.txt`, `rss.xml` 모두 이 YAML 에서 파생됨.
 - [src/data/navigation.json](src/data/navigation.json) — 헤더 내비게이션. 항목의 `label` 은 body 의 `page-{label}` id 로도 사용된다.
 
+## 브라우저 지원 (CSS 타깃)
+
+CSS vendor prefix 주입·문법 다운레벨은 빌드 시 Lightning CSS(Vite 기본 CSS minifier)가 처리하며, 그 대상 브라우저는 [browser-targets.yml](browser-targets.yml) 에서 온다. [astro.config.mjs](astro.config.mjs) 가 이 파일을 읽어 `vite.build.cssTarget` 으로 넘긴다.
+
+- **생성**: `pnpm update:browsers` — [scripts/gen-browser-targets.mjs](scripts/gen-browser-targets.mjs) 가 ① caniuse-lite 데이터를 최신화하고, ② [package.json](package.json) 의 `browserslist` 쿼리를 브라우저별 **최소 버전**으로 추려 esbuild 타깃 문자열(`chrome109` 등)로 [browser-targets.yml](browser-targets.yml) 에 출력. **커밋 대상** — 빌드·dev 는 browserslist 를 돌리지 않고 이 파일만 참조(결정론적).
+- **쿼리**: `> 0.2% in KR`, `last 2 versions`, `not dead` (package.json `browserslist`).
+- **하한 강제**: 스크립트의 `MIN_VERSIONS` 로 특정 브라우저 하한을 올린다(구형 iOS 배제 → 출력 비대화 방지). 현재 `ios: 16.4`.
+- **제외**: `cssTarget` 이 인식하는 브라우저는 chrome·edge·firefox·safari·ios·opera·ie 뿐. samsung·and_chr 등은 자동 제외(Chromium 계열은 chrome 최소값이 커버).
+
+지원 브라우저 현황(최소 버전):
+
+| chrome | edge | firefox | safari | iOS | opera |
+| ------ | ---- | ------- | ------ | --- | ----- |
+| 109 | 148 | 151 | 26.3 | 16.4 | 127 |
+
+> dev(`astro dev`)는 CSS 를 minify 하지 않아 prefix 가 붙지 않는다. 실제 확인은 `pnpm run preview`(빌드 결과).
+
 ## 폰트
 
 본문은 [Pretendard](https://github.com/orioncactus/pretendard) 가변폰트를 서브셋한 **단일 파일** `public/fonts/PretendardVariable.subset.woff2`(약 365KB)를 사용한다. 원본 가변폰트(약 2MB)를 harfbuzz(`hb-subset`)로 다음과 같이 축소했다.

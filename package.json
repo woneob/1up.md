@@ -8,7 +8,8 @@
     "dev:draft": "node scripts/dev-with-search-index.mjs --draft",
     "build": "astro build && pagefind --site dist --force-language en",
     "build:draft": "astro build --mode draft && pagefind --site dist --force-language en",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "update:browsers": "node scripts/gen-browser-targets.mjs"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,11 @@
   "engines": {
     "node": ">=22.12.0"
   },
+  "browserslist": [
+    "> 0.2% in KR",
+    "last 2 versions",
+    "not dead"
+  ],
   "dependencies": {
     "astro": "7.0.3"
   },
@@ -33,6 +39,7 @@
     "@astrojs/markdown-remark": "7.2.0",
     "@astrojs/mdx": "7.0.2",
     "@rollup/plugin-yaml": "5.0.0",
+    "browserslist": "4.28.6",
     "pagefind": "1.5.2",
     "reading-time": "1.5.0",
     "sass": "1.100.0",

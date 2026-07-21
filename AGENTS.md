@@ -86,6 +86,16 @@ posts/2025-11-24.bulkhead-pattern/
 
 `@use` 모듈 Sass, 진입점 [global.scss](src/styles/global.scss). 브레이크포인트는 [_variables.scss](src/styles/_variables.scss) `$bp-content`(971px)·`$bp-mobile`(600px) 변수 — 하드코딩 금지.
 
+## 브라우저 지원 (CSS 타깃)
+
+CSS vendor prefix·문법 다운레벨은 빌드 시 Lightning CSS(Vite 기본 CSS minifier)가 처리. 대상은 [browser-targets.yml](browser-targets.yml) → [astro.config.mjs](astro.config.mjs)가 읽어 `vite.build.cssTarget`.
+
+- **[browser-targets.yml](browser-targets.yml)은 손대지 말 것 — 생성물.** `pnpm update:browsers`([scripts/gen-browser-targets.mjs](scripts/gen-browser-targets.mjs))로 재생성: caniuse-lite 갱신 → [package.json](package.json) `browserslist` 쿼리 → 브라우저별 최소 버전 → esbuild 타깃 문자열. 커밋 대상(빌드·dev 는 이 파일만 참조, 결정론적).
+- **하한**은 스크립트 `MIN_VERSIONS`(현재 `ios: 16.4`) — 구형 브라우저 배제로 출력 비대화 방지. 하한 조정은 여기서.
+- **함정 — minify 는 `build.cssTarget` 만 본다**: `css.lightningcss.targets`·`css.transformer:'lightningcss'` 는 minify 단계에서 `convertTargets(build.cssTarget)` 로 덮어써져 무효(Astro 가 `build.target: 'esnext'` 고정 → 빈 타깃 → prefix 제거). `css.lightningcss.targets` 로 우회 시도 금지.
+- **함정 — `cssTarget` 은 문자열 배열만**: `'esnext'`/`baseline-widely-available` 특수값·targets 객체 불가. 인식 브라우저는 chrome·edge·firefox·safari·ios·opera·ie 뿐(`ios_saf→ios`, samsung 등 미지원 → 스크립트가 제외).
+- **dev 는 prefix 안 붙음**(minify 안 함) → 확인은 `pnpm run preview`.
+
 ## preload / Early Hints
 
 폰트·CSS preload 를 **`_headers` `Link:` 응답 헤더로** 내보냄 — HTML `<link rel=preload>` 는 Cloudflare 가 103 승격 안 함(실측).
