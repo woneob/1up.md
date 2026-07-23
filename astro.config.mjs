@@ -13,6 +13,15 @@ const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls];
 
 const SITE = 'https://1up.md';
 
+// CSS vendor prefix·다운레벨 대상. pnpm update:browsers 로 생성(browserslist → esbuild 타깃).
+// 평평한 YAML 시퀀스(`- chrome109`) — 파서 없이 라인만 추림.
+const cssTarget = fs
+  .readFileSync(new URL('./browser-targets.yml', import.meta.url), 'utf8')
+  .split('\n')
+  .map((line) => line.trim())
+  .filter((line) => line.startsWith('- '))
+  .map((line) => line.slice(2).trim());
+
 // dev 전용: astro dev 는 dist 를 안 서빙하므로 /pagefind/* 를 dist/pagefind 실파일로 직접 응답.
 // prod 는 정적 자산 배포라 불필요 → apply: 'serve'. 인덱스는 마지막 build 스냅샷 (최신화하려면 재빌드).
 function pagefindDevServer() {
@@ -64,6 +73,10 @@ export default defineConfig({
     },
   },
   vite: {
+    // CSS minify(lightningcss)의 vendor prefix 주입·문법 다운레벨 대상 (browser-targets.json).
+    build: {
+      cssTarget,
+    },
     // ClientRouter 의 transitions 가상 모듈은 초기 dep 스캔에 안 잡혀 늦게 발견 →
     // 재최적화·리로드(504 Outdated Optimize Dep) 유발. 콜드 스타트에 미리 번들해 차단.
     optimizeDeps: {
