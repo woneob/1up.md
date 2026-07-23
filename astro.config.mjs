@@ -6,6 +6,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import resolveMissingImages from './src/plugins/resolve-missing-images.mjs';
 import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
+import browserCssTarget from './scripts/browser-css-target.mjs';
 
 // remark 플러그인은 markdown.processor 한 곳에만 선언 (mdx 가 상속).
 // Astro 7 정식 경로는 processor: unified(...) 하나 — remarkPlugins·mdx({remarkPlugins}) 는 deprecated.
@@ -13,14 +14,8 @@ const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls];
 
 const SITE = 'https://1up.md';
 
-// CSS vendor prefix·다운레벨 대상. pnpm update:browsers 로 생성(browserslist → esbuild 타깃).
-// 평평한 YAML 시퀀스(`- chrome109`) — 파서 없이 라인만 추림.
-const cssTarget = fs
-  .readFileSync(new URL('./browser-targets.yml', import.meta.url), 'utf8')
-  .split('\n')
-  .map((line) => line.trim())
-  .filter((line) => line.startsWith('- '))
-  .map((line) => line.slice(2).trim());
+// CSS vendor prefix·다운레벨 대상. 빌드 시 package.json browserslist → esbuild 타깃으로 변환.
+const cssTarget = browserCssTarget();
 
 // dev 전용: astro dev 는 dist 를 안 서빙하므로 /pagefind/* 를 dist/pagefind 실파일로 직접 응답.
 // prod 는 정적 자산 배포라 불필요 → apply: 'serve'. 인덱스는 마지막 build 스냅샷 (최신화하려면 재빌드).
@@ -73,7 +68,7 @@ export default defineConfig({
     },
   },
   vite: {
-    // CSS minify(lightningcss)의 vendor prefix 주입·문법 다운레벨 대상 (browser-targets.json).
+    // CSS minify(lightningcss)의 vendor prefix 주입·문법 다운레벨 대상 (browserslist 파생).
     build: {
       cssTarget,
     },

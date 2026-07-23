@@ -88,12 +88,11 @@ posts/2025-11-24.bulkhead-pattern/
 
 ## 브라우저 지원 (CSS 타깃)
 
-CSS vendor prefix·문법 다운레벨은 빌드 시 Lightning CSS(Vite 기본 CSS minifier)가 처리. 대상은 [browser-targets.yml](browser-targets.yml) → [astro.config.mjs](astro.config.mjs)가 읽어 `vite.build.cssTarget`.
+CSS vendor prefix·문법 다운레벨은 빌드 시 Lightning CSS(Vite 기본 CSS minifier)가 처리. 대상은 빌드 시 [package.json](package.json) `browserslist` → [scripts/browser-css-target.mjs](scripts/browser-css-target.mjs)가 브라우저별 최소 버전 esbuild 타깃 문자열로 변환 → [astro.config.mjs](astro.config.mjs)가 `vite.build.cssTarget` 주입. 생성·커밋 파일 없음.
 
-- **[browser-targets.yml](browser-targets.yml)은 손대지 말 것 — 생성물.** `pnpm update:browsers`([scripts/gen-browser-targets.mjs](scripts/gen-browser-targets.mjs))로 재생성: caniuse-lite 갱신 → [package.json](package.json) `browserslist` 쿼리 → 브라우저별 최소 버전 → esbuild 타깃 문자열. 커밋 대상(빌드·dev 는 이 파일만 참조, 결정론적).
-- **하한**은 스크립트 `MIN_VERSIONS`(현재 `ios: 16.4`) — 구형 브라우저 배제로 출력 비대화 방지. 하한 조정은 여기서.
-- **함정 — minify 는 `build.cssTarget` 만 본다**: `css.lightningcss.targets`·`css.transformer:'lightningcss'` 는 minify 단계에서 `convertTargets(build.cssTarget)` 로 덮어써져 무효(Astro 가 `build.target: 'esnext'` 고정 → 빈 타깃 → prefix 제거). `css.lightningcss.targets` 로 우회 시도 금지.
-- **함정 — `cssTarget` 은 문자열 배열만**: `'esnext'`/`baseline-widely-available` 특수값·targets 객체 불가. 인식 브라우저는 chrome·edge·firefox·safari·ios·opera·ie 뿐(`ios_saf→ios`, samsung 등 미지원 → 스크립트가 제외).
+- **caniuse-lite 갱신**: `pnpm update:browserslist`(`update-browserslist-db`) — 브라우저 통계 최신화. 빌드가 이 데이터로 browserslist 해석.
+- **주의 — minify 는 `build.cssTarget` 만 본다**: `css.lightningcss.targets`·`css.transformer:'lightningcss'` 는 minify 단계에서 `convertTargets(build.cssTarget)` 로 덮어써져 무효(Astro 가 `build.target: 'esnext'` 고정 → 빈 타깃 → prefix 제거). `css.lightningcss.targets` 로 우회 시도 금지.
+- **주의 — `cssTarget` 은 문자열 배열만**: `'esnext'`/`baseline-widely-available` 특수값·targets 객체 불가. 인식 브라우저는 `chrome`, `edge`, `firefox`, `safari`, `ios`(iOS Safari), `opera`, `ie` 뿐(`ios_saf→ios`, `samsung`(Samsung Internet)·`and_chr`(Chrome for Android) 등 미지원 → 스크립트가 제외). 이름 정의: [browserslist](https://github.com/browserslist/browserslist#browsers) 입력 / [esbuild target](https://esbuild.github.io/api/#target) 출력.
 - **dev 는 prefix 안 붙음**(minify 안 함) → 확인은 `pnpm run preview`.
 
 ## preload / Early Hints
