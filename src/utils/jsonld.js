@@ -1,9 +1,8 @@
 import site from '~/data/site.config.yml';
 
-// JSON-LD 노드 그래프 빌더. site.config.yml 을 단일 출처로 사용(다른 엔드포인트와 동일).
-// 모든 페이지는 baseGraph()(WebSite + Person + 로고 ImageObject)를 깔고, 페이지별
-// 노드를 @id 참조로 연결한다. Google 은 페이지 단위로 평가하므로 참조가 같은 페이지
-// 안에서 풀리도록 베이스 그래프를 전 페이지에 주입한다(DefaultLayout → Head).
+// JSON-LD 노드 그래프 빌더. site.config.yml 단일 출처.
+// 전 페이지에 baseGraph()(WebSite+Person+로고) 주입 → 페이지별 노드를 @id 참조로 연결
+// (Google 은 페이지 단위 평가라 참조가 같은 페이지 안에서 풀려야 함).
 
 const SITE_URL = site.url.replace(/\/$/, '');
 const LOCALE = site.language.locale.replace('_', '-'); // ko_KR → ko-KR
@@ -14,7 +13,7 @@ const ID = {
   logo: `${SITE_URL}/#logo`,
 };
 
-// 본문 메타용 텍스트 정규화: YAML 블록 스칼라/폴디드로 들어온 줄바꿈을 공백으로.
+// YAML 블록 스칼라 줄바꿈을 공백으로 정규화.
 const oneLine = (str) => String(str ?? '').replace(/\s*\n\s*/g, ' ').trim();
 
 function socialUrls() {
@@ -78,15 +77,14 @@ function breadcrumbNode(pageUrl, items) {
   };
 }
 
-// 커버 이미지 절대 URL. import 된 에셋의 .src 는 루트 상대(`/_astro/...`)라 도메인 결합.
+// 커버 절대 URL. import 에셋 .src 는 루트 상대(`/_astro/...`)라 도메인 결합.
 function absoluteCover(cover) {
   if (!cover?.src) return null;
   return /^https?:/.test(cover.src) ? cover.src : `${SITE_URL}${cover.src}`;
 }
 
-// 완결적 BlogPosting 노드. 목록(blogPost/hasPart)·상세가 같은 @id 로 이 노드를 공유하므로
-// image/author/headline 등 권장 필드를 항상 채운다(리치 결과 경고 방지). detail=true 면
-// 상세 페이지 전용 필드(isPartOf, mainEntityOfPage)도 포함.
+// 완결적 BlogPosting 노드. 목록·상세가 같은 @id 로 공유하므로 권장 필드를 항상 채움
+// (리치 결과 경고 방지). detail=true 면 상세 전용 필드(isPartOf, mainEntityOfPage) 포함.
 function blogPostingNode(post, { detail = false } = {}) {
   const fm = post.frontmatter;
   const pageUrl = `${SITE_URL}/${post.slug}`;
@@ -100,7 +98,7 @@ function blogPostingNode(post, { detail = false } = {}) {
     headline: oneLine(fm.title),
     ...(fm.description ? { description: oneLine(fm.description) } : {}),
     datePublished: fm.pubDate,
-    // dateModified: updatedDate 가 없으면 datePublished 와 동일 값.
+    // updatedDate 없으면 datePublished 와 동일.
     dateModified: fm.updatedDate || fm.pubDate,
     author: { '@id': ID.person },
     publisher: { '@id': ID.person },
@@ -158,9 +156,8 @@ export function profileGraph() {
   ];
 }
 
-// 태그 목록/태그별 페이지 — CollectionPage + BreadcrumbList.
-// posts: getAllPosts() 형태의 글 객체 배열(hasPart 용). breadcrumb: [{name,item?}, ...]
-// (마지막 항목은 현재 페이지, item 생략).
+// 태그 목록/태그별 — CollectionPage + BreadcrumbList.
+// posts: hasPart 용 글 객체 배열. breadcrumb: 마지막 항목이 현재 페이지(item 생략).
 export function collectionGraph({ url, name, description, posts = [], breadcrumb = [] }) {
   const pageUrl = url.replace(/\/$/, '');
   return [

@@ -7,9 +7,9 @@ function escapeXml(value) {
     .replace(/>/g, '&gt;');
 }
 
-// 포스트의 최종 수정일 — JSON-LD dateModified 와 동일 규칙(updatedDate, 없거나 비면 pubDate).
-// 프론트매터는 'ISO + 타임존 오프셋' 문자열(예: 2025-10-20T14:10:12+09:00). toISOString()은 UTC(Z)
-// 로 바꿔버리므로, 오프셋을 보존하려고 유효성만 확인하고 원본 문자열을 그대로 출력한다(W3C Datetime).
+// 포스트 최종 수정일 — JSON-LD dateModified 와 동일 규칙(updatedDate ?? pubDate).
+// 프론트매터는 'ISO + 오프셋'(예: 2025-10-20T14:10:12+09:00). toISOString() 은 UTC(Z)로
+// 바꾸므로, 오프셋 보존 위해 유효성만 확인하고 원본 문자열 그대로 출력(W3C Datetime).
 function postLastmod({ frontmatter }) {
   const raw = frontmatter.updatedDate || frontmatter.pubDate;
   if (!raw) return undefined;
@@ -25,9 +25,8 @@ function latest(dates) {
 }
 
 export async function GET(context) {
-  // getAllPosts() 가 unlisted 를 기본 필터링하므로 사이트맵 제외가 한 번에 처리됨
-  // (인덱스·태그·RSS·llms.txt 와 동일 단일 출처). 데모(/<slug>/demos/<demo>)는 라우트로
-  // 열거하지 않으니 자연히 제외 — noindex standalone 페이지라 색인 대상이 아님.
+  // getAllPosts() 가 unlisted 를 기본 필터링 → 사이트맵 제외가 한 번에 처리
+  // (인덱스·태그·RSS·llms.txt 와 동일 단일 출처). 데모는 포스트에 인라인돼 독립 라우트 없음.
   const posts = getAllPosts();
 
   const tags = new Set();
@@ -35,8 +34,8 @@ export async function GET(context) {
 
   const siteLatest = latest(posts.map(postLastmod)); // 전체 포스트 중 최신 수정일
 
-  // { path, lastmod } 목록. lastmod 는 신뢰할 변경 신호가 있을 때만 — 없으면 <lastmod> 생략
-  // (about 처럼 날짜 신호가 없는 페이지에 빌드시각 등을 박으면 lastmod 신뢰도만 떨어뜨림).
+  // { path, lastmod } 목록. lastmod 는 신뢰할 변경 신호 있을 때만 — 없으면 생략
+  // (about 처럼 날짜 신호 없는 페이지에 빌드시각을 박으면 신뢰도만 저하).
   const entries = [
     { path: '', lastmod: siteLatest },     // 홈 = 최신 포스트 기준
     { path: 'about' },                     // 신뢰할 날짜 없음 → 생략

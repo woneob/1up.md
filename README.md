@@ -14,9 +14,10 @@
 ## 명령어
 
 ```bash
-pnpm run dev      # astro dev — http://localhost:4321
-pnpm run build    # astro build — /dist 정적 빌드
-pnpm run preview  # 빌드 결과 미리보기
+pnpm run dev                 # astro dev — http://localhost:4321
+pnpm run build               # astro build — /dist 정적 빌드
+pnpm run preview             # 빌드 결과 미리보기
+pnpm run update:browserslist # caniuse-lite 통계 갱신 (CSS 타깃 산출용)
 ```
 
 ## 경로 별칭
@@ -132,6 +133,44 @@ import SomeDemo from './demos/some-demo/index.astro';
 
 - [src/data/site.config.yml](src/data/site.config.yml) — 사이트명, 태그라인, 언어, 저자, SNS, 테마 색상 등의 단일 출처. `manifest.json`, `robots.txt`, `humans.txt`, `rss.xml` 모두 이 YAML 에서 파생됨.
 - [src/data/navigation.json](src/data/navigation.json) — 헤더 내비게이션. 항목의 `label` 은 body 의 `page-{label}` id 로도 사용된다.
+
+## 브라우저 지원 (CSS 타깃)
+
+CSS 벤더 프리픽스 주입·문법 다운레벨링은 빌드 시 [Lightning CSS](https://github.com/parcel-bundler/lightningcss)(Vite 기본 CSS minifier)가 처리한다. 대상 브라우저는 [package.json](package.json) 의 `browserslist` 쿼리로 정의하며, 빌드 시 [scripts/browser-css-target.mjs](scripts/browser-css-target.mjs) 가 그 결과를 브라우저별 최소 버전 esbuild 타깃 문자열(예: `chrome109`)로 추려 [astro.config.mjs](astro.config.mjs) 가 이를 `vite.build.cssTarget` 으로 전달한다.
+
+**쿼리** — [package.json](package.json) 의 `browserslist` 정의.
+
+| 쿼리 | 의미 |
+| --- | --- |
+| `> 0.2% in KR` | 한국에서 점유율 0.2% 이상인 브라우저 |
+| `last 2 versions` | 각 브라우저의 최신 2개 버전 |
+| `not dead` | 24개월간 공식 지원·업데이트가 끊긴 브라우저 제외 |
+| `not ios_saf < 16.4` | iOS Safari 16.4 미만 제외 |
+
+**caniuse-lite 갱신** — `pnpm update:browserslist`(`update-browserslist-db`)로 브라우저 통계를 최신화한다. 빌드가 이 데이터로 browserslist 를 해석하므로 주기적 실행 필요.
+
+**지원 브라우저** — `cssTarget` 이 인식하는 브라우저만 프리픽스 대상이 되고, 나머지는 자동 제외.  
+식별자는 browserslist 입력 이름 기준.
+
+| 브라우저 식별자 | 브라우저 이름 | 지원 | 비고 |
+| --- | --- | --- | --- |
+| `chrome` | Chrome | O | |
+| `edge` | Edge | O | |
+| `firefox` | Firefox | O | |
+| `safari` | Safari (macOS) | O | |
+| `ios_saf` | iOS Safari | O | esbuild 타깃 `ios` 로 매핑 |
+| `opera` | Opera | O | |
+| `ie` | Internet Explorer | O | |
+| `and_chr` | Chrome for Android | X | |
+| `and_ff` | Firefox for Android | X | |
+| `samsung` | Samsung Internet | X | |
+| `op_mob` | Opera Mobile | X | |
+| `op_mini` | Opera Mini | X | |
+| `android` | Android Browser | X | |
+
+이름 정의: [browserslist](https://github.com/browserslist/browserslist#browsers)(입력 코드) · [esbuild target](https://esbuild.github.io/api/#target)(출력 타깃).
+
+> dev(`astro dev`)는 CSS 를 minify 하지 않아 prefix 가 붙지 않는다. 실제 확인은 빌드 결과에 적용됨.
 
 ## 폰트
 
