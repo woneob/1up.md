@@ -1128,7 +1128,7 @@ button.shareBtn {
   @media (max-width: $bp-mobile) {
     width: 100%;
     max-width: none;
-    height: 100%;
+    height: 100dvh;
     max-height: none;
     margin: 0;
     border-radius: 0;
