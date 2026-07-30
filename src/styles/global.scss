@@ -773,13 +773,8 @@ button.shareBtn {
 
     .postContent {
       margin-top: rem(20);
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) rem(208);
-      grid-auto-flow: dense;
-      column-gap: rem(20);
 
       .postCover {
-        grid-column: 1 / -1;
         margin: 0 0 rem(40);
 
         img {
@@ -790,70 +785,7 @@ button.shareBtn {
         }
       }
 
-      .postToc {
-        grid-column: 2;
-        align-self: stretch;
-
-        > nav {
-          position: sticky;
-          top: rem(20);
-          max-height: calc(100vh - #{rem(40)});
-          overflow-y: auto;
-        }
-
-        .postTocTitle {
-          margin: 0 0 rem(10);
-          font-size: rem(11);
-          font-weight: 500;
-          letter-spacing: .08em;
-          text-transform: uppercase;
-          color: #999;
-        }
-
-        ol {
-          margin: 0;
-          padding: 0;
-          list-style: none;
-          border-left: 1px solid #ddd;
-        }
-
-        .postTocItem {
-          a {
-            display: block;
-            margin-left: -1px;
-            padding: rem(4) rem(10);
-            border-left: 2px solid transparent;
-            font-size: rem(13);
-            line-height: 1.4;
-            text-decoration: none;
-            color: #888;
-            word-break: keep-all;
-
-            &:hover {
-              color: #333;
-            }
-
-            &[aria-current] {
-              color: #222;
-              border-left-color: #333;
-              font-weight: 500;
-            }
-          }
-
-          &.postTocItem--h3 a {
-            padding-left: rem(22);
-            font-size: rem(12);
-            color: #999;
-
-            &[aria-current] {
-              color: #333;
-            }
-          }
-        }
-      }
-
       .postBody {
-        grid-column: 1;
         min-width: 0;
         font-size: 17px;
 
@@ -968,20 +900,6 @@ button.shareBtn {
             font-weight: 400;
             color: #666;
           }
-        }
-      }
-
-      @media (max-width: $bp-content) {
-        grid-template-columns: minmax(0, 1fr);
-        row-gap: rem(24);
-
-        // 단일 컬럼에서는 목차가 본문 위에 쌓일 뿐 길잡이 역할을 못 하므로 숨김
-        .postToc {
-          display: none;
-        }
-
-        .postBody {
-          grid-column: 1;
         }
       }
     }

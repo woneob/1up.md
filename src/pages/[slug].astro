@@ -3,7 +3,6 @@ import { Picture } from 'astro:assets';
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
-import PostToc from '~/components/PostToc.astro';
 import LikeButton from '~/components/LikeButton.astro';
 import ShareButton from '~/components/ShareButton.astro';
 import { getAllPosts, getPostBySlug } from '~/utils/posts.js';
@@ -25,7 +24,6 @@ const { title, description, pubDate, updatedDate, tags, robots, unlisted } = pos
 const multilineTitle = title.includes('\n');
 const Content = post.module.default;
 const stats = post.stats;
-const headings = typeof post.module.getHeadings === 'function' ? post.module.getHeadings() : [];
 const cover = post.cover;
 
 const jsonLd = postGraph(post);
@@ -68,7 +66,6 @@ const jsonLd = postGraph(post);
           />
         </figure>
       )}
-      <PostToc {headings} />
       <div class="postBody">
         <Content />
       </div>
