@@ -80,6 +80,9 @@ export default defineConfig({
         'astro/virtual-modules/transitions-types.js',
         'astro/virtual-modules/transitions-events.js',
         'astro/virtual-modules/transitions-swap-functions.js',
+        // PhotoSwipe 본체는 클릭 시점 동적 import → 같은 이유로 미리 번들.
+        'photoswipe',
+        'photoswipe/lightbox',
       ],
     },
     resolve: {
