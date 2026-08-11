@@ -179,7 +179,7 @@ CSS 벤더 프리픽스 주입·문법 다운레벨링은 빌드 시 [Lightning 
 - **글리프**: [Adobe-KR-9](https://github.com/adobe-type-tools/Adobe-KR) Supplement 0(상용 현대 한글 2,780자) + 라틴·문장부호만 유지
 - **굵기 축**: `wght` 를 400–600 으로 제한 (400 / 500 / 600 사용)
 
-[_font.scss](src/styles/_font.scss) 에서 `font-weight: 400 600` 한 블록으로 선언하며, 세 굵기를 이 한 파일이 모두 커버한다. 초기 렌더 속도를 위해 [_headers](src/pages/[...headers].js) 의 preload(Early Hints) 대상에 포함된다. 메인 포스트 순번용 숫자는 Outfit-ExtraLight 서브셋을 별도로 쓴다.
+[_font.scss](src/styles/_font.scss) 에서 `font-weight: 400 600` 한 블록으로 선언하며, 세 굵기를 이 한 파일이 모두 커버한다. 초기 렌더 속도를 위해 [_headers](src/pages/[...headers].js) 의 preload(Early Hints) 대상에 포함된다.
 
 ## SPA 전환
 

@@ -40,9 +40,9 @@ body {
 
   .siteHeaderInner {
     display: flex;
-    max-width: rem(980);
+    max-width: rem(760);
     margin: 0 auto;
-    padding: rem(6) rem(20);
+    padding: rem(6) 0;
     justify-content: space-between;
     align-items: center;
   }
@@ -54,19 +54,15 @@ body {
     font-size: rem(13);
     color: #888;
 
-    .brand,
-    .tagline {
-      display: inline-block;
-      font-size: rem(13);
-    }
-
     .brand {
+      display: inline-block;
+
       a {
         font-weight: 600;
-        font-size: rem(17);
+        font-size: rem(15);
         color: #666;
 
-        &::before {
+        &::after {
           content: "";
           position: absolute;
           inset: 0;
@@ -75,10 +71,12 @@ body {
     }
 
     .tagline {
+      display: inline-block;
       display: none;
+      font-size: rem(14);
 
       &::before {
-        content: "\00B7";
+        content: "-";
       }
     }
   }
@@ -126,7 +124,7 @@ body {
           display: block;
           text-decoration: none;
           padding: 4px 6px;
-          font-size: 12px;
+          font-size: 13px;
           color: #666;
           text-transform: capitalize;
 
@@ -148,7 +146,7 @@ body {
           border: 0;
           background: none;
           font: inherit;
-          font-size: 12px;
+          font-size: 13px;
           color: #666;
           text-transform: capitalize;
           cursor: pointer;
@@ -173,12 +171,11 @@ body {
       }
     }
   }
-
 }
 
 .siteBody {
   box-sizing: content-box;
-  max-width: rem(940);
+  max-width: rem(760);
   margin: 0 auto;
   padding: rem(10) rem(16);
 
@@ -195,13 +192,14 @@ body {
     margin: rem(40) 0 rem(56);
   }
 
-  &::before {
-    content: "";
+  h1 {
     display: block;
     width: rem(120);
     height: rem(120);
-    margin: 0 auto 8px;
-    background: #ddd;
+    overflow: clip;
+    margin: 0 auto rem(8);
+    text-indent: 100%;
+    white-space: nowrap;
     background: url("/images/1up.png") center /contain no-repeat;
     image-rendering: pixelated;
     border-radius: 50%;
@@ -209,26 +207,14 @@ body {
     @media (max-width: $bp-content) {
       width: rem(80);
       height: rem(80);
-      margin: 0 auto 4px;
+      margin: 0 auto rem(4);
     }
-  }
-
-  h1 {
-    display: inline-block;
-    font-size: rem(14);
-    font-weight: 600;
-    word-break: keep-all;
   }
 
   .tagline {
     display: inline-block;
-    font-size: rem(14);
+    font-size: rem(15);
     color: #666;
-
-    &::before {
-      content: "-";
-      margin: 0 rem(2);
-    }
   }
 }
 
@@ -292,7 +278,7 @@ body {
       margin-top: rem(16);
       font-size: rem(15);
       overflow: hidden;
-      color: #666;
+      color: #777;
     }
   }
 
@@ -528,69 +514,45 @@ button.shareBtn {
 
 #page-posts {
   .postCard--indexed {
+    // 제목·메타는 좌측, 좋아요는 우측에서 제목+메타 두 줄에 세로로 걸침.
+    // 본문요약·태그는 그 아래 전체 폭으로 깔림.
     .cardGrid {
       margin-top: rem(16);
       display: grid;
-      grid-template-columns: rem(140) minmax(0, 1fr) rem(140);
-      column-gap: rem(20);
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: rem(10);
+      // 요소마다 간격이 달라 균일 row-gap 대신 각 항목의 margin-top으로 개별 제어
+      row-gap: 0;
+      align-items: start;
     }
 
-    .cardSeq {
-      grid-column: 1;
-    }
-
-    .cardSeqNum {
-      display: block;
-      font-family: 'Outfit', sans-serif;
-      font-weight: 200;
-      font-size: rem(35);
-      line-height: 1;
-      color: #777;
-    }
-
-    // .postMeta 를 그대로 써서 상세 페이지와 동일한 아이콘(published/readingTime)을 재사용,
-    // 다만 좁은 컬럼에 맞춰 세로 1줄씩 배치
-    .cardSeqMeta {
-      margin: rem(16) 0 0;
-      flex-direction: column;
-
-      .postMetaItem {
-        margin-right: 0;
-
-        + .postMetaItem {
-          margin-top: rem(4);
-        }
-      }
-
-      dd {
-        line-height: 1.5;
-      }
-    }
-
+    // 제목·본문요약·태그는 .cardMain 안에 묶여 있으므로 박스를 풀어(display:contents)
+    // 그리드 직속 항목으로 만든 뒤 명시적 row/column 으로 재배치
     .cardMain {
-      grid-column: 2;
-      min-width: 0;
-
-      h2 {
-        margin-top: 0;
-      }
-
-      .postBody {
-        margin-top: rem(12);
-      }
-
-      // 태그는 본문요약 하단으로 이동, 가로 배치(.postTags 기본값) + 윗여백만 부여
-      .postTags {
-        margin-top: rem(14);
-      }
+      display: contents;
     }
 
+    .cardMain h2 {
+      grid-column: 1;
+      grid-row: 1;
+      margin-top: 0;
+      font-size: rem(26);
+    }
+
+    // .postMeta 를 그대로 써서 상세 페이지와 동일한 아이콘(published/readingTime)을 재사용
+    .cardSeqMeta {
+      grid-column: 1;
+      grid-row: 2;
+      margin: 0;
+      column-gap: rem(10);
+    }
+
+    // 우측 컬럼에서 제목+메타(1~2행)에 걸쳐 상단 정렬
     .cardLike {
-      grid-column: 3;
-      min-width: 0;
-      display: flex;
-      justify-content: right;
-      align-items: flex-start;
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      align-self: start;
+      justify-content: flex-end;
       padding-top: rem(5);
 
       button {
@@ -599,55 +561,13 @@ button.shareBtn {
       }
     }
 
-    @media (max-width: $bp-content) {
-      // 제목·메타는 좌측, 좋아요는 우측에서 제목+메타 두 줄에 세로로 걸침.
-      // 본문요약·태그는 그 아래 전체 폭으로 깔림.
-      .cardGrid {
-        grid-template-columns: minmax(0, 1fr) auto;
-        column-gap: rem(10);
-        // 요소마다 간격이 달라 균일 row-gap 대신 각 항목의 margin-top으로 개별 제어
-        row-gap: 0;
-        align-items: start;
-      }
+    .cardMain .postBody {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      margin-top: rem(16);
 
-      // 제목·본문요약·태그는 .cardMain 안에 묶여 있으므로 박스를 풀어(display:contents)
-      // 그리드 직속 항목으로 만든 뒤 명시적 row/column 으로 재배치
-      .cardMain {
-        display: contents;
-      }
-
-      .cardMain h2 {
-        grid-column: 1;
-        grid-row: 1;
-        font-size: rem(24);
-      }
-
-      .cardSeq {
-        grid-column: 1;
-        grid-row: 2;
-        display: flex;
-        align-items: baseline;
-        column-gap: rem(16);
-      }
-
-      // 우측 컬럼에서 제목+메타(1~2행)에 걸쳐 상단 정렬
-      .cardLike {
-        grid-column: 2;
-        grid-row: 1 / span 2;
-        align-self: start;
-        justify-content: flex-end;
-        margin-top: 0;
-        padding-top: rem(5);
-      }
-
-      .cardMain .postBody {
-        grid-column: 1 / -1;
-        grid-row: 3;
-        margin-top: rem(16);
-      }
-
-      // 1단 레이아웃에서는 본문요약을 최대 3줄로 제한, 초과 시 말줄임표
-      .cardMain .postBody p {
+      // 본문요약을 최대 3줄로 제한, 초과 시 말줄임표
+      p {
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 3;
@@ -655,26 +575,12 @@ button.shareBtn {
         overflow: hidden;
         margin: 0;
       }
+    }
 
-      .cardMain .postTags {
-        grid-column: 1 / -1;
-        grid-row: 4;
-        margin-top: rem(12);
-      }
-
-      .cardSeqNum {
-        display: none;
-      }
-
-      .cardSeqMeta {
-        margin: 0;
-        flex-direction: row;
-        column-gap: rem(10);
-
-        .postMetaItem + .postMetaItem {
-          margin-top: 0;
-        }
-      }
+    .cardMain .postTags {
+      grid-column: 1 / -1;
+      grid-row: 4;
+      margin-top: rem(12);
     }
 
     // 모바일에서는 메타가 줄바꿈되기 쉬워 카드 날짜·조회수를 축약형으로 표시
@@ -704,8 +610,8 @@ button.shareBtn {
     .postHeader {
       h1 {
         padding: rem(80) 0 rem(60);
-        font-size: rem(42);
-        font-weight: 500;
+        font-size: rem(38);
+        font-weight: 400;
         line-height: 1.3;
         word-break: keep-all;
         text-align: center;
@@ -787,7 +693,10 @@ button.shareBtn {
 
       .postBody {
         min-width: 0;
-        font-size: 17px;
+        font-size: rem(17);
+        text-align: justify;
+        text-wrap: pretty;
+        word-break: keep-all;
 
         :first-child {
           margin-top: 0;
@@ -880,6 +789,7 @@ button.shareBtn {
         }
 
         img {
+          display: block;
           max-width: 100%;
           height: auto;
         }
@@ -900,6 +810,18 @@ button.shareBtn {
             font-weight: 400;
             color: #666;
           }
+        }
+
+        cite {
+          font-style: normal;
+          color: #666;
+        }
+
+        a {
+          color: #006fd5;
+          text-decoration: underline currentcolor rem(1);
+          text-decoration-skip-ink: auto;
+          text-underline-offset: rem(2);
         }
       }
     }

@@ -19,9 +19,6 @@ export async function GET() {
     `  ${fontPreload('PretendardVariable.subset.woff2')}`,
     `  Link: <${globalCssUrl}>; rel=preload; as=style`,
     '',
-    '/',
-    `  ${fontPreload('Outfit-ExtraLight.subset.woff2')}`,
-    '',
   ].join('\n');
 
   return new Response(body, {
