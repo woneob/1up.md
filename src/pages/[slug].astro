@@ -5,6 +5,7 @@ import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
 import LikeButton from '~/components/LikeButton.astro';
 import ShareButton from '~/components/ShareButton.astro';
+import ImageLightbox from '~/components/ImageLightbox.astro';
 import { getAllPosts, getPostBySlug } from '~/utils/posts.js';
 import { postGraph } from '~/utils/jsonld.js';
 
@@ -71,4 +72,5 @@ const jsonLd = postGraph(post);
       </div>
     </div>
   </article>
+  <ImageLightbox />
 </DefaultLayout>

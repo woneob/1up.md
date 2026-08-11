@@ -1,0 +1,112 @@
+---
+// 본문 이미지 라이트박스 (상세 전용). PhotoSwipe v5 + Astro 접합부.
+import 'photoswipe/style.css';
+---
+
+<script>
+  import PhotoSwipeLightbox from 'photoswipe/lightbox';
+
+  const GALLERY = '.postContent .postBody';
+  const CHILDREN = 'img:not(a img):not([data-no-zoom])';
+
+  let lightbox = null;
+  let savedState = null;
+  let pushed = false;
+  let popping = false;
+
+  // 착지할 엔트리의 state 를 null 로 비워야 ClientRouter onPopState 가 즉시 return(같은 URL 재네비게이션 방지).
+  function pushHistoryEntry() {
+    if (pushed) return;
+    savedState = history.state;
+    history.replaceState(null, '');
+    history.pushState(savedState, '', location.href);
+    pushed = true;
+  }
+
+  function restoreHistoryState() {
+    if (savedState !== null && history.state === null) history.replaceState(savedState, '');
+    savedState = null;
+  }
+
+  function onClose() {
+    if (!pushed) return;
+    pushed = false;
+    popping = true;
+    history.back();
+  }
+
+  addEventListener('popstate', () => {
+    if (popping) {
+      popping = false;
+      restoreHistoryState();
+      return;
+    }
+    if (!pushed) return;
+    pushed = false;
+    restoreHistoryState();
+    lightbox?.pswp?.close();
+  });
+
+  function create() {
+    const gallery = document.querySelector(GALLERY);
+    const images = gallery ? [...gallery.querySelectorAll(CHILDREN)] : [];
+    if (!images.length) return;
+
+    lightbox = new PhotoSwipeLightbox({
+      gallery: GALLERY,
+      children: CHILDREN,
+      pswpModule: () => import('photoswipe'),
+      bgOpacity: 0.4,
+      wheelToZoom: true,
+      counter: false,
+      history: false, // 해시 기반 → ClientRouter popstate 와 충돌
+      errorMsg: '이미지를 불러올 수 없습니다.',
+      closeTitle: '닫기',
+      zoomTitle: '확대/축소',
+      arrowPrevTitle: '이전 이미지',
+      arrowNextTitle: '다음 이미지',
+    });
+
+    // 마크다운 이미지는 <a> 래핑이 없어 PhotoSwipe 가 src·크기를 못 읽음.
+    lightbox.addFilter('domItemData', (itemData, el) => {
+      const src = el.currentSrc || el.src;
+      itemData.src = src;
+      itemData.msrc = src;
+      itemData.width = el.naturalWidth || Number(el.getAttribute('width')) || 0;
+      itemData.height = el.naturalHeight || Number(el.getAttribute('height')) || 0;
+      itemData.alt = el.alt;
+      return itemData;
+    });
+
+    lightbox.on('beforeOpen', pushHistoryEntry);
+    lightbox.on('close', onClose);
+    lightbox.init();
+
+    // <img> 는 기본 포커스·엔터 동작이 없음
+    images.forEach((img, index) => {
+      img.classList.add('is-zoomable');
+      img.tabIndex = 0;
+      img.setAttribute('role', 'button');
+      img.setAttribute('aria-haspopup', 'dialog');
+      img.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        e.preventDefault();
+        lightbox?.loadAndOpen(index);
+      });
+    });
+  }
+
+  function destroy() {
+    lightbox?.destroy();
+    lightbox = null;
+  }
+
+  if (import.meta.env.PROD) {
+    document.addEventListener('astro:before-swap', destroy);
+    document.addEventListener('astro:page-load', create);
+  } else if (document.readyState !== 'loading') {
+    create();
+  } else {
+    document.addEventListener('DOMContentLoaded', create);
+  }
+</script>

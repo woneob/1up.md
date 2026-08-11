@@ -152,6 +152,18 @@ trailing slash 없음. [astro.config.mjs](astro.config.mjs) `trailingSlash:'neve
 
 [ShareButton](src/components/ShareButton.astro) — `navigator.share` 우선 → 미지원 시 `clipboard.writeText` + "복사됨" 피드백. 순수 클라이언트. `astro:page-load` 재바인딩(`dataset.bound`).
 
+## 이미지 라이트박스
+
+[ImageLightbox](src/components/ImageLightbox.astro) — 상세 페이지 전용. **PhotoSwipe v5**(`photoswipe` devDependency)가 확대·핀치/휠 줌·팬·포커스 트랩·모프 담당. 컴포넌트는 Astro 접합부만 채움.
+
+- **대상** = `.postContent .postBody img:not(a img):not([data-no-zoom])`(인덱스 카드 발췌도 `.postBody` 라 상세로 한정). 데모 이미지 포함 → 빼려면 `data-no-zoom`.
+- **마크다운 이미지는 `<a>` 래핑이 없음** → PhotoSwipe 가 src·크기를 못 읽음. `domItemData` 필터에서 `naturalWidth/Height`(미로드 시 `width`/`height` 속성)로 채움. `getThumbBounds` 는 `element.matches('img')` 라 `<img>` 자체를 썸네일로 인식 → 모프는 그대로 동작.
+- **키보드**: `<a>` 가 아니라 기본 포커스가 없음 → 런타임에 `tabindex`·`role="button"` 부여 + Enter/Space 로 `loadAndOpen(index)`.
+- **`history: false` 필수**: PhotoSwipe 기본 히스토리는 해시 기반이라 ClientRouter `popstate` 가 같은 URL 로 SPA 재네비게이션. 뒤로가기 닫기는 직접 처리 — 열 때 엔트리 1개 push 하되 **착지할 엔트리의 `state` 를 `null` 로 비워야** ClientRouter `onPopState` 가 즉시 return. 닫을 때 `replaceState` 로 원복.
+- **재바인딩**: `astro:before-swap` → `destroy()`, `astro:page-load` → 재생성(dev 는 `DOMContentLoaded` 1회).
+- CSS 는 frontmatter `import 'photoswipe/style.css'` → 상세 페이지 CSS 에만. 본체는 클릭 시 동적 import(별도 청크) — dev 콜드 스타트 재최적화 방지로 `photoswipe`·`photoswipe/lightbox` 를 [astro.config.mjs](astro.config.mjs) `optimizeDeps.include` 에 등재.
+- 뷰어 DOM 은 런타임 생성 → Pagefind 인덱스 무관.
+
 ## 검색 (Pagefind)
 
 빌드된 `dist/` HTML 후처리(런타임 서버 없음). 헤더 `search` → 현재 페이지 모달([SearchDialog](src/components/SearchDialog.astro), `<dialog closedby="any">`).
