@@ -132,9 +132,35 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
     input.setAttribute('aria-expanded', 'true');
   }
 
+  // body 스크롤 고정
+  let lockedScrollY = 0;
+
+  function lockScroll() {
+    lockedScrollY = window.scrollY;
+    const body = document.body;
+    body.style.position = 'fixed';
+    body.style.top = `-${lockedScrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+  }
+
+  function unlockScroll() {
+    const body = document.body;
+    body.style.position = '';
+    body.style.top = '';
+    body.style.left = '';
+    body.style.right = '';
+    body.style.width = '';
+    // html{scroll-behavior:smooth} 이 걸려 있어 기본 scrollTo 는 복원이 애니메이션됨(닫을 때
+    // 스크롤 과정 노출) → instant 로 순간 복원.
+    window.scrollTo({ top: lockedScrollY, left: 0, behavior: 'instant' });
+  }
+
   function openSearch() {
     const dialog = document.getElementById('searchDialog');
     if (!dialog || dialog.open) return;
+    lockScroll();
     dialog.showModal();
     dialog.querySelector('[data-search-input]')?.focus();
   }
@@ -200,10 +226,11 @@ const clearIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
       });
     }
 
-    // 닫으면 입력/결과 초기화.
+    // 닫으면 입력/결과 초기화 + 배경 스크롤 락 해제.
     dialog.addEventListener('close', () => {
       input.value = '';
       runSearch('', input, results);
+      unlockScroll();
     });
   }
 
