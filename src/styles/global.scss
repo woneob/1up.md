@@ -1148,3 +1148,14 @@ button.shareBtn {
 html:has(.searchDialog[open]) {
   overflow: hidden;
 }
+
+
+// 라이트박스 썸네일 어포던스 (ImageLightbox.astro). 뷰어 스타일은 photoswipe/style.css.
+.postBody img.is-zoomable {
+  cursor: zoom-in;
+
+  &:focus-visible {
+    outline: 2px solid #666;
+    outline-offset: 3px;
+  }
+}
