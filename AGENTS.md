@@ -127,6 +127,7 @@ trailing slash 없음. [astro.config.mjs](astro.config.mjs) `trailingSlash:'neve
 - 플러그인 2개([astro.config.mjs](astro.config.mjs) `remarkPlugins`, **순서 고정**):
   1. [resolve-missing-images](src/plugins/resolve-missing-images.mjs) — 존재 않는 파일의 `![](path)` 를 raw `<img>` 로 치환(안 하면 rolldown import 실패로 빌드 사망, 초안에서 흔함). 존재 이미지는 무수정.
   2. [resolve-post-relative-urls](src/plugins/resolve-post-relative-urls.mjs) — mdast `html` 노드의 상대 src/href 를 슬러그 절대 경로화(위가 만든 `<img>` 대상, 반드시 뒤). MDX 저작 raw HTML 은 JSX 라 대상 아님.
+- **smartypants**: `unified({ smartypants })` 에 선언(top-level `markdown.smartypants` 는 deprecated). 값은 [retext-smartypants](https://github.com/retextjs/retext-smartypants#options) 옵션 그대로. 현재 `quotes:false`·`backticks:false` — 따옴표·아포스트로피 곧은 문자 유지. `dashes`(`--`→`—`)·`ellipses`(`...`→`…`)는 켜둠.
 - **본문 H1 금지**: 제목은 frontmatter `title`(상세가 h1 렌더). 본문은 `## ` 부터.
 
 ## JSON-LD
