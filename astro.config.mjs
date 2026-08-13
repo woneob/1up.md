@@ -59,10 +59,15 @@ export default defineConfig({
   image: {
     layout: 'none',
   },
-  // mdx 는 markdown 설정 상속 (extendMarkdownConfig 기본 true) → 옵션 안 넘김.
   integrations: [mdx()],
   markdown: {
-    processor: unified({ remarkPlugins }),
+    processor: unified({
+      remarkPlugins,
+      smartypants: {
+        quotes: false,
+        backticks: false
+      }
+    }),
     shikiConfig: {
       theme: 'nord',
     },
