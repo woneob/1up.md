@@ -14,6 +14,7 @@ Claude Code 작업 가이드. **1up.md** 정적 블로그 — Astro 7, Cloudflar
 
 - **버전 단일 출처** = [package.json](package.json) `packageManager: "pnpm@11.13.0"`. pnpm 이 스스로 이 필드를 읽어 해당 버전으로 실행(로컬·Cloudflare 동일). 업그레이드는 이 값만 수정.
 - `PNPM_VERSION`·corepack·devEngines 미사용(버전 출처를 `packageManager` 하나로).
+- **쿨다운** = [pnpm-workspace.yaml](pnpm-workspace.yaml) `minimumReleaseAge: 10080`(분=7일, v11 기본 1440 상향). 전이 의존성 포함 공개 7일 미만 버전 설치 제외. 우회는 `--config.minimumReleaseAge=0`.
 
 > ### ⚠️ 빠지면 빌드 깨짐
 > - **`allowBuilds`** ([pnpm-workspace.yaml](pnpm-workspace.yaml)): pnpm 은 build/postinstall 기본 차단. `@parcel/watcher`·`esbuild`·`sharp` 허용 필요. 설정 자리는 이 파일(package.json `pnpm` 필드는 v11 무시).
