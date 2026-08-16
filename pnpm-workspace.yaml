@@ -1,5 +1,8 @@
 engineStrict: true
 
+# 설치 쿨다운. 분 단위 = 7일(기본 1440)
+minimumReleaseAge: 10080
+
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
