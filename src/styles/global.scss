@@ -695,8 +695,11 @@ button.shareBtn {
         min-width: 0;
         font-size: rem(17);
         text-align: justify;
-        text-wrap: pretty;
         word-break: keep-all;
+
+        @media (max-width: $bp-mobile) {
+          text-align: left;
+        }
 
         :first-child {
           margin-top: 0;
