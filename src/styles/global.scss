@@ -780,6 +780,50 @@ button.shareBtn {
           }
         }
 
+        table {
+          display: block;
+          width: 100%;
+          margin: rem(24) 0 rem(32);
+          overflow-x: auto;
+          border-collapse: collapse;
+          font-size: rem(16);
+          text-align: left;
+        }
+
+        th,
+        td {
+          padding: rem(10) rem(16);
+          border-bottom: 1px solid #eee;
+          vertical-align: top;
+
+          &:first-child {
+            padding-left: 0;
+          }
+
+          &:last-child {
+            padding-right: 0;
+          }
+
+          @media (max-width: $bp-mobile) {
+            padding: rem(8) rem(12);
+            font-size: rem(14);
+          }
+        }
+
+        th {
+          border-bottom-color: #888;
+          font-weight: 500;
+          color: #222;
+        }
+
+        td {
+          color: #555;
+        }
+
+        tbody tr:hover {
+          background-color: #fafafa;
+        }
+
         small {
           font-size: 80%;
           color: #666;
