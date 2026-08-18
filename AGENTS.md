@@ -86,6 +86,14 @@ posts/2025-11-24.bulkhead-pattern/
 
 `@use` 모듈 Sass, 진입점 [global.scss](src/styles/global.scss). 브레이크포인트는 [_variables.scss](src/styles/_variables.scss) `$bp-content`(971px)·`$bp-mobile`(600px) 변수 — 하드코딩 금지.
 
+### 외부 링크 표시
+
+상세 본문(`.postContent .postBody`) 링크가 외부면 `::after` ↗ 아이콘(mask + `currentColor`). **시각 표시 전용 — `target="_blank"`·`rel` 부여 없음.**
+
+- 판별: `[href^="http"]` 전부. 내부 링크는 루트 절대 경로(`/slug`)로만 작성 — 본문에 자체 도메인 절대 URL 금지(쓰면 외부로 표시됨).
+- 자동 제외: `:not(:has(img, picture, video, svg, iframe))` — 이미지 등 블록 요소를 감싼 링크.
+- 수동 제외: `data-no-external-icon`(라이트박스 `data-no-zoom` 과 같은 결).
+
 ## 브라우저 지원 (CSS 타깃)
 
 CSS vendor prefix·문법 다운레벨은 빌드 시 Lightning CSS(Vite 기본 CSS minifier)가 처리. 대상은 빌드 시 [package.json](package.json) `browserslist` → [scripts/browser-css-target.mjs](scripts/browser-css-target.mjs)가 브라우저별 최소 버전 esbuild 타깃 문자열로 변환 → [astro.config.mjs](astro.config.mjs)가 `vite.build.cssTarget` 주입. 생성·커밋 파일 없음.
