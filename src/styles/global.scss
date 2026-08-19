@@ -883,6 +883,28 @@ button.shareBtn {
           color: #666;
         }
 
+        // 외부 링크 표시 — 링크 텍스트 우측에 ↗ 아이콘. 새 창 열기는 하지 않음(시각 표시 전용).
+        // 대상: http(s) 스킴 전부. 내부 링크는 루트 절대 경로(/slug)로만 쓰므로 도메인 판별 불필요.
+        // 제외 1: 이미지·미디어를 감싼 블록형 링크 — :has() 로 자동 판별.
+        // 제외 2: 수동 opt-out — data-no-external-icon (라이트박스 data-no-zoom 과 같은 결).
+        a[href^="http"]:not([data-no-external-icon]):not(:has(img, picture, video, svg, iframe)) {
+          &::after {
+            content: "";
+            display: inline-block;
+            width: 0.75em;
+            height: 0.75em;
+            margin-left: rem(2);
+            background-color: currentColor;
+            mask: url("/images/postIcons/postIcon_externalLink.svg") center / contain no-repeat;
+
+            // 고대비 모드는 background-color 를 Canvas 로 덮어써 아이콘이 사라짐.
+            // 강제 조정만 끄면 링크에서 상속한 currentColor(LinkText/VisitedText)로 그려짐.
+            @media (forced-colors: active) {
+              forced-color-adjust: none;
+            }
+          }
+        }
+
         img {
           max-width: 100%;
           height: auto;
