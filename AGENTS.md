@@ -14,10 +14,12 @@ Claude Code 작업 가이드. **1up.md** 정적 블로그 — Astro 7, Cloudflar
 
 - **버전 단일 출처** = [package.json](package.json) `packageManager: "pnpm@11.13.0"`. pnpm 이 스스로 이 필드를 읽어 해당 버전으로 실행(로컬·Cloudflare 동일). 업그레이드는 이 값만 수정.
 - `PNPM_VERSION`·corepack·devEngines 미사용(버전 출처를 `packageManager` 하나로).
+- **쿨다운** = [pnpm-workspace.yaml](pnpm-workspace.yaml) `minimumReleaseAge: 10080`(분=7일, v11 기본 1440 상향). 전이 의존성 포함 공개 7일 미만 버전 설치 제외. 우회는 `--config.minimumReleaseAge=0`.
 
 > ### ⚠️ 빠지면 빌드 깨짐
 > - **`allowBuilds`** ([pnpm-workspace.yaml](pnpm-workspace.yaml)): pnpm 은 build/postinstall 기본 차단. `@parcel/watcher`·`esbuild`·`sharp` 허용 필요. 설정 자리는 이 파일(package.json `pnpm` 필드는 v11 무시).
 > - **`sharp` 직접 devDependency 선언**: 없으면 Astro 가 전이 sharp resolve 못 해 `MissingSharp`. 삭제 금지.
+> - **쿨다운 vs lockfile**: `minimumReleaseAge` 는 resolve 뿐 아니라 **기존 lockfile 검증에도 적용**. 쿨다운 안쪽 버전이 lockfile 에 있으면 `--frozen-lockfile` 이 `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` 로 실패 → Cloudflare 빌드 사망. 의존성 갱신은 쿨다운 켠 상태로 `pnpm update` (그래야 lockfile 에 쿨다운 통과 버전만 들어감). 이미 걸렸으면 해당 버전이 7일 될 때까지 대기하거나 lockfile 재해석.
 
 ## 명령어
 
