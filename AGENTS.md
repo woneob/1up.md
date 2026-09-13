@@ -88,6 +88,10 @@ posts/2025-11-24.bulkhead-pattern/
 
 `@use` 모듈 Sass, 진입점 [global.scss](src/styles/global.scss). 브레이크포인트는 [_variables.scss](src/styles/_variables.scss) `$bp-content`(971px)·`$bp-mobile`(600px) 변수 — 하드코딩 금지.
 
+- **자동 주입** = [astro.config.mjs](astro.config.mjs) `vite.css.preprocessorOptions.scss.additionalData`. `_variables.scss`·`_functions.scss` 를 전 진입점(`.scss` + `<style lang="scss">`)에 `@use as *` → `$bp-*`·`rem()` 선언 없이 사용.
+- **주입은 CSS 출력 없는 모듈만** — `global.scss` 류 추가 시 스타일 블록마다 전역 CSS 중복 출력.
+- 수동 `@use` 는 `~/styles/...` 별칭 경로(Vite `resolve.alias` 해석). 주입과 중복돼도 무해.
+
 ### 외부 링크 표시
 
 상세 본문(`.postContent .postBody`) 링크가 외부면 `::after` ↗ 아이콘(mask + `currentColor`). **시각 표시 전용 — `target="_blank"`·`rel` 부여 없음.**
