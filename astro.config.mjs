@@ -77,6 +77,14 @@ export default defineConfig({
     build: {
       cssTarget,
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          // 전 SCSS 진입점에 자동 주입. CSS 출력 없는 모듈만 (아니면 블록마다 중복 출력).
+          additionalData: '@use "~/styles/variables" as *; @use "~/styles/functions" as *;',
+        },
+      },
+    },
     // ClientRouter 의 transitions 가상 모듈은 초기 dep 스캔에 안 잡혀 늦게 발견 →
     // 재최적화·리로드(504 Outdated Optimize Dep) 유발. 콜드 스타트에 미리 번들해 차단.
     optimizeDeps: {
