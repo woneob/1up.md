@@ -924,6 +924,14 @@ button.shareBtn {
             color: #666;
           }
         }
+
+        // 인라인·블록 코드 모두 Jetendard(고정폭). 단일 웨이트라 400 고정.
+        // 본문 17px 기준 상대 16px(16/17em) — 고정폭이 커 보이는 걸 완화.
+        code {
+          font-family: 'Jetendard', monospace;
+          font-weight: 400;
+          font-size: calc(16 / 17 * 1em);
+        }
       }
 
       @media (max-width: $bp-content) {

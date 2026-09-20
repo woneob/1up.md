@@ -13,3 +13,13 @@
   font-weight: 200;
   src: url('/fonts/Outfit-ExtraLight.subset.woff2') format('woff2');
 }
+
+// Jetendard(JetBrains Mono + Pretendard) — code 전용 한글 지원 고정폭.
+// Regular 단일 웨이트. Pretendard 서브셋과 동일 글리프 커버리지로 서브셋(약 210KB)
+// → preload 제외·swap 으로 지연 로드.
+@font-face {
+  font-family: 'Jetendard';
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Jetendard-Regular.subset.woff2') format('woff2');
+}

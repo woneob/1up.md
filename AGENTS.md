@@ -116,6 +116,7 @@ CSS vendor prefix·문법 다운레벨은 빌드 시 Lightning CSS(Vite 기본 C
 - [[...headers].js](src/pages/[...headers].js)가 `dist/_headers` 생성(`_` 시작이라 페이지 스캔 제외, catch-all 로 `_headers` 하나만). `public/_headers` 불가(CSS 해시 담아야 함).
 - CSS: `import globalCssUrl from '~/styles/global.scss?url'` 로 컴파일 해시 URL 을 preload+stylesheet 양쪽에 같은 모듈로 참조([Head.astro](src/components/Head.astro)) → 항상 일치 + [SPA 전환](#spa-전환) 시 유지.
 - 폰트: Pretendard 가변 서브셋 단일 woff2(전 경로), Outfit-ExtraLight 는 홈만. `@font-face` 익명 CORS 라 `crossorigin` 필수. [_font.scss](src/styles/_font.scss)는 `font-weight: 400 600` 한 블록으로 400/500/600 커버(용량은 축 범위로 결정).
+- **Jetendard**(code 전용 고정폭, [_font.scss](src/styles/_font.scss)): Pretendard 서브셋과 **동일 글리프 커버리지로 서브셋**(약 210KB). `.postBody code`(인라인·블록)에만 적용, 본문 17px 대비 `16/17em`. **preload 제외** — 코드는 크리티컬 패스 아니라 `font-display: swap` 으로 지연 로드(여기 헤더에 넣지 말 것). 재현: fontkit 로 `PretendardVariable.subset.woff2` cmap 추출 → subset-font(harfbuzz)로 동일 유니코드 집합 서브셋.
 
 **검증**: `chrome://net-export` 의 `...EARLY_HINTS... → 103`. curl·Node http2 프로브는 false negative — 쓰지 말 것.
 
