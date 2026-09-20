@@ -183,6 +183,12 @@ CSS 벤더 프리픽스 주입·문법 다운레벨링은 빌드 시 [Lightning 
 
 [_font.scss](src/styles/_font.scss) 에서 `font-weight: 400 600` 한 블록으로 선언하며, 세 굵기를 이 한 파일이 모두 커버한다. 초기 렌더 속도를 위해 [_headers](src/pages/[...headers].js) 의 preload(Early Hints) 대상에 포함된다. 메인 포스트 순번용 숫자는 Outfit-ExtraLight 서브셋을 별도로 쓴다.
 
+코드(`code`)는 한글을 지원하는 고정폭 폰트 **Jetendard**(JetBrains Mono + Pretendard) Regular 을 쓴다. 위 Pretendard 서브셋과 **동일한 글리프 커버리지**로 서브셋해 `public/fonts/Jetendard-Regular.subset.woff2`(약 210KB, 원본 약 1.7MB)로 축소했다.
+
+- **서브셋 재현**: [fontkit](https://github.com/foliojs/fontkit) 으로 `PretendardVariable.subset.woff2` 의 유니코드 집합을 추출한 뒤, [subset-font](https://github.com/papandreou/subset-font)(harfbuzz)로 Jetendard 에 같은 집합을 서브셋한다. Jetendard 원본에 없는 5자(`― ‧ ₩ ★ ☆`)는 표현 불가라 `monospace` 로 폴백된다.
+- **적용**: [global.scss](src/styles/global.scss) `.postBody code`(인라인·블록). 본문 17px 대비 `16/17em`.
+- **preload 제외**: 코드는 크리티컬 패스가 아니므로 preload 하지 않고 `font-display: swap` 으로 지연 로드한다.
+
 ## SPA 전환
 
 [src/components/Head.astro](src/components/Head.astro) 의 `<ClientRouter />` (astro:transitions) 가 페이지 간 전환을 처리한다. 헤더 (`<Logo>`, `<Navigation>`) 는 `transition:persist` 로 지정되어 재마운트로 인한 플리커링이 발생하지 않는다.
