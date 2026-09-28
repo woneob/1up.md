@@ -23,7 +23,7 @@
   "license": "UNLICENSED",
   "private": true,
   "homepage": "https://1up.md",
-  "packageManager": "pnpm@11.27.1",
+  "packageManager": "pnpm@12.5.1",
   "engines": {
     "node": ">=22.12.0"
   },
