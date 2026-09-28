@@ -40,9 +40,10 @@ body {
 
   .siteHeaderInner {
     display: flex;
+    box-sizing: content-box;
     max-width: rem(760);
     margin: 0 auto;
-    padding: rem(6) 0;
+    padding: rem(6) rem(16);
     justify-content: space-between;
     align-items: center;
   }
@@ -59,7 +60,7 @@ body {
 
       a {
         font-weight: 600;
-        font-size: rem(15);
+        font-size: rem(18);
         color: #666;
 
         &::after {
@@ -719,11 +720,11 @@ button.shareBtn {
         }
 
         h2 {
-          font-size: rem(28);
+          font-size: rem(30);
         }
 
         h3 {
-          font-size: rem(24);
+          font-size: rem(25);
         }
 
         h4 {
@@ -780,12 +781,20 @@ button.shareBtn {
           }
         }
 
+        figcaption.references {
+          font-size: 80%;
+          color: #666;
+        }
+
         table {
           display: block;
           width: 100%;
           margin: rem(24) 0 rem(32);
           overflow-x: auto;
           border-collapse: collapse;
+          border-width: rem(1) 0;
+          border-color: #ccc;
+          border-style: solid;
           font-size: rem(16);
           text-align: left;
         }
@@ -824,6 +833,12 @@ button.shareBtn {
           background-color: #fafafa;
         }
 
+        .fixedTable {
+          table {
+            table-layout: fixed;
+          }
+        }
+
         small {
           font-size: 80%;
           color: #666;
@@ -835,22 +850,23 @@ button.shareBtn {
           color: #222;
         }
 
-        // 외부 링크 표시 — 링크 텍스트 우측에 ↗ 아이콘. 새 창 열기는 하지 않음(시각 표시 전용).
-        // 대상: http(s) 스킴 전부. 내부 링크는 루트 절대 경로(/slug)로만 쓰므로 도메인 판별 불필요.
-        // 제외 1: 이미지·미디어를 감싼 블록형 링크 — :has() 로 자동 판별.
-        // 제외 2: 수동 opt-out — data-no-external-icon (라이트박스 data-no-zoom 과 같은 결).
+        hr {
+          border-width: 1px 0 0;
+          border-style: solid;
+          border-color: #ccc;
+          margin: rem(10) 0;
+        }
+
         a[href^="http"]:not([data-no-external-icon]):not(:has(img, picture, video, svg, iframe)) {
           &::after {
             content: "";
             display: inline-block;
             width: 0.75em;
             height: 0.75em;
-            margin-left: rem(2);
+            margin-inline: rem(2);
             background-color: currentColor;
             mask: url("/images/postIcons/postIcon_externalLink.svg") center / contain no-repeat;
 
-            // 고대비 모드는 background-color 를 Canvas 로 덮어써 아이콘이 사라짐.
-            // 강제 조정만 끄면 링크에서 상속한 currentColor(LinkText/VisitedText)로 그려짐.
             @media (forced-colors: active) {
               forced-color-adjust: none;
             }
@@ -869,15 +885,25 @@ button.shareBtn {
         }
 
         ruby {
-          font-weight: 500;
+          font-weight: 600;
 
           rt {
             display: inline;
             font-size: 80%;
             vertical-align: text-top;
-            margin-left: rem(2);
+            margin-left: rem(3);
             font-weight: 400;
-            color: #666;
+            color: #767676;
+          }
+
+          &.blockRuby {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+
+            rt {
+              margin: 0;
+            }
           }
         }
 
