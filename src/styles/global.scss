@@ -40,9 +40,10 @@ body {
 
   .siteHeaderInner {
     display: flex;
-    max-width: rem(980);
+    box-sizing: content-box;
+    max-width: rem(760);
     margin: 0 auto;
-    padding: rem(6) rem(20);
+    padding: rem(6) rem(16);
     justify-content: space-between;
     align-items: center;
   }
@@ -54,19 +55,15 @@ body {
     font-size: rem(13);
     color: #888;
 
-    .brand,
-    .tagline {
-      display: inline-block;
-      font-size: rem(13);
-    }
-
     .brand {
+      display: inline-block;
+
       a {
-        font-weight: 500;
-        font-size: rem(16);
+        font-weight: 600;
+        font-size: rem(18);
         color: #666;
 
-        &::before {
+        &::after {
           content: "";
           position: absolute;
           inset: 0;
@@ -75,10 +72,12 @@ body {
     }
 
     .tagline {
+      display: inline-block;
       display: none;
+      font-size: rem(14);
 
       &::before {
-        content: "\00B7";
+        content: "-";
       }
     }
   }
@@ -126,7 +125,7 @@ body {
           display: block;
           text-decoration: none;
           padding: 4px 6px;
-          font-size: 12px;
+          font-size: 13px;
           color: #666;
           text-transform: capitalize;
 
@@ -148,7 +147,7 @@ body {
           border: 0;
           background: none;
           font: inherit;
-          font-size: 12px;
+          font-size: 13px;
           color: #666;
           text-transform: capitalize;
           cursor: pointer;
@@ -173,12 +172,11 @@ body {
       }
     }
   }
-
 }
 
 .siteBody {
   box-sizing: content-box;
-  max-width: rem(940);
+  max-width: rem(760);
   margin: 0 auto;
   padding: rem(10) rem(16);
 
@@ -195,13 +193,14 @@ body {
     margin: rem(40) 0 rem(56);
   }
 
-  &::before {
-    content: "";
+  h1 {
     display: block;
     width: rem(120);
     height: rem(120);
-    margin: 0 auto 8px;
-    background: #ddd;
+    overflow: clip;
+    margin: 0 auto rem(8);
+    text-indent: 100%;
+    white-space: nowrap;
     background: url("/images/1up.png") center /contain no-repeat;
     image-rendering: pixelated;
     border-radius: 50%;
@@ -209,25 +208,14 @@ body {
     @media (max-width: $bp-content) {
       width: rem(80);
       height: rem(80);
-      margin: 0 auto 4px;
+      margin: 0 auto rem(4);
     }
-  }
-
-  h1 {
-    display: inline-block;
-    font-size: rem(13);
-    font-weight: 500;
-    word-break: keep-all;
   }
 
   .tagline {
     display: inline-block;
-    font-size: rem(13);
+    font-size: rem(15);
     color: #666;
-
-    &::before {
-      content: "\00B7";
-    }
   }
 }
 
@@ -291,7 +279,7 @@ body {
       margin-top: rem(16);
       font-size: rem(15);
       overflow: hidden;
-      color: #666;
+      color: #777;
     }
   }
 
@@ -527,69 +515,45 @@ button.shareBtn {
 
 #page-posts {
   .postCard--indexed {
+    // 제목·메타는 좌측, 좋아요는 우측에서 제목+메타 두 줄에 세로로 걸침.
+    // 본문요약·태그는 그 아래 전체 폭으로 깔림.
     .cardGrid {
       margin-top: rem(16);
       display: grid;
-      grid-template-columns: rem(140) minmax(0, 1fr) rem(140);
-      column-gap: rem(20);
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: rem(10);
+      // 요소마다 간격이 달라 균일 row-gap 대신 각 항목의 margin-top으로 개별 제어
+      row-gap: 0;
+      align-items: start;
     }
 
-    .cardSeq {
-      grid-column: 1;
-    }
-
-    .cardSeqNum {
-      display: block;
-      font-family: 'Outfit', sans-serif;
-      font-weight: 200;
-      font-size: rem(35);
-      line-height: 1;
-      color: #777;
-    }
-
-    // .postMeta 를 그대로 써서 상세 페이지와 동일한 아이콘(published/readingTime)을 재사용,
-    // 다만 좁은 컬럼에 맞춰 세로 1줄씩 배치
-    .cardSeqMeta {
-      margin: rem(16) 0 0;
-      flex-direction: column;
-
-      .postMetaItem {
-        margin-right: 0;
-
-        + .postMetaItem {
-          margin-top: rem(4);
-        }
-      }
-
-      dd {
-        line-height: 1.5;
-      }
-    }
-
+    // 제목·본문요약·태그는 .cardMain 안에 묶여 있으므로 박스를 풀어(display:contents)
+    // 그리드 직속 항목으로 만든 뒤 명시적 row/column 으로 재배치
     .cardMain {
-      grid-column: 2;
-      min-width: 0;
-
-      h2 {
-        margin-top: 0;
-      }
-
-      .postBody {
-        margin-top: rem(12);
-      }
-
-      // 태그는 본문요약 하단으로 이동, 가로 배치(.postTags 기본값) + 윗여백만 부여
-      .postTags {
-        margin-top: rem(14);
-      }
+      display: contents;
     }
 
+    .cardMain h2 {
+      grid-column: 1;
+      grid-row: 1;
+      margin-top: 0;
+      font-size: rem(26);
+    }
+
+    // .postMeta 를 그대로 써서 상세 페이지와 동일한 아이콘(published/readingTime)을 재사용
+    .cardSeqMeta {
+      grid-column: 1;
+      grid-row: 2;
+      margin: 0;
+      column-gap: rem(10);
+    }
+
+    // 우측 컬럼에서 제목+메타(1~2행)에 걸쳐 상단 정렬
     .cardLike {
-      grid-column: 3;
-      min-width: 0;
-      display: flex;
-      justify-content: right;
-      align-items: flex-start;
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      align-self: start;
+      justify-content: flex-end;
       padding-top: rem(5);
 
       button {
@@ -598,55 +562,13 @@ button.shareBtn {
       }
     }
 
-    @media (max-width: $bp-content) {
-      // 제목·메타는 좌측, 좋아요는 우측에서 제목+메타 두 줄에 세로로 걸침.
-      // 본문요약·태그는 그 아래 전체 폭으로 깔림.
-      .cardGrid {
-        grid-template-columns: minmax(0, 1fr) auto;
-        column-gap: rem(10);
-        // 요소마다 간격이 달라 균일 row-gap 대신 각 항목의 margin-top으로 개별 제어
-        row-gap: 0;
-        align-items: start;
-      }
+    .cardMain .postBody {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      margin-top: rem(16);
 
-      // 제목·본문요약·태그는 .cardMain 안에 묶여 있으므로 박스를 풀어(display:contents)
-      // 그리드 직속 항목으로 만든 뒤 명시적 row/column 으로 재배치
-      .cardMain {
-        display: contents;
-      }
-
-      .cardMain h2 {
-        grid-column: 1;
-        grid-row: 1;
-        font-size: rem(24);
-      }
-
-      .cardSeq {
-        grid-column: 1;
-        grid-row: 2;
-        display: flex;
-        align-items: baseline;
-        column-gap: rem(16);
-      }
-
-      // 우측 컬럼에서 제목+메타(1~2행)에 걸쳐 상단 정렬
-      .cardLike {
-        grid-column: 2;
-        grid-row: 1 / span 2;
-        align-self: start;
-        justify-content: flex-end;
-        margin-top: 0;
-        padding-top: rem(5);
-      }
-
-      .cardMain .postBody {
-        grid-column: 1 / -1;
-        grid-row: 3;
-        margin-top: rem(16);
-      }
-
-      // 1단 레이아웃에서는 본문요약을 최대 3줄로 제한, 초과 시 말줄임표
-      .cardMain .postBody p {
+      // 본문요약을 최대 3줄로 제한, 초과 시 말줄임표
+      p {
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 3;
@@ -654,26 +576,12 @@ button.shareBtn {
         overflow: hidden;
         margin: 0;
       }
+    }
 
-      .cardMain .postTags {
-        grid-column: 1 / -1;
-        grid-row: 4;
-        margin-top: rem(12);
-      }
-
-      .cardSeqNum {
-        display: none;
-      }
-
-      .cardSeqMeta {
-        margin: 0;
-        flex-direction: row;
-        column-gap: rem(10);
-
-        .postMetaItem + .postMetaItem {
-          margin-top: 0;
-        }
-      }
+    .cardMain .postTags {
+      grid-column: 1 / -1;
+      grid-row: 4;
+      margin-top: rem(12);
     }
 
     // 모바일에서는 메타가 줄바꿈되기 쉬워 카드 날짜·조회수를 축약형으로 표시
@@ -703,8 +611,8 @@ button.shareBtn {
     .postHeader {
       h1 {
         padding: rem(80) 0 rem(60);
-        font-size: rem(42);
-        font-weight: 500;
+        font-size: rem(38);
+        font-weight: 400;
         line-height: 1.3;
         word-break: keep-all;
         text-align: center;
@@ -752,6 +660,11 @@ button.shareBtn {
       }
 
       @media (max-width: $bp-mobile) {
+        h1 {
+          padding: rem(64) 0 rem(44);
+          font-size: rem(36);
+        }
+
         .postHeaderBar {
           flex-direction: column;
           align-items: flex-start;
@@ -767,13 +680,8 @@ button.shareBtn {
 
     .postContent {
       margin-top: rem(20);
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) rem(140);
-      grid-auto-flow: dense;
-      column-gap: rem(20);
 
       .postCover {
-        grid-column: 1 / -1;
         margin: 0 0 rem(40);
 
         img {
@@ -784,93 +692,43 @@ button.shareBtn {
         }
       }
 
-      .postToc {
-        grid-column: 2;
-        align-self: stretch;
-
-        > nav {
-          position: sticky;
-          top: rem(20);
-          max-height: calc(100vh - #{rem(40)});
-          overflow-y: auto;
-        }
-
-        .postTocTitle {
-          margin: 0 0 rem(10);
-          font-size: rem(11);
-          font-weight: 500;
-          letter-spacing: .08em;
-          text-transform: uppercase;
-          color: #999;
-        }
-
-        ol {
-          margin: 0;
-          padding: 0;
-          list-style: none;
-          border-left: 1px solid #ddd;
-        }
-
-        .postTocItem {
-          a {
-            display: block;
-            margin-left: -1px;
-            padding: rem(4) rem(10);
-            border-left: 2px solid transparent;
-            font-size: rem(13);
-            line-height: 1.4;
-            text-decoration: none;
-            color: #888;
-            word-break: keep-all;
-
-            &:hover {
-              color: #333;
-            }
-
-            &[aria-current] {
-              color: #222;
-              border-left-color: #333;
-              font-weight: 500;
-            }
-          }
-
-          &.postTocItem--h3 a {
-            padding-left: rem(22);
-            font-size: rem(12);
-            color: #999;
-
-            &[aria-current] {
-              color: #333;
-            }
-          }
-        }
-      }
-
       .postBody {
-        grid-column: 1;
         min-width: 0;
-        font-size: 17px;
+        font-size: rem(17);
+        text-align: justify;
+        word-break: keep-all;
+
+        @media (max-width: $bp-mobile) {
+          text-align: left;
+        }
 
         :first-child {
           margin-top: 0;
         }
 
         h2,
-        h3 {
+        h3,
+        h4 {
           margin-top: rem(46);
           text-box-trim: trim-both;
           scroll-margin-top: rem(20);
           line-height: 1.2;
+          font-weight: 500;
+          color: #222;
+          margin-block-start: 1em;
+          margin-block-end: 1em;
         }
 
         h2 {
-          font-size: rem(32);
-          font-weight: 500;
+          font-size: rem(30);
         }
 
         h3 {
-          font-size: rem(24);
-          font-weight: 500;
+          font-size: rem(25);
+        }
+
+        h4 {
+          font-size: rem(18);
         }
 
         p {
@@ -878,27 +736,156 @@ button.shareBtn {
           letter-spacing: rem(-0.2);
         }
 
+        // reset 이 list-style·여백을 제거하므로 본문 리스트는 기본 스타일을 복원
+        ul,
+        ol {
+          margin: rem(16) 0 rem(24);
+          padding-left: rem(24);
+        }
+
+        ul {
+          list-style: disc;
+        }
+
+        ol {
+          list-style: decimal;
+        }
+
+        li {
+          margin: rem(6) 0;
+
+          &::marker {
+            color: #999;
+          }
+        }
+
+        // 중첩 리스트는 바깥 항목에 붙어 보이도록 위아래 여백을 줄임
+        li > ul,
+        li > ol {
+          margin: rem(6) 0;
+        }
+
+        blockquote {
+          margin: rem(24) 0;
+          padding: rem(4) rem(20);
+          border-left: 3px solid #aaa;
+          color: #666;
+
+          // 인용 내부 첫/마지막 문단의 바깥 여백 제거로 좌측 보더와 정렬
+          > :first-child {
+            margin-top: 0;
+          }
+
+          > :last-child {
+            margin-bottom: 0;
+          }
+        }
+
+        .postSubnote {
+          margin: rem(20) 0;
+          padding: rem(10) rem(16);
+          font-size: rem(14);
+          line-height: 1.6;
+          color: #64748b;
+          background: #f8fafc;
+          border-left: 3px solid #cbd5e1;
+          border-radius: 0 rem(6) rem(6) 0;
+
+          > :first-child {
+            margin-top: 0;
+          }
+
+          > :last-child {
+            margin-bottom: 0;
+          }
+        }
+
+        figcaption.references {
+          font-size: 80%;
+          color: #666;
+        }
+
+        table {
+          display: block;
+          width: 100%;
+          margin: rem(24) 0 rem(32);
+          overflow-x: auto;
+          border-collapse: collapse;
+          border-width: rem(1) 0;
+          border-color: #ccc;
+          border-style: solid;
+          font-size: rem(16);
+          text-align: left;
+        }
+
+        th,
+        td {
+          padding: rem(10) rem(16);
+          border-bottom: 1px solid #eee;
+          vertical-align: top;
+
+          &:first-child {
+            padding-left: 0;
+          }
+
+          &:last-child {
+            padding-right: 0;
+          }
+
+          @media (max-width: $bp-mobile) {
+            padding: rem(8) rem(12);
+            font-size: rem(14);
+          }
+        }
+
+        th {
+          border-bottom-color: #888;
+          font-weight: 500;
+          color: #222;
+        }
+
+        td {
+          color: #555;
+        }
+
+        tbody tr:hover {
+          background-color: #fafafa;
+        }
+
+        .fixedTable {
+          table {
+            table-layout: fixed;
+          }
+        }
+
         small {
           font-size: 80%;
           color: #666;
         }
 
-        // 외부 링크 표시 — 링크 텍스트 우측에 ↗ 아이콘. 새 창 열기는 하지 않음(시각 표시 전용).
-        // 대상: http(s) 스킴 전부. 내부 링크는 루트 절대 경로(/slug)로만 쓰므로 도메인 판별 불필요.
-        // 제외 1: 이미지·미디어를 감싼 블록형 링크 — :has() 로 자동 판별.
-        // 제외 2: 수동 opt-out — data-no-external-icon (라이트박스 data-no-zoom 과 같은 결).
+        strong,
+        b {
+          font-weight: 600;
+          color: #222;
+        }
+
+        hr {
+          border-width: 1px 0 0;
+          border-style: solid;
+          border-color: #ccc;
+          margin: rem(10) 0;
+        }
+
         a[href^="http"]:not([data-no-external-icon]):not(:has(img, picture, video, svg, iframe)) {
           &::after {
             content: "";
             display: inline-block;
             width: 0.75em;
             height: 0.75em;
-            margin-left: rem(2);
+            margin-inline: rem(2);
             background-color: currentColor;
             mask: url("/images/postIcons/postIcon_externalLink.svg") center / contain no-repeat;
 
-            // 고대비 모드는 background-color 를 Canvas 로 덮어써 아이콘이 사라짐.
-            // 강제 조정만 끄면 링크에서 상속한 currentColor(LinkText/VisitedText)로 그려짐.
             @media (forced-colors: active) {
               forced-color-adjust: none;
             }
@@ -906,6 +893,7 @@ button.shareBtn {
         }
 
         img {
+          display: block;
           max-width: 100%;
           height: auto;
         }
@@ -916,12 +904,25 @@ button.shareBtn {
         }
 
         ruby {
+          font-weight: 600;
+
           rt {
             display: inline;
             font-size: 80%;
             vertical-align: text-top;
-            margin-left: rem(2);
-            color: #666;
+            margin-left: rem(3);
+            font-weight: 400;
+            color: #767676;
+          }
+
+          &.blockRuby {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+
+            rt {
+              margin: 0;
+            }
           }
         }
 
@@ -932,19 +933,17 @@ button.shareBtn {
           font-weight: 400;
           font-size: calc(16 / 17 * 1em);
         }
-      }
 
-      @media (max-width: $bp-content) {
-        grid-template-columns: minmax(0, 1fr);
-        row-gap: rem(24);
-
-        // 단일 컬럼에서는 목차가 본문 위에 쌓일 뿐 길잡이 역할을 못 하므로 숨김
-        .postToc {
-          display: none;
+        cite {
+          font-style: normal;
+          color: #666;
         }
 
-        .postBody {
-          grid-column: 1;
+        a {
+          color: #006fd5;
+          text-decoration: underline currentcolor rem(1);
+          text-decoration-skip-ink: auto;
+          text-underline-offset: rem(2);
         }
       }
     }

@@ -7,10 +7,10 @@ import LikeButton from '~/components/LikeButton.astro';
 import { formatDate } from '~/utils/formatDate';
 
 const { post, showCover = false, seq = null, eager = false } = Astro.props;
-const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
+const indexed = seq != null;
 ---
 
-<article class:list={['postCard', { 'postCard--indexed': seqLabel != null }]}>
+<article class:list={['postCard', { 'postCard--indexed': indexed }]}>
   {showCover && post.cover && (
     <figure class="cover">
       <Picture
@@ -30,10 +30,14 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
     </figure>
   )}
 
-  {seqLabel != null ? (
+  {indexed ? (
     <div class="cardGrid">
-      <div class="cardSeq">
-        <span class="cardSeqNum">{seqLabel}</span>
+      <div class="cardMain">
+        <h2>
+          <a href={`/${post.slug}`}>
+            <span>{post.title}</span>
+          </a>
+        </h2>
         <dl class="postMeta cardSeqMeta">
           <div class="postMetaItem" data-type="published">
             <dt>Published</dt>
@@ -55,14 +59,6 @@ const seqLabel = seq != null ? String(seq).padStart(2, '0') : null;
           )}
           <ViewCount slug={post.slug} />
         </dl>
-      </div>
-
-      <div class="cardMain">
-        <h2>
-          <a href={`/${post.slug}`}>
-            <span>{post.title}</span>
-          </a>
-        </h2>
         <div class="postBody">
           <p>{post.description}</p>
         </div>
