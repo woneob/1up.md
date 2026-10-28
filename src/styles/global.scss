@@ -781,6 +781,25 @@ button.shareBtn {
           }
         }
 
+        .postSubnote {
+          margin: rem(20) 0;
+          padding: rem(10) rem(16);
+          font-size: rem(14);
+          line-height: 1.6;
+          color: #64748b;
+          background: #f8fafc;
+          border-left: 3px solid #cbd5e1;
+          border-radius: 0 rem(6) rem(6) 0;
+
+          > :first-child {
+            margin-top: 0;
+          }
+
+          > :last-child {
+            margin-bottom: 0;
+          }
+        }
+
         figcaption.references {
           font-size: 80%;
           color: #666;
