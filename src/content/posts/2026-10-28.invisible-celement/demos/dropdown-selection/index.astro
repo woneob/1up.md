@@ -1,0 +1,256 @@
+---
+// 본문 인라인 데모(standalone 문서 아님). 유사 UI 셀렉트 드롭다운 2단 비교.
+// 좌: 선택 항목을 목록에서 숨김(안티패턴) / 우: 선택 항목을 selected 로 표시(권장).
+// 초기 상태를 SSR 로 확정(제로 CLS) → script.js 는 선택 전환만 담당.
+const OPTIONS = [
+  { value: 'low', label: '낮음' },
+  { value: 'normal', label: '보통' },
+  { value: 'high', label: '높음' },
+  { value: 'urgent', label: '긴급' },
+];
+const DEFAULT = 'normal';
+const defaultLabel = OPTIONS.find((o) => o.value === DEFAULT).label;
+
+const columns = [
+  {
+    variant: 'hide',
+    badge: '안티패턴',
+    title: '선택 항목 숨김',
+    note: '선택한 항목이 목록에서 사라져, 앞뒤 항목과 비교할 기준을 잃어버린다.',
+  },
+  {
+    variant: 'mark',
+    badge: '권장',
+    title: '선택 항목 표시',
+    note: '선택한 항목을 강조해, 지금 위치와 다음 선택을 판단할 수 있다.',
+  },
+];
+---
+
+<div class="demo dd-demo">
+  <div class="dd-grid">
+    {
+      columns.map((col) => (
+        <figure class="dd-col">
+          <figcaption class="dd-head">
+            <span class={`dd-badge dd-badge--${col.variant}`}>{col.badge}</span>
+            <span class="dd-title">{col.title}</span>
+          </figcaption>
+
+          <div class="dd" data-variant={col.variant} data-value={DEFAULT}>
+            <button
+              type="button"
+              class="dd-trigger"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span class="dd-value">{defaultLabel}</span>
+              <span class="dd-caret" aria-hidden="true" />
+            </button>
+
+            <ul class="dd-menu" role="listbox" aria-label={col.title}>
+              {OPTIONS.map((o) => {
+                const selected = o.value === DEFAULT;
+                const marked = col.variant === 'mark' && selected;
+                return (
+                  <li
+                    class:list={['dd-option', { 'is-selected': marked }]}
+                    role="option"
+                    data-value={o.value}
+                    tabindex="0"
+                    aria-selected={marked ? 'true' : 'false'}
+                    hidden={col.variant === 'hide' && selected}
+                  >
+                    <span class="dd-label">{o.label}</span>
+                    <span class="dd-check" aria-hidden="true">
+                      ✓
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          <p class="dd-note">{col.note}</p>
+        </figure>
+      ))
+    }
+  </div>
+</div>
+
+<style lang="scss">
+  .dd-demo {
+    padding: rem(32) rem(14);
+    background: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: rem(7);
+    color: #3b3e49;
+    font-size: 0.85rem;
+  }
+
+  .dd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: rem(20);
+    max-width: rem(520);
+    margin-inline: auto;
+
+    @media (max-width: $bp-mobile) {
+      grid-template-columns: 1fr;
+      gap: rem(10)
+    }
+  }
+
+  .dd-col {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .dd-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .dd-title {
+    font-weight: 600;
+    color: #222;
+  }
+
+  .dd-badge {
+    flex: none;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.5;
+
+    &--hide {
+      color: #c0392b;
+      background: #fdecec;
+    }
+    &--mark {
+      color: #1e874b;
+      background: #e9f7ef;
+    }
+  }
+
+  // 트리거 기준 절대 배치 → 메뉴 열려도 레이아웃 밀림 없음(제로 CLS).
+  .dd {
+    position: relative;
+  }
+
+  // 셀렉트 트리거 — 클릭 시 메뉴 토글.
+  .dd-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #cfcfd4;
+    border-radius: 8px;
+    background: #fff;
+    color: #222;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #b3b3ba;
+    }
+    &:focus-visible {
+      outline: 2px solid #f43f5e;
+      outline-offset: 1px;
+    }
+  }
+
+  .dd-caret {
+    flex: none;
+    width: 0;
+    height: 0;
+    border-inline: 4px solid transparent;
+    border-top: 5px solid #999;
+    transition: transform 0.15s ease;
+
+    .dd.is-open & {
+      transform: rotate(180deg);
+    }
+  }
+
+  .dd-menu {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(100% + 0.35rem);
+    z-index: 20;
+    // 본문 ul 규칙(#page-post … .postBody ul)이 id 명시도라 스코프 스타일로 못 이김 → !important.
+    // 안 그러면 본문의 padding-left:1.5rem 가 남아 항목 좌측에 여백이 생긴다.
+    margin: 0 !important;
+    padding: 0.2rem 0 !important;
+    list-style: none;
+    border: 1px solid #e0e0e4;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.09);
+    overflow: hidden; // 풀폭 항목 배경을 메뉴 라운드 코너로 클립
+
+    display: none;
+    .dd.is-open & {
+      display: block;
+    }
+  }
+
+  .dd-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    color: #3b3e49;
+    cursor: pointer;
+    user-select: none;
+
+    // display:flex 가 브라우저 기본 [hidden]{display:none} 을 덮으므로 명시 필요(hide 변형).
+    &[hidden] {
+      display: none;
+    }
+
+    // hover/focus — 선택 상태(is-selected)와 반드시 다른 시각 처리(중립 그레이).
+    &:hover,
+    &:focus-visible {
+      background: #f2f3f5;
+      outline: none;
+    }
+
+    // 선택 상태 — 브랜드 로즈 틴트 + 체크 + 볼드. hover 의 그레이와 구분.
+    &.is-selected {
+      background: #fff0f3;
+      color: #222;
+      font-weight: 600;
+
+      .dd-check {
+        visibility: visible;
+      }
+    }
+  }
+
+  .dd-check {
+    flex: none;
+    visibility: hidden;
+    color: #f43f5e;
+    font-size: 0.9em;
+  }
+
+  .dd-note {
+    margin: 0.7rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #777;
+  }
+</style>
+
+<script>
+  import './script.js';
+</script>
