@@ -1,0 +1,28 @@
+---
+// 선분 표기(AB 위 가로줄). 본문 MDX 에서 <Segment>AB</Segment> 로 사용.
+// - 의미 구조는 MathML <mover>(밑글자 + 윗줄 U+203E), 꼭짓점 이름은 여러 글자 <mi> 라 정체(upright)
+// - 윗줄은 CSS 로 그림: 브라우저 기본 수식 폰트에서 윗줄 문자가 늘어나지 않음(Chrome 실측) → <mo> 는 숨김
+// - Astro 가 <math> 내부 표현식을 평가하지 않아 마크업을 문자열로 조립 → set:html
+const name = (await Astro.slots.render('default')).trim().replace(/[^A-Za-z0-9]/g, '');
+const inner = `<mover accent="true"><mi>${name}</mi><mo>&#x203E;</mo></mover>`;
+---
+
+<math class="segment" aria-label={`선분 ${name}`} set:html={inner} />
+
+<style lang="scss">
+  // 본문 글꼴 유지(UA 기본 font-family: math 는 세리프 수식 폰트)
+  .segment {
+    font-family: inherit;
+  }
+
+  // set:html 내부라 스코프 속성이 없음 → :global
+  // 글자보다 옅고 가는 보조선 — 글자색 50% 혼합, 1px 고정
+  .segment :global(mi) {
+    border-top: 1px solid color-mix(in srgb, currentColor 50%, transparent);
+    padding-top: 0.08em;
+  }
+
+  .segment :global(mo) {
+    visibility: hidden;
+  }
+</style>
