@@ -144,6 +144,7 @@ trailing slash 없음. [astro.config.mjs](astro.config.mjs) `trailingSlash:'neve
   2. [resolve-post-relative-urls](src/plugins/resolve-post-relative-urls.mjs) — mdast `html` 노드의 상대 src/href 를 슬러그 절대 경로화(위가 만든 `<img>` 대상, 반드시 뒤). MDX 저작 raw HTML 은 JSX 라 대상 아님.
 - **smartypants**: `unified({ smartypants })` 에 선언(top-level `markdown.smartypants` 는 deprecated). 값은 [retext-smartypants](https://github.com/retextjs/retext-smartypants#options) 옵션 그대로. 현재 `quotes:false`·`backticks:false` — 따옴표·아포스트로피 곧은 문자 유지. `dashes`(`--`→`—`)·`ellipses`(`...`→`…`)는 켜둠.
 - **본문 H1 금지**: 제목은 frontmatter `title`(상세가 h1 렌더). 본문은 `## ` 부터.
+- **선분 표기**: MDX 에서 [Segment](src/components/Segment.astro) import 후 `<Segment>AB</Segment>`(MathML `<mover>` + CSS 윗줄, 수식 라이브러리 없음). 윗줄 문자 stretch 는 기본 수식 폰트에서 안 늘어나(Chrome 실측) CSS `border-top` 으로 그림. Astro 는 `<math>` 내부 `{표현식}` 미평가 → `set:html` 조립.
 
 ## JSON-LD
 

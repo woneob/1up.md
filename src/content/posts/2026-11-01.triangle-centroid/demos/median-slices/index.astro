@@ -1,0 +1,121 @@
+---
+// 본문 인라인 도해(정적 SVG). 밑변과 평행한 띠로 자른 부등변 삼각형 —
+// 각 띠의 가운데 점이 모두 꼭짓점 A 의 중선 위에 놓임을 보여줌.
+// 꼭짓점 A(90,20), B(30,180), C(250,180) → 높이 비율 t 에서 좌 90-60t, 우 90+160t, 가운데 90+50t.
+import Segment from '~/components/Segment.astro';
+
+const STRIPS = 8;
+const TOP = 20;
+const HEIGHT = 160;
+const at = (t) => ({ y: TOP + HEIGHT * t, l: 90 - 60 * t, r: 90 + 160 * t, m: 90 + 50 * t });
+
+const strips = Array.from({ length: STRIPS }, (_, k) => {
+  const a = at(k / STRIPS);
+  const b = at((k + 1) / STRIPS);
+  const mid = at((k + 0.5) / STRIPS);
+  return {
+    points: `${a.l},${a.y} ${a.r},${a.y} ${b.r},${b.y} ${b.l},${b.y}`,
+    dot: { x: mid.m, y: mid.y },
+    odd: k % 2 === 1,
+  };
+});
+---
+
+<figure class="demo ms-demo">
+  <svg class="ms-svg" viewBox="0 0 300 214" role="img" aria-labelledby="ms-title">
+    <title id="ms-title">
+      삼각형을 밑변과 평행한 띠로 자르면, 각 띠의 가운데 점이 모두 꼭짓점 A 에서 내려온 중선 위에 놓인다
+    </title>
+
+    {strips.map((s) => <polygon class:list={['ms-strip', { 'ms-strip--alt': s.odd }]} points={s.points} />)}
+    <line class="ms-median" x1="90" y1="20" x2="140" y2="180" />
+    {strips.map((s) => <circle class="ms-dot" cx={s.dot.x} cy={s.dot.y} r="3" />)}
+
+    <circle class="ms-mid" cx="140" cy="180" r="3.5" />
+    <text class="ms-label" x="90" y="13" text-anchor="middle">A</text>
+    <text class="ms-label" x="22" y="194" text-anchor="middle">B</text>
+    <text class="ms-label" x="258" y="194" text-anchor="middle">C</text>
+    <text class="ms-label ms-label--accent" x="140" y="200" text-anchor="middle">D</text>
+    <text class="ms-note" x="140" y="212" text-anchor="middle">BC 의 중점</text>
+  </svg>
+
+  <figcaption class="ms-caption">
+    어느 띠든 가운데 점(<i class="ms-key"></i>)이 중선 <Segment>AD</Segment> 위에 놓인다. 삼각형 모양과는 관계없다.
+  </figcaption>
+</figure>
+
+<style lang="scss">
+  .ms-demo {
+    margin: rem(24) 0;
+    padding: rem(20) rem(14);
+    background: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: rem(7);
+  }
+
+  .ms-svg {
+    display: block;
+    width: 100%;
+    max-width: rem(300);
+    height: auto;
+    margin-inline: auto;
+    font-family: inherit;
+  }
+
+  .ms-strip {
+    fill: #dcdee5;
+    stroke: #f9f9f9;
+    stroke-width: 1.5;
+
+    &--alt {
+      fill: #cfd2db;
+    }
+  }
+
+  .ms-median {
+    stroke: #2563eb;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+
+  .ms-dot {
+    fill: #f43f5e;
+    stroke: #fff;
+    stroke-width: 1;
+  }
+
+  .ms-mid {
+    fill: #2563eb;
+  }
+
+  .ms-label {
+    font-size: 14px;
+    font-weight: 600;
+    fill: #222;
+
+    &--accent {
+      fill: #2563eb;
+    }
+  }
+
+  .ms-note {
+    font-size: 10px;
+    fill: #777;
+  }
+
+  .ms-caption {
+    margin-top: rem(12);
+    font-size: 0.8rem;
+    text-align: center;
+    color: #666;
+  }
+
+  .ms-key {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f43f5e;
+    vertical-align: 0.05em;
+  }
+</style>

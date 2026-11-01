@@ -1,0 +1,217 @@
+---
+// 본문 인라인 도해(정적 SVG). 부등변 삼각형 ABC 2단.
+// ① 세 중선 AD·BE·CF 가 G 에서 만나고 AG:GD = 2:1
+// ② 중점 연결선 DE ∥ AB, DE = AB/2 → △GAB ∽ △GDE(닮음비 2:1)
+// A(110,25) B(25,195) C(255,195) → D(140,195) E(182.5,110) F(67.5,110) G=(A+B+C)/3=(130,138.33)
+// 우측 패널은 x 를 +290 평행 이동.
+const shift = (p, dx) => ({ x: p.x + dx, y: p.y });
+const base = {
+  A: { x: 110, y: 25 },
+  B: { x: 25, y: 195 },
+  C: { x: 255, y: 195 },
+  D: { x: 140, y: 195 },
+  E: { x: 182.5, y: 110 },
+  F: { x: 67.5, y: 110 },
+  G: { x: 130, y: 138.33 },
+};
+const R = Object.fromEntries(Object.entries(base).map(([k, p]) => [k, shift(p, 290)]));
+const L = base;
+const pts = (...ps) => ps.map((p) => `${p.x},${p.y}`).join(' ');
+---
+
+<figure class="demo mr-demo">
+  <svg class="mr-svg" viewBox="0 0 570 248" role="img" aria-labelledby="mr-title">
+    <title id="mr-title">
+      세 중선은 무게중심 G 에서 만나고, 중점 연결선 DE 가 AB 와 평행하고 절반 길이라서 삼각형 GAB 와 GDE 가 2 대 1 로 닮아, G 가 중선을 2 대 1 로 나눈다
+    </title>
+
+    <!-- ① 세 중선 -->
+    <g>
+      <polygon class="mr-tri" points={pts(L.A, L.B, L.C)} />
+      <line class="mr-median" x1={L.A.x} y1={L.A.y} x2={L.D.x} y2={L.D.y} />
+      <line class="mr-median mr-median--muted" x1={L.B.x} y1={L.B.y} x2={L.E.x} y2={L.E.y} />
+      <line class="mr-median mr-median--muted" x1={L.C.x} y1={L.C.y} x2={L.F.x} y2={L.F.y} />
+      <circle class="mr-pt" cx={L.D.x} cy={L.D.y} r="3" />
+      <circle class="mr-pt" cx={L.E.x} cy={L.E.y} r="3" />
+      <circle class="mr-pt" cx={L.F.x} cy={L.F.y} r="3" />
+      <circle class="mr-g" cx={L.G.x} cy={L.G.y} r="4.5" />
+
+      <text class="mr-ratio" x="108" y="86" text-anchor="end">2</text>
+      <text class="mr-ratio" x="128" y="171" text-anchor="end">1</text>
+
+      <text class="mr-label" x={L.A.x} y={L.A.y - 8} text-anchor="middle">A</text>
+      <text class="mr-label" x={L.B.x - 8} y={L.B.y + 14} text-anchor="middle">B</text>
+      <text class="mr-label" x={L.C.x + 8} y={L.C.y + 14} text-anchor="middle">C</text>
+      <text class="mr-label" x={L.D.x} y={L.D.y + 17} text-anchor="middle">D</text>
+      <text class="mr-label" x={L.E.x + 9} y={L.E.y - 3}>E</text>
+      <text class="mr-label" x={L.F.x - 9} y={L.F.y - 3} text-anchor="end">F</text>
+      <text class="mr-label mr-label--g" x={L.G.x + 9} y={L.G.y - 6}>G</text>
+
+      <text class="mr-cap" x="140" y="240" text-anchor="middle">① 세 중선은 한 점 G 에서 만난다</text>
+    </g>
+
+    <!-- ② 중점 연결선과 닮음 -->
+    <g>
+      <polygon class="mr-tri" points={pts(R.A, R.B, R.C)} />
+      <polygon class="mr-big" points={pts(R.G, R.A, R.B)} />
+      <polygon class="mr-small" points={pts(R.G, R.D, R.E)} />
+      <line class="mr-median mr-median--muted" x1={R.A.x} y1={R.A.y} x2={R.D.x} y2={R.D.y} />
+      <line class="mr-median mr-median--muted" x1={R.B.x} y1={R.B.y} x2={R.E.x} y2={R.E.y} />
+      <line class="mr-edge mr-edge--big" x1={R.A.x} y1={R.A.y} x2={R.B.x} y2={R.B.y} />
+      <line class="mr-edge mr-edge--small" x1={R.D.x} y1={R.D.y} x2={R.E.x} y2={R.E.y} />
+      <circle class="mr-pt" cx={R.D.x} cy={R.D.y} r="3" />
+      <circle class="mr-pt" cx={R.E.x} cy={R.E.y} r="3" />
+      <circle class="mr-g" cx={R.G.x} cy={R.G.y} r="4.5" />
+
+      <text class="mr-label" x={R.A.x} y={R.A.y - 8} text-anchor="middle">A</text>
+      <text class="mr-label" x={R.B.x - 8} y={R.B.y + 14} text-anchor="middle">B</text>
+      <text class="mr-label" x={R.C.x + 8} y={R.C.y + 14} text-anchor="middle">C</text>
+      <text class="mr-label" x={R.D.x} y={R.D.y + 17} text-anchor="middle">D</text>
+      <text class="mr-label" x={R.E.x + 9} y={R.E.y - 3}>E</text>
+      <text class="mr-label mr-label--g" x={R.G.x - 10} y={R.G.y + 4} text-anchor="end">G</text>
+
+      <!-- tspan 사이 공백 보존 위해 한 줄 유지 -->
+      <text class="mr-cap" x="430" y="240" text-anchor="middle">② <tspan class="mr-seg">DE</tspan> ∥ <tspan class="mr-seg">AB</tspan>, <tspan class="mr-seg">DE</tspan> = <tspan class="mr-seg">AB</tspan>/2 → 닮음비 2 : 1</text>
+    </g>
+  </svg>
+
+  <figcaption class="mr-legend">
+    <span><i class="mr-key mr-key--g"></i>무게중심 G</span>
+    <span><i class="mr-key mr-key--pt"></i>변의 중점</span>
+    <span><i class="mr-key mr-key--big"></i>△GAB</span>
+    <span><i class="mr-key mr-key--small"></i>△GDE</span>
+  </figcaption>
+</figure>
+
+<style lang="scss">
+  .mr-demo {
+    margin: rem(24) 0;
+    padding: rem(20) rem(14);
+    background: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: rem(7);
+  }
+
+  .mr-svg {
+    display: block;
+    width: 100%;
+    max-width: rem(570);
+    height: auto;
+    margin-inline: auto;
+    font-family: inherit;
+  }
+
+  .mr-tri {
+    fill: #eceef2;
+    stroke: #9a9aa3;
+    stroke-width: 1;
+  }
+
+  .mr-big {
+    fill: #fbd5dd;
+  }
+
+  .mr-small {
+    fill: #cfdcfb;
+  }
+
+  .mr-median {
+    stroke: #f43f5e;
+    stroke-width: 2;
+
+    &--muted {
+      stroke: #8a8f9c;
+      stroke-width: 1;
+      stroke-dasharray: 4 3;
+    }
+  }
+
+  .mr-edge {
+    stroke-width: 2.5;
+    stroke-linecap: round;
+
+    &--big {
+      stroke: #f43f5e;
+    }
+    &--small {
+      stroke: #2563eb;
+    }
+  }
+
+  .mr-pt {
+    fill: #fff;
+    stroke: #3b3e49;
+    stroke-width: 1.5;
+  }
+
+  .mr-g {
+    fill: #f43f5e;
+    stroke: #fff;
+    stroke-width: 1.5;
+  }
+
+  .mr-ratio {
+    font-size: 15px;
+    font-weight: 700;
+    fill: #f43f5e;
+  }
+
+  .mr-label {
+    font-size: 13px;
+    font-weight: 600;
+    fill: #222;
+
+    &--g {
+      fill: #f43f5e;
+    }
+  }
+
+  .mr-cap {
+    font-size: 13px;
+    font-weight: 600;
+    fill: #222;
+  }
+
+  // 선분 표기(윗줄)
+  .mr-seg {
+    text-decoration: overline 1px color-mix(in srgb, #222 50%, transparent);
+  }
+
+  .mr-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.3rem 1.1rem;
+    margin-top: rem(12);
+    font-size: 0.78rem;
+    color: #666;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+  }
+
+  .mr-key {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+
+    &--g {
+      border-radius: 50%;
+      background: #f43f5e;
+    }
+    &--pt {
+      border-radius: 50%;
+      border: 1.5px solid #3b3e49;
+      background: #fff;
+    }
+    &--big {
+      background: #fbd5dd;
+    }
+    &--small {
+      background: #cfdcfb;
+    }
+  }
+</style>

@@ -1,0 +1,235 @@
+---
+// 본문 인라인 데모. 가로·세로 슬라이더로 ▲ 박스 크기를 바꾸며 꼭짓점 좌표 평균 = 무게중심 확인.
+// 초기 상태를 SSR 로 확정(제로 CLS) → script.js 는 슬라이더 입력 시 좌표·도형만 갱신.
+import { layout, fmt, VIEW } from './geometry.js';
+
+const INITIAL = { w: 120, h: 120 };
+const g = layout(INITIAL.w, INITIAL.h);
+const at = (p) => ({ x: g.ox + p.x, y: g.oy + p.y });
+const A = at(g.A);
+const B = at(g.B);
+const C = at(g.C);
+const G = at(g.G);
+const bx = g.ox - 20; // 좌측 높이 브래킷 x
+---
+
+<figure class="demo cc-demo" data-w={INITIAL.w} data-h={INITIAL.h}>
+  <div class="cc-controls">
+    <label class="cc-range">
+      <span>가로 W</span>
+      <input type="range" min="40" max="200" step="2" value={INITIAL.w} data-axis="w" />
+      <output data-out="w">{INITIAL.w}</output>
+    </label>
+    <label class="cc-range">
+      <span>세로 H</span>
+      <input type="range" min="40" max="150" step="2" value={INITIAL.h} data-axis="h" />
+      <output data-out="h">{INITIAL.h}</output>
+    </label>
+  </div>
+
+  <svg
+    class="cc-svg"
+    viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
+    role="img"
+    aria-label="박스 크기에 따른 삼각형 꼭짓점과 무게중심 위치"
+  >
+    <rect class="cc-box" data-el="box" x={g.ox} y={g.oy} width={g.w} height={g.h} />
+    <polygon class="cc-tri" data-el="tri" points={`${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`} />
+    <line class="cc-median" data-el="median" x1={A.x} y1={A.y} x2={A.x} y2={B.y} />
+    <line class="cc-gline" data-el="gline" x1={g.ox - 8} y1={G.y} x2={g.ox + g.w + 8} y2={G.y} />
+
+    <path
+      class="cc-bracket"
+      data-el="bracket"
+      d={`M${bx - 3} ${A.y}h6M${bx} ${A.y}V${G.y}M${bx - 3} ${G.y}h6M${bx} ${G.y}V${B.y}M${bx - 3} ${B.y}h6`}
+    />
+    <text class="cc-dim" data-el="dim-top" x={bx - 6} y={(A.y + G.y) / 2 + 4} text-anchor="end">2H/3</text>
+    <text class="cc-dim" data-el="dim-bottom" x={bx - 6} y={(G.y + B.y) / 2 + 4} text-anchor="end">H/3</text>
+
+    <circle class="cc-vertex" data-el="va" cx={A.x} cy={A.y} r="3" />
+    <circle class="cc-vertex" data-el="vb" cx={B.x} cy={B.y} r="3" />
+    <circle class="cc-vertex" data-el="vc" cx={C.x} cy={C.y} r="3" />
+    <circle class="cc-g" data-el="g" cx={G.x} cy={G.y} r="5" />
+
+    <text class="cc-label" data-el="la" x={A.x} y={A.y - 10} text-anchor="middle">A</text>
+    <text class="cc-label" data-el="lb" x={B.x - 4} y={B.y + 18} text-anchor="middle">B</text>
+    <text class="cc-label" data-el="lc" x={C.x + 4} y={C.y + 18} text-anchor="middle">C</text>
+    <text class="cc-label cc-label--g" data-el="lg" x={G.x + 10} y={G.y - 7}>G</text>
+  </svg>
+
+  <figcaption class="cc-readout">
+    <dl>
+      <dt>A</dt>
+      <dd>(W/2, 0) = (<span data-out="ax">{fmt(g.A.x)}</span>, 0)</dd>
+      <dt>B</dt>
+      <dd>(0, H) = (0, <span data-out="by">{fmt(g.B.y)}</span>)</dd>
+      <dt>C</dt>
+      <dd>
+        (W, H) = (<span data-out="cx">{fmt(g.C.x)}</span>, <span data-out="cy">{fmt(g.C.y)}</span>)
+      </dd>
+      <dt class="cc-dt-g">G</dt>
+      <dd>
+        ((<span data-out="ax">{fmt(g.A.x)}</span> + 0 + <span data-out="cx">{fmt(g.C.x)}</span>) ÷ 3,
+        (0 + <span data-out="by">{fmt(g.B.y)}</span> + <span data-out="cy">{fmt(g.C.y)}</span>) ÷ 3)
+        <br />= (<strong data-out="gx">{fmt(g.G.x)}</strong>, <strong data-out="gy">{fmt(g.G.y)}</strong>)
+      </dd>
+    </dl>
+    <div class="cc-result">
+      가로 <strong data-out="px">{fmt((g.G.x / g.w) * 100)}%</strong> · 세로{' '}
+      <strong data-out="py">{fmt((g.G.y / g.h) * 100)}%</strong>
+    </div>
+  </figcaption>
+</figure>
+
+<style lang="scss">
+  .cc-demo {
+    margin: rem(24) 0;
+    padding: rem(20) rem(14);
+    background: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: rem(7);
+    color: #3b3e49;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+
+  .cc-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.6rem;
+  }
+
+  .cc-range {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #555;
+
+    input {
+      width: rem(130);
+      margin: 0;
+      accent-color: #f43f5e;
+    }
+
+    output {
+      min-width: 2.2em;
+      font-variant-numeric: tabular-nums;
+      color: #222;
+      font-weight: 600;
+    }
+  }
+
+  .cc-svg {
+    display: block;
+    width: 100%;
+    max-width: rem(320);
+    height: auto;
+    margin: rem(8) auto 0;
+    font-family: inherit;
+  }
+
+  .cc-box {
+    fill: none;
+    stroke: #9a9aa3;
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+  }
+
+  .cc-tri {
+    fill: #dcdee5;
+  }
+
+  .cc-median {
+    stroke: #2563eb;
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+  }
+
+  .cc-gline {
+    stroke: #f43f5e;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+    opacity: 0.7;
+  }
+
+  .cc-bracket {
+    fill: none;
+    stroke: #9a9aa3;
+    stroke-width: 1;
+  }
+
+  .cc-dim {
+    font-size: 11px;
+    fill: #777;
+  }
+
+  .cc-vertex {
+    fill: #3b3e49;
+  }
+
+  .cc-g {
+    fill: #f43f5e;
+    stroke: #fff;
+    stroke-width: 1.5;
+  }
+
+  .cc-label {
+    font-size: 13px;
+    font-weight: 600;
+    fill: #222;
+
+    &--g {
+      fill: #f43f5e;
+    }
+  }
+
+  .cc-readout {
+    max-width: rem(360);
+    margin: rem(8) auto 0;
+    font-variant-numeric: tabular-nums;
+
+    dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.25rem 0.7rem;
+      margin: 0;
+    }
+
+    dt {
+      font-weight: 600;
+      color: #222;
+    }
+
+    dd {
+      margin: 0;
+      color: #555;
+    }
+
+    .cc-dt-g {
+      color: #f43f5e;
+    }
+
+    strong {
+      font-weight: 600;
+      color: #222;
+    }
+  }
+
+  .cc-result {
+    margin-top: 0.7rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid #e3e3e3;
+    text-align: center;
+    color: #555;
+
+    strong {
+      color: #f43f5e;
+    }
+  }
+</style>
+
+<script>
+  import './script.js';
+</script>

@@ -1,0 +1,195 @@
+---
+// 본문 인라인 도해(정적 SVG). 회전 축에 따른 무게중심 이동 3단 비교.
+// 박스 W×H = 96×80, 상단 y=50 → 박스 중심 y=90, ▲ 무게중심 y=50+80×2/3≈103.33.
+// ② 박스 중심 회전: 무게중심 y=130-53.33≈76.67 / ③ 무게중심 회전: 박스가 y 76.67~156.67 로 이동.
+---
+
+<figure class="demo cd-demo">
+  <svg
+    class="cd-svg"
+    viewBox="0 36 560 182"
+    role="img"
+    aria-labelledby="cd-title"
+  >
+    <title id="cd-title">
+      박스 중심으로 회전하면 무게중심이 높이의 1/3 만큼 이동하고, 무게중심으로 회전하면 제자리에 머문다
+    </title>
+
+    <!-- 접힘 전 ▲ 무게중심 높이 -->
+    <line class="cd-guide" x1="16" y1="103.33" x2="544" y2="103.33" />
+
+    <!-- ① 원래 모양 -->
+    <g>
+      <rect class="cd-bbox" x="52" y="50" width="96" height="80" />
+      <polygon class="cd-tri" points="100,50 52,130 148,130" />
+      <path class="cd-cross cd-cross--muted" d="M94 90h12M100 84v12" />
+      <circle class="cd-dot" cx="100" cy="103.33" r="4.5" />
+
+      <path class="cd-bracket" d="M36 50h6M39 50v53.33M36 103.33h6M39 103.33v26.67M36 130h6" />
+      <text class="cd-dim" x="33" y="80" text-anchor="end">2H/3</text>
+      <text class="cd-dim" x="33" y="121" text-anchor="end">H/3</text>
+    </g>
+
+    <!-- ② 박스 중심으로 회전 -->
+    <g>
+      <rect class="cd-bbox" x="232" y="50" width="96" height="80" />
+      <polygon class="cd-tri" points="232,50 328,50 280,130" />
+      <circle class="cd-ghost" cx="280" cy="103.33" r="4.5" />
+      <path class="cd-cross" d="M272 90h16M280 82v16" />
+      <circle class="cd-dot" cx="280" cy="76.67" r="4.5" />
+
+      <path class="cd-bracket" d="M338 76.67h6M341 76.67v26.66M338 103.33h6" />
+      <text class="cd-dim cd-dim--accent" x="349" y="94">H/3</text>
+    </g>
+
+    <!-- ③ 무게중심으로 회전 -->
+    <g>
+      <rect class="cd-bbox cd-bbox--ghost" x="412" y="50" width="96" height="80" />
+      <rect class="cd-bbox" x="412" y="76.67" width="96" height="80" />
+      <polygon class="cd-tri" points="412,76.67 508,76.67 460,156.67" />
+      <path class="cd-cross" d="M450 103.33h20M460 93.33v20" />
+      <circle class="cd-dot" cx="460" cy="103.33" r="4.5" />
+    </g>
+
+    <text class="cd-cap" x="100" y="188" text-anchor="middle">① 원래 모양 ▲</text>
+    <text class="cd-cap" x="280" y="188" text-anchor="middle">② 박스 중심으로 회전</text>
+    <text class="cd-sub" x="280" y="208" text-anchor="middle">무게중심이 위로 이동</text>
+    <text class="cd-cap" x="460" y="188" text-anchor="middle">③ 무게중심으로 회전</text>
+    <text class="cd-sub" x="460" y="208" text-anchor="middle">무게중심 제자리, 박스가 이동</text>
+  </svg>
+
+  <figcaption class="cd-legend">
+    <span><i class="cd-key cd-key--dot"></i>무게중심</span>
+    <span><i class="cd-key cd-key--cross"></i>회전 축</span>
+    <span><i class="cd-key cd-key--box"></i>요소 박스(border box)</span>
+  </figcaption>
+</figure>
+
+<style lang="scss">
+  .cd-demo {
+    margin: rem(24) 0;
+    padding: rem(24) rem(14) rem(20);
+    background: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: rem(7);
+    color: #3b3e49;
+  }
+
+  .cd-svg {
+    display: block;
+    width: 100%;
+    max-width: rem(560);
+    height: auto;
+    margin-inline: auto;
+    font-family: inherit;
+  }
+
+  .cd-guide {
+    stroke: #f43f5e;
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+    opacity: 0.6;
+  }
+
+  .cd-bbox {
+    fill: none;
+    stroke: #9a9aa3;
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+
+    &--ghost {
+      stroke: #d3d3d8;
+    }
+  }
+
+  .cd-tri {
+    fill: #dcdee5;
+  }
+
+  .cd-cross {
+    fill: none;
+    stroke: #2563eb;
+    stroke-width: 2;
+    stroke-linecap: round;
+
+    &--muted {
+      stroke: #9a9aa3;
+      stroke-width: 1.5;
+    }
+  }
+
+  .cd-dot {
+    fill: #f43f5e;
+    stroke: #fff;
+    stroke-width: 1.5;
+  }
+
+  .cd-ghost {
+    fill: #fff;
+    stroke: #f43f5e;
+    stroke-width: 1.5;
+    stroke-dasharray: 2 2;
+  }
+
+  .cd-bracket {
+    fill: none;
+    stroke: #9a9aa3;
+    stroke-width: 1;
+  }
+
+  .cd-dim {
+    font-size: 12px;
+    fill: #777;
+
+    &--accent {
+      fill: #f43f5e;
+      font-weight: 600;
+    }
+  }
+
+  .cd-cap {
+    font-size: 14px;
+    font-weight: 600;
+    fill: #222;
+  }
+
+  .cd-sub {
+    font-size: 12px;
+    fill: #777;
+  }
+
+  .cd-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.3rem 1.1rem;
+    margin-top: rem(14);
+    font-size: 0.78rem;
+    color: #666;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+  }
+
+  .cd-key {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+
+    &--dot {
+      border-radius: 50%;
+      background: #f43f5e;
+    }
+    &--cross {
+      background:
+        linear-gradient(#2563eb, #2563eb) center / 100% 2px no-repeat,
+        linear-gradient(#2563eb, #2563eb) center / 2px 100% no-repeat;
+    }
+    &--box {
+      border: 1px dashed #9a9aa3;
+    }
+  }
+</style>

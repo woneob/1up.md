@@ -1,0 +1,357 @@
+---
+// 본문 인라인 데모(standalone 문서 아님). 토글 화살표 2단 비교, preset 으로 비교 대상 선택.
+// - rotate: 기본 회전 축(박스 중심) vs 무게중심 축 — 가이드 = 접힘 상태 무게중심 높이
+// - align: 무게중심 축만 vs 무게중심 축 + translate 보정 — 가이드 = 버튼(글자) 중심선
+// 초기 상태(접힘)를 SSR 로 확정(제로 CLS) → script.js 는 토글·옵션 전환만 담당.
+const { preset = 'rotate' } = Astro.props;
+
+const PRESETS = {
+  rotate: [
+    {
+      variant: 'box',
+      tone: 'bad',
+      badge: '기본값',
+      title: '박스 중심으로 회전',
+      code: ['transform-origin: 50% 50%;'],
+      note: '뒤집힐 때마다 무게중심이 높이의 1/3 만큼 위아래로 튄다.',
+    },
+    {
+      variant: 'centroid',
+      tone: 'good',
+      badge: '개선',
+      title: '무게중심으로 회전',
+      code: ['transform-origin: 50% 66.67%;'],
+      note: '무게중심이 제자리에 머물러, 위치 변화 없이 방향만 바뀐다.',
+    },
+  ],
+  align: [
+    {
+      variant: 'centroid',
+      tone: 'neutral',
+      badge: '회전 축만',
+      title: '무게중심으로 회전',
+      code: ['transform-origin: 50% 66.67%;'],
+      note: '흔들리지는 않지만, 무게중심이 글자 중심선보다 높이의 1/6 만큼 아래에 머문다.',
+    },
+    {
+      variant: 'aligned',
+      tone: 'good',
+      badge: '중심선 보정',
+      title: '무게중심을 중심선 위로',
+      code: ['transform-origin: 50% 66.67%;', 'translate: 0 -16.67%;'],
+      note: '무게중심이 글자 중심선 위에 고정된 채로 뒤집힌다.',
+    },
+  ],
+};
+const columns = PRESETS[preset];
+const guide = preset === 'align' ? 'midline' : 'centroid';
+
+const options = [
+  { name: 'guide', label: '가이드 보기' },
+  { name: 'slow', label: '느리게' },
+  { name: 'zoom', label: '크게' },
+];
+---
+
+<div class="demo tg-demo" data-guide={guide}>
+  <div class="tg-options" role="group" aria-label="데모 보기 옵션">
+    {
+      options.map((o) => (
+        <label class="tg-option">
+          <input type="checkbox" data-option={o.name} />
+          <span>{o.label}</span>
+        </label>
+      ))
+    }
+  </div>
+
+  <div class="tg-grid">
+    {
+      columns.map((col) => (
+        <figure class="tg-col">
+          <figcaption class="tg-head">
+            <span class={`tg-badge tg-badge--${col.tone}`}>{col.badge}</span>
+            <span class="tg-title">{col.title}</span>
+          </figcaption>
+
+          <div class="tg-box" data-variant={col.variant}>
+            <button
+              type="button"
+              class="tg"
+              aria-expanded="false"
+              aria-controls={`tg-panel-${preset}-${col.variant}`}
+            >
+              <span class="tg-midline" aria-hidden="true" />
+              <span class="tg-label">펼쳐보기</span>
+              <span class="tg-icon" aria-hidden="true">
+                <span class="tg-line" />
+                <span class="tg-arrow" />
+              </span>
+            </button>
+            <div class="tg-panel" id={`tg-panel-${preset}-${col.variant}`} hidden>
+              접혀 있던 내용이 여기에 나타난다.
+            </div>
+          </div>
+
+          <code class="tg-code">
+            {col.code.map((line) => (
+              <span>{line}</span>
+            ))}
+          </code>
+          <div class="tg-note">{col.note}</div>
+        </figure>
+      ))
+    }
+  </div>
+</div>
+
+<style lang="scss">
+  .tg-demo {
+    padding: rem(24) rem(14) rem(32);
+    background: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: rem(7);
+    color: #3b3e49;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+
+  .tg-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.4rem 1.1rem;
+    margin-bottom: rem(24);
+    font-size: 0.8rem;
+    color: #555;
+  }
+
+  .tg-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    user-select: none;
+
+    input {
+      margin: 0;
+      accent-color: #f43f5e;
+    }
+  }
+
+  .tg-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: rem(20);
+    max-width: rem(520);
+    margin-inline: auto;
+
+    @media (max-width: $bp-mobile) {
+      grid-template-columns: 1fr;
+      gap: rem(24);
+    }
+  }
+
+  .tg-col {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .tg-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .tg-title {
+    font-weight: 600;
+    color: #222;
+  }
+
+  .tg-badge {
+    flex: none;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.5;
+
+    &--bad {
+      color: #c0392b;
+      background: #fdecec;
+    }
+    &--good {
+      color: #1e874b;
+      background: #e9f7ef;
+    }
+    &--neutral {
+      color: #5b6170;
+      background: #eceef2;
+    }
+  }
+
+  .tg-box {
+    // 화살표 크기 — zoom 옵션에서 3배
+    --w: 12px;
+    --h: 10px;
+
+    border: 1px solid #cfcfd4;
+    border-radius: 8px;
+    background: #fff;
+
+    .tg-demo.is-zoom & {
+      --w: 36px;
+      --h: 30px;
+    }
+  }
+
+  // 라벨 길이가 바뀌어도 화살표 x 위치 고정 — 우측 끝 정렬
+  .tg {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: rem(42);
+    padding: 0.55rem 0.85rem;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: #222;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid #f43f5e;
+      outline-offset: 1px;
+    }
+  }
+
+  // 회전하지 않는 기준 틀 — 가이드 선의 고정 위치
+  .tg-icon {
+    position: relative;
+    flex: none;
+    width: var(--w);
+    height: var(--h);
+  }
+
+  // 회전 대상. ::before = border 삼각형(▲), ::after = 무게중심 표시 점
+  .tg-arrow {
+    position: absolute;
+    inset: 0;
+    color: #3b3e49;
+    transition: transform 0.25s ease;
+
+    .tg-demo.is-slow & {
+      transition-duration: 1.6s;
+    }
+
+    [data-variant='centroid'] &,
+    [data-variant='aligned'] & {
+      transform-origin: 50% 66.667%;
+    }
+
+    // 무게중심(66.67%)을 박스 중심(50%)으로 → flex 세로 가운데 정렬 기준선과 일치
+    [data-variant='aligned'] & {
+      translate: 0 -16.667%;
+    }
+
+    .tg[aria-expanded='false'] & {
+      transform: rotate(180deg);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 0;
+      height: 0;
+      border-inline: calc(var(--w) / 2) solid transparent;
+      border-bottom: var(--h) solid currentColor;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 66.667%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #f43f5e;
+      box-shadow: 0 0 0 1.5px #fff;
+      translate: -50% -50%;
+      opacity: 0;
+    }
+
+    .tg-demo.is-guide & {
+      outline: 1px dashed #b3b3ba;
+
+      &::after {
+        opacity: 1;
+      }
+    }
+  }
+
+  // 접힘(▼) 상태의 무게중심 높이 — box: 33.33%, centroid: 66.67%
+  .tg-line {
+    position: absolute;
+    top: 66.667%;
+    left: -10px;
+    right: -10px;
+    border-top: 1px dashed #f43f5e;
+    opacity: 0;
+
+    [data-variant='box'] & {
+      top: 33.333%;
+    }
+
+    .tg-demo.is-guide[data-guide='centroid'] & {
+      opacity: 0.7;
+    }
+  }
+
+  // 버튼 세로 중앙 = flex 정렬 기준 = 글자 중심선
+  .tg-midline {
+    position: absolute;
+    top: 50%;
+    left: 0.4rem;
+    right: 0.4rem;
+    border-top: 1px dashed #f43f5e;
+    opacity: 0;
+    pointer-events: none;
+
+    .tg-demo.is-guide[data-guide='midline'] & {
+      opacity: 0.7;
+    }
+  }
+
+  .tg-panel {
+    padding: 0.6rem 0.85rem 0.75rem;
+    border-top: 1px solid #ececf0;
+    color: #555;
+  }
+
+  .tg-code {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.6rem;
+    font-size: 0.76rem;
+    color: #666;
+  }
+
+  .tg-note {
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #777;
+  }
+</style>
+
+<script>
+  import './script.js';
+</script>
