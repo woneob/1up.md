@@ -92,6 +92,10 @@ posts/2025-11-24.bulkhead-pattern/
 - **주입은 CSS 출력 없는 모듈만** — `global.scss` 류 추가 시 스타일 블록마다 전역 CSS 중복 출력.
 - 수동 `@use` 는 `~/styles/...` 별칭 경로(Vite `resolve.alias` 해석). 주입과 중복돼도 무해.
 
+### 인라인 코드
+
+`.postBody code:not(.astro-code code)` 에만 박스 스타일(테두리·배경). Shiki 블록(`pre.astro-code > code`)은 제외 — 인라인 스타일 추가 시 이 셀렉터 안에서.
+
 ### 외부 링크 표시
 
 상세 본문(`.postContent .postBody`) 링크가 외부면 `::after` ↗ 아이콘(mask + `currentColor`). **시각 표시 전용 — `target="_blank"`·`rel` 부여 없음.**
