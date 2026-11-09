@@ -839,9 +839,12 @@ button.shareBtn {
         }
 
         th {
-          border-bottom-color: #888;
           font-weight: 500;
           color: #222;
+        }
+
+        thead th {
+          border-bottom-color: #888;
         }
 
         td {
@@ -930,9 +933,6 @@ button.shareBtn {
           font-family: 'Jetendard', monospace;
           font-weight: 400;
           font-size: calc(16 / 17 * 1em);
-        }
-
-        cite {
 
           &:not(.astro-code code) {
             margin-inline: 2px;
@@ -942,7 +942,23 @@ button.shareBtn {
             background-color: #f9f9f9;
             font-size: 70%;
             color: #294a6e;
+
+            // 색상 값 견본 (color-swatch 플러그인이 data-color·--swatch 부여)
+            &[data-color]::before {
+              content: '';
+              display: inline-block;
+              inline-size: 0.9em;
+              block-size: 0.9em;
+              margin-inline-end: 0.4em;
+              vertical-align: -0.1em;
+              border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+              border-radius: 2px;
+              background: var(--swatch);
+            }
           }
+        }
+
+        cite {
           font-style: normal;
           color: #666;
         }

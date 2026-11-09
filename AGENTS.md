@@ -96,6 +96,13 @@ posts/2025-11-24.bulkhead-pattern/
 
 `.postBody code:not(.astro-code code)` 에만 박스 스타일(테두리·배경). Shiki 블록(`pre.astro-code > code`)은 제외 — 인라인 스타일 추가 시 이 셀렉터 안에서.
 
+### 색상 견본
+
+인라인 코드 전체가 색상 값(`#RGB[A]`·`#RRGGBB[AA]`·`rgb/hsl/hwb/lab/lch/oklab/oklch()`)이면 앞에 색 박스 표시. 펜스 코드 블록은 제외.
+
+- [color-swatch](src/plugins/color-swatch.mjs) remark 플러그인이 `inlineCode` 에 `data.hProperties`(`data-color`·`style="--swatch:값"`) 부여 → 스타일은 `code[data-color]::before`(인라인 코드 규칙 안). md·mdx 공통 경로라 raw `html` 노드 치환 금지.
+- 값 해석은 브라우저 위임(무효 값이면 견본만 안 보임). 플러그인은 `remarkPlugins` 마지막.
+
 ### 외부 링크 표시
 
 상세 본문(`.postContent .postBody`) 링크가 외부면 `::after` ↗ 아이콘(mask + `currentColor`). **시각 표시 전용 — `target="_blank"`·`rel` 부여 없음.**

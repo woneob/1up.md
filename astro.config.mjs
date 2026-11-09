@@ -6,11 +6,12 @@ import path from 'node:path';
 import fs from 'node:fs';
 import resolveMissingImages from './src/plugins/resolve-missing-images.mjs';
 import resolvePostRelativeUrls from './src/plugins/resolve-post-relative-urls.mjs';
+import colorSwatch from './src/plugins/color-swatch.mjs';
 import browserCssTarget from './scripts/browser-css-target.mjs';
 
 // remark 플러그인은 markdown.processor 한 곳에만 선언 (mdx 가 상속).
 // Astro 7 정식 경로는 processor: unified(...) 하나 — remarkPlugins·mdx({remarkPlugins}) 는 deprecated.
-const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls];
+const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls, colorSwatch];
 
 const SITE = 'https://1up.md';
 
