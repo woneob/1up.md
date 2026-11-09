@@ -1021,7 +1021,7 @@ button.shareBtn {
   .searchDialog__icon {
     display: flex;
     flex: none;
-    color: #999;
+    color: #767676;
 
     svg {
       width: rem(20);
@@ -1041,7 +1041,7 @@ button.shareBtn {
     color: #222;
 
     &::placeholder {
-      color: #aaa;
+      color: #767676;
     }
 
     &:focus {
@@ -1065,7 +1065,7 @@ button.shareBtn {
     padding: 0;
     border: 0;
     border-radius: 50%;
-    background: #c4c4c4;
+    background: #767676;
     color: #fff;
     cursor: pointer;
 
@@ -1079,7 +1079,7 @@ button.shareBtn {
     }
 
     &:hover {
-      background: #aaa;
+      background: #555;
     }
   }
 
@@ -1095,7 +1095,7 @@ button.shareBtn {
     border-radius: rem(6);
     background: #f7f7f7;
     font-size: rem(11);
-    color: #888;
+    color: #767676;
     cursor: pointer;
 
     &:hover {
@@ -1114,7 +1114,7 @@ button.shareBtn {
     padding: rem(24) rem(12);
     text-align: center;
     font-size: rem(14);
-    color: #999;
+    color: #767676;
   }
 
   .searchResult {
@@ -1145,7 +1145,7 @@ button.shareBtn {
       margin-top: rem(4);
       font-size: rem(13);
       line-height: 1.5;
-      color: #777;
+      color: #666;
 
       mark {
         background: #fff1a8;
