@@ -9,6 +9,7 @@
     "build": "astro build && pagefind --site dist --force-language en",
     "build:draft": "astro build --mode draft && pagefind --site dist --force-language en",
     "preview": "astro preview",
+    "tunnel": "cloudflared tunnel run 1up",
     "update:browserslist": "pnpm dlx update-browserslist-db@latest"
   },
   "repository": {

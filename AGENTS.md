@@ -29,6 +29,7 @@ pnpm run dev:draft    # 위 + --mode draft. gitignore된 src/content.draft/posts
 pnpm run build        # astro build && pagefind --site dist --force-language en
 pnpm run build:draft  # 초안으로 dist/pagefind 생성(dev 검색 확인용)
 pnpm run preview      # 빌드 결과 미리보기
+pnpm run tunnel       # cloudflared tunnel run 1up — dev 서버 외부 노출(전역 cloudflared 필요, dev 와 별도 터미널)
 ```
 
 `build` 가 pagefind 포함 → Cloudflare 빌드 커맨드도 동일.
