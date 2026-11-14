@@ -207,6 +207,7 @@ trailing slash 없음. [astro.config.mjs](astro.config.mjs) `trailingSlash:'neve
 
 - **대상** = `.postContent .postBody img:not(a img):not([data-no-zoom])`(인덱스 카드 발췌도 `.postBody` 라 상세로 한정). 데모 이미지 포함 → 빼려면 `data-no-zoom`.
 - **마크다운 이미지는 `<a>` 래핑이 없음** → PhotoSwipe 가 src·크기를 못 읽음. `domItemData` 필터에서 `naturalWidth/Height`(미로드 시 `width`/`height` 속성)로 채움. `getThumbBounds` 는 `element.matches('img')` 라 `<img>` 자체를 썸네일로 인식 → 모프는 그대로 동작.
+- **확대용 원본**: `<img data-zoom-src="원본">` 지정 시 확대는 그 원본으로(`srcset` 축소본 대신), 모프 썸네일은 현재 표시 이미지. 이때 `width`/`height` 속성은 **원본 크기**로 해석 — 원본 기준으로 적을 것. 미지정이면 기존 동작.
 - **키보드**: `<a>` 가 아니라 기본 포커스가 없음 → 런타임에 `tabindex`·`role="button"` 부여 + Enter/Space 로 `loadAndOpen(index)`.
 - **`history: false` 필수**: PhotoSwipe 기본 히스토리는 해시 기반이라 ClientRouter `popstate` 가 같은 URL 로 SPA 재네비게이션. 뒤로가기 닫기는 직접 처리 — 열 때 엔트리 1개 push 하되 **착지할 엔트리의 `state` 를 `null` 로 비워야** ClientRouter `onPopState` 가 즉시 return. 닫을 때 `replaceState` 로 원복.
 - **재바인딩**: `astro:before-swap` → `destroy()`, `astro:page-load` → 재생성(dev 는 `DOMContentLoaded` 1회).
