@@ -69,11 +69,15 @@ import 'photoswipe/style.css';
 
     // 마크다운 이미지는 <a> 래핑이 없어 PhotoSwipe 가 src·크기를 못 읽음.
     lightbox.addFilter('domItemData', (itemData, el) => {
-      const src = el.currentSrc || el.src;
-      itemData.src = src;
-      itemData.msrc = src;
-      itemData.width = el.naturalWidth || Number(el.getAttribute('width')) || 0;
-      itemData.height = el.naturalHeight || Number(el.getAttribute('height')) || 0;
+      const thumb = el.currentSrc || el.src;
+      // data-zoom-src: 확대 시 원본 지정(srcset 축소본 대신). 크기는 width/height 속성(원본 기준)
+      const zoomSrc = el.dataset.zoomSrc;
+      const attrWidth = Number(el.getAttribute('width')) || 0;
+      const attrHeight = Number(el.getAttribute('height')) || 0;
+      itemData.src = zoomSrc || thumb;
+      itemData.msrc = thumb;
+      itemData.width = (zoomSrc && attrWidth) || el.naturalWidth || attrWidth;
+      itemData.height = (zoomSrc && attrHeight) || el.naturalHeight || attrHeight;
       itemData.alt = el.alt;
       return itemData;
     });
