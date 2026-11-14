@@ -92,6 +92,14 @@ posts/2025-11-24.bulkhead-pattern/
 - **주입은 CSS 출력 없는 모듈만** — `global.scss` 류 추가 시 스타일 블록마다 전역 CSS 중복 출력.
 - 수동 `@use` 는 `~/styles/...` 별칭 경로(Vite `resolve.alias` 해석). 주입과 중복돼도 무해.
 
+### 표
+
+`.postBody table` 은 기본 `display: table`(본문 너비 100%). 가로 스크롤은 `$bp-mobile` 이하만.
+
+- **모바일 스크롤**: 스크롤 영역을 좌우 여백까지 확장(`margin-inline: rem(-16)` + `padding-inline: rem(16)`) → 넘친 내용이 화면 끝에서 잘려 보임. `16` = `.siteBody` 좌우 패딩, 바꾸면 같이 수정.
+- 마크다운 표는 모바일에서 `display: block`(익명 테이블이 콘텐츠 너비로 수축 → 짧은 표는 100% 안 참). 항상 100% + 스크롤이 필요하면 `<div class="table-scroll">` 로 감쌈(데모 표 포함, 래퍼 스타일 재정의 금지).
+- **테두리**: 상·하단 `#ccc` 는 `table` 아닌 첫·마지막 행 그룹에, 행 구분선은 셀 `border-top`. `table` 테두리는 모바일 확장 시 여백까지 그어지고, 셀 `border-bottom` 은 `rowspan` 셀이 하단 선을 덮음.
+
 ### 인라인 코드
 
 `.postBody code:not(.astro-code code)` 에만 박스 스타일(테두리·배경). Shiki 블록(`pre.astro-code > code`)은 제외 — 인라인 스타일 추가 시 이 셀렉터 안에서.

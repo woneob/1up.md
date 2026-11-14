@@ -806,22 +806,42 @@ button.shareBtn {
         }
 
         table {
-          display: block;
           width: 100%;
           margin: rem(24) 0 rem(32);
-          overflow-x: auto;
           border-collapse: collapse;
-          border-width: rem(1) 0;
-          border-color: #ccc;
-          border-style: solid;
           font-size: rem(16);
           text-align: left;
+
+          // 모바일 한정 가로 스크롤. block 은 내부 익명 테이블이 콘텐츠 너비로 수축
+          @media (max-width: $bp-mobile) {
+            display: block;
+            overflow-x: auto;
+            // 좌우 여백(.siteBody 패딩 16)까지 확장 — 스크롤 가능 암시. 패딩으로 시작·끝 여백 유지
+            width: auto;
+            margin-inline: rem(-16);
+            padding-inline: rem(16);
+          }
+        }
+
+        // 상·하단 테두리는 행 그룹에 — table 에 두면 모바일 확장 시 여백까지 선이 그어짐
+        table > :first-child {
+          border-top: rem(1) solid #ccc;
+        }
+
+        table > :last-child {
+          border-bottom: rem(1) solid #ccc;
+        }
+
+        // 첫 행 윗선은 행 그룹 상단 테두리로 대체
+        table > :first-child > tr:first-child > * {
+          border-top: 0;
         }
 
         th,
         td {
           padding: rem(10) rem(16);
-          border-bottom: 1px solid #eee;
+          // 행 구분선은 윗선 — 아랫선이면 rowspan 셀이 표 하단 테두리를 덮음
+          border-top: 1px solid #eee;
           vertical-align: top;
 
           &:first-child {
@@ -839,9 +859,12 @@ button.shareBtn {
         }
 
         th {
-          border-bottom-color: #888;
           font-weight: 500;
           color: #222;
+        }
+
+        thead th {
+          border-bottom: 1px solid #888;
         }
 
         td {
@@ -850,6 +873,27 @@ button.shareBtn {
 
         tbody tr:hover {
           background-color: #fafafa;
+        }
+
+        // 표 래퍼 — 표는 display:table 유지(전체 너비), 가로 스크롤은 래퍼 담당
+        .table-scroll {
+          margin: rem(24) 0 rem(32);
+          overflow-x: auto;
+          overscroll-behavior-x: contain;
+          touch-action: pan-x pan-y; // html 의 manipulation 을 상속 교집합에서 풀어 가로 팬 보장
+
+          // 좌우 여백(.siteBody 패딩 16)까지 확장 — 스크롤 가능 암시. 패딩으로 시작·끝 여백 유지
+          @media (max-width: $bp-mobile) {
+            margin-inline: rem(-16);
+            padding-inline: rem(16);
+          }
+
+          table {
+            display: table;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+          }
         }
 
         .fixedTable {
