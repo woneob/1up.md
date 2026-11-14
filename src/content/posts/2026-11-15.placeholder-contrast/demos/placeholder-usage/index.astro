@@ -1,0 +1,274 @@
+---
+import { Image } from 'astro:assets';
+import { contrast, luminance, toRgb } from '../colors.js';
+
+// images/ 에 없는 항목은 렌더 제외
+const images = import.meta.glob('./images/*.png', { eager: true, import: 'default' });
+
+const PLACEHOLDER_MIN = 4.5; // 배경 ↔ 플레이스홀더 (WCAG 1.4.3 AA)
+const TEXT_GAP_MIN = 3; // 플레이스홀더 ↔ 입력 글자 (G183)
+
+const ratioOf = (a, b) => contrast(luminance(toRgb(a)), luminance(toRgb(b)));
+
+const items = [
+  { id: 'p1', background: '#F7F7F7', placeholder: '#737373', text: '#2E2E2E' },
+  { id: 'p2', background: '#F2F5F8', placeholder: '#848F9A', text: '#333333' },
+  { id: 'p3', background: '#FFFFFF', placeholder: '#9CA3AF', text: '#000000' },
+  { id: 'p4', background: '#F8F8F8', placeholder: '#606060', text: '#0F0F0F' },
+  { id: 'p5', background: '#F4F4F4', placeholder: '#999999', text: '#101010' },
+  { id: 'p6', background: '#F5F5F5', placeholder: '#969696', text: '#222222' },
+]
+  .map((item) => {
+    const placeholderRatio = ratioOf(item.background, item.placeholder);
+    const textGapRatio = ratioOf(item.placeholder, item.text);
+    return {
+      ...item,
+      image: images[`./images/${item.id}.png`],
+      colors: [
+        ['Background', item.background],
+        ['Placeholder', item.placeholder],
+        ['Text', item.text],
+      ],
+      ratios: [
+        { name: '배경 대비 플레이스홀더 명암비', value: placeholderRatio, passes: placeholderRatio >= PLACEHOLDER_MIN },
+        { name: '플레이스홀더 대비 입력 글자 명암비', value: textGapRatio, passes: textGapRatio >= TEXT_GAP_MIN },
+      ],
+    };
+  })
+  .filter((item) => item.image)
+  .map((item, index) => ({ ...item, name: `사이트 ${String.fromCharCode(65 + index)}` }));
+---
+
+<div class="placeholder-usage">
+  <div class="usage-grid">
+    {items.map((item) => (
+      <figure class="usage-item">
+        <Image
+          src={item.image}
+          alt={`${item.name} 입력창: 플레이스홀더 상태와 입력된 상태`}
+          widths={[480, item.image.width]}
+          sizes={`(max-width: 600px) 100vw, 380px`}
+          data-zoom-src={item.image.src}
+        />
+        <figcaption>
+          <div class="usage-name">{item.name}</div>
+          <dl class="usage-colors">
+            {item.colors.map(([label, color]) => (
+              <>
+                <dt class="color-name">{label}</dt>
+                <dd class="color-value"><code data-color style={`--swatch:${color}`}>{color}</code></dd>
+              </>
+            ))}
+            {item.ratios.map(({ name, value, passes }) => (
+              <>
+                <dt class="ratio-name">{name}</dt>
+                <dd class:list={['ratio-value', { isPass: passes, isFail: !passes }]}>
+                  <span class="ratio-number">{value.toFixed(2)}:1</span>
+                  {passes ? (
+                    <svg class="status-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  ) : (
+                    <svg class="status-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M4.5 4.5L11.5 11.5M11.5 4.5L4.5 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                  )}
+                  <span class="status-text">{passes ? '충족' : '미달'}</span>
+                </dd>
+              </>
+            ))}
+          </dl>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+  <p class="usage-legend">
+    위 수치는 배경 대비(기준 {PLACEHOLDER_MIN}:1), 아래 수치는 입력 글자 대비(기준 {TEXT_GAP_MIN}:1) 명암비다.
+  </p>
+</div>
+
+<style lang="scss">
+  @mixin visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .placeholder-usage {
+    margin: rem(24) 0 rem(32);
+  }
+
+  .usage-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: rem(16);
+
+    @media (max-width: $bp-mobile) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .usage-legend {
+    margin: rem(16) 0 0;
+    font-size: rem(13);
+    line-height: 1.5;
+    color: #666;
+    text-align: left;
+  }
+
+  .usage-item {
+    min-width: 0;
+    margin: 0;
+    padding: rem(10);
+    border: rem(1) solid #e3e3e3;
+    background: #f9f9f9;
+
+    img {
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: rem(6);
+    }
+
+    figcaption {
+      margin-top: rem(10);
+      padding-left: rem(4);
+      text-align: left;
+    }
+  }
+
+  .usage-name {
+    margin-bottom: rem(6);
+    font-size: rem(14);
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  // 행 구성: 이름 | 값 × 3. 명암비는 인접한 두 행 중앙을 잇는 괄호 옆에 배치
+  .usage-colors {
+    --value-h: #{rem(22)};
+    --bracket-w: #{rem(10)};
+    --line: #bbb;
+
+    position: relative;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: repeat(3, var(--value-h));
+    justify-content: start;
+    align-items: center;
+    margin: 0;
+    font-size: rem(13);
+    line-height: 1.3;
+
+    dd {
+      margin: 0;
+    }
+  }
+
+  .color-name {
+    grid-column: 1;
+    padding-left: rem(6);
+    padding-right: rem(10);
+    color: #666;
+    white-space: nowrap;
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: rem(3);
+      height: rem(3);
+      margin-right: rem(6);
+      border-radius: 50%;
+      background: currentColor;
+      vertical-align: middle;
+    }
+  }
+
+  .color-value {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+
+    // 전역 인라인 코드 배경(#f9f9f9)이 그리드 배경과 겹침
+    code {
+      background-color: #fff !important;
+    }
+  }
+
+  .ratio-name {
+    @include visually-hidden;
+  }
+
+  .ratio-value {
+    position: relative;
+    grid-column: 3;
+    align-self: stretch;
+    // 행 중앙 ~ 다음 행 중앙
+    margin-block: calc(var(--value-h) / 2) !important;
+    padding-left: calc(var(--bracket-w) + #{rem(12)});
+    display: flex;
+    align-items: center;
+    gap: rem(3);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+
+    // 괄호
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--bracket-w);
+      border: solid var(--line);
+      border-width: 1px 1px 1px 0;
+    }
+
+    // 괄호 → 수치 눈금
+    &::after {
+      content: '';
+      position: absolute;
+      left: var(--bracket-w);
+      top: 50%;
+      width: rem(7);
+      border-top: 1px solid var(--line);
+    }
+
+    &:nth-of-type(4) {
+      grid-row: 1 / 3;
+    }
+
+    &:nth-of-type(5) {
+      grid-row: 2 / 4;
+
+      // 위 괄호 하단선과 겹침 방지
+      &::before {
+        border-top-width: 0;
+      }
+    }
+
+    &.isFail .ratio-number {
+      color: #888;
+    }
+
+    &.isPass .status-icon {
+      color: #16a34a;
+    }
+
+    &.isFail .status-icon {
+      color: #dc2626;
+    }
+  }
+
+  .status-icon {
+    width: rem(14);
+    height: rem(14);
+    flex-shrink: 0;
+  }
+
+  .status-text {
+    @include visually-hidden;
+  }
+</style>
