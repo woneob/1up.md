@@ -7,6 +7,7 @@ const buildTime_formattedDate = date.toLocaleDateString('en-US', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
+  timeZone: site.timezone,
 });
 
 export async function GET() {
