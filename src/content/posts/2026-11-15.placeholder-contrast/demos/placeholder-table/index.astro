@@ -1,0 +1,195 @@
+---
+import { contrast, luminance, toRgb } from '../colors.js';
+const bgColor = '#ffffff';
+const rows = ['#999999', '#888888', '#777777', '#767676', '#666666', '#333333'].map((color) => {
+  const ratio = contrast(luminance(toRgb(color)), 1);
+  return { color, ratio, passes: ratio >= 4.5 };
+});
+---
+
+<div class="table-scroll">
+<table class="placeholder-table">
+  <thead>
+    <tr>
+      <th scope="col">배경색</th>
+      <th scope="col">글자색</th>
+      <th scope="col">표시 예시</th>
+      <th scope="col">명암비</th>
+      <th scope="col">AA 기준 (4.5:1)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {rows.map(({ color, ratio, passes }, index) => (
+      <tr>
+        {index === 0 && (
+          <td class="bg-cell" rowspan={rows.length}>
+            <span class="color-label">
+              <code>{bgColor}</code>
+              <span class="color-swatch" style={`background:${bgColor}`} aria-hidden="true"></span>
+            </span>
+          </td>
+        )}
+        <th scope="row">
+          <span class="color-label">
+            <code>{color}</code>
+            <span class="color-swatch" style={`background:${color}`} aria-hidden="true"></span>
+          </span>
+        </th>
+        <td class="sample-cell">
+          <input
+            type="text"
+            placeholder="홍길동"
+            readonly
+            tabindex="-1"
+            inert
+            aria-label={`${color} 플레이스홀더 예시`}
+            style={`--sample-color:${color}`}
+          />
+        </td>
+        <td class="num-cell">{ratio.toFixed(2)}:1</td>
+        <td class="status-cell">
+          <span class:list={['status-badge', { isPass: passes, isFail: !passes }]}>
+            {passes ? (
+              <svg class="status-icon isPass" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8.5L6.5 12L13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            ) : (
+              <svg class="status-icon isFail" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M4.5 4.5L11.5 11.5M11.5 4.5L4.5 11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            )}
+            <span>{passes ? '충족' : '미달'}</span>
+          </span>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+</div>
+
+<style lang="scss">
+  table.placeholder-table {
+    display: table !important;
+    width: 100% !important;
+    margin: 0 !important;
+    color-scheme: light;
+
+    th,
+    td {
+      text-align: center !important;
+      vertical-align: middle !important;
+    }
+
+    thead th {
+      white-space: nowrap;
+    }
+
+    tbody th {
+      font-weight: 400 !important;
+      white-space: nowrap;
+      // 첫 행은 rowspan 셀 뒤라 :first-child 가 아니어서 padding-left 가 달라짐 → 전 행 통일
+      padding-left: rem(16) !important;
+
+      @media (max-width: $bp-mobile) {
+        padding-left: rem(12) !important;
+      }
+    }
+
+    .color-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: rem(8);
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    .color-swatch {
+      width: rem(14);
+      height: rem(14);
+      border-radius: rem(2);
+      // 흰색 등 밝은 값이 배경에 묻히지 않도록 반투명 테두리
+      box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25);
+      flex-shrink: 0;
+      forced-color-adjust: none;
+    }
+
+    .sample-cell {
+      padding-top: rem(6) !important;
+      padding-bottom: rem(6) !important;
+    }
+
+    .bg-cell {
+      white-space: nowrap;
+    }
+
+    .num-cell {
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .status-cell {
+      white-space: nowrap;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: rem(5);
+
+      &.isFail {
+        color: #888;
+      }
+    }
+
+    .status-icon {
+      width: rem(15);
+      height: rem(15);
+      flex-shrink: 0;
+
+      &.isPass {
+        color: #16a34a;
+      }
+
+      &.isFail {
+        color: #dc2626;
+      }
+    }
+
+    input[readonly] {
+      appearance: none;
+      box-sizing: border-box;
+      width: rem(140);
+      padding: rem(5) rem(10);
+      border: 1px solid #ccc;
+      border-radius: rem(4);
+      background: #fff;
+      color: #222;
+      opacity: 1;
+      pointer-events: none;
+      user-select: none;
+      font: inherit;
+      font-size: rem(15);
+      line-height: 1.3;
+      font-weight: 500;
+      box-shadow: none;
+
+      &::placeholder {
+        color: var(--sample-color);
+        opacity: 1;
+      }
+    }
+
+    @media (forced-colors: active) {
+      input[readonly] {
+        background: Field;
+        color: FieldText;
+        border-color: ButtonText;
+
+        &::placeholder {
+          color: GrayText;
+        }
+      }
+    }
+  }
+</style>

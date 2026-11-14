@@ -1,0 +1,216 @@
+@use '~/styles/variables' as *;
+@use '~/styles/functions' as *;
+
+// 색상 도구 데모(contrast-checker · placeholder-pair-checker) 공용 UI
+// 구성: .controls(입력·옵션) → .card(미리보기 + 결과 행)
+// 본문 규칙(.postBody p/ul/li/b/small)과 충돌 방지로 div·span 만 사용
+@mixin demo-ui {
+  --accent: #315bb5;
+  --line: #e0e0e0;
+  --muted: #555;
+  display: grid;
+  gap: rem(16);
+  padding: rem(20);
+  border: 1px solid var(--line);
+  border-radius: rem(10);
+  background: #ededed;
+  color: #222;
+  color-scheme: light;
+  font-size: rem(15);
+  text-align: left;
+
+  output { font-variant-numeric: tabular-nums; }
+  [hidden] { display: none !important; }
+
+  .label,
+  .hint,
+  .desc { color: var(--muted); font-size: rem(13); }
+  .label { font-weight: 500; }
+  // 테두리 있는 컨트롤 위·아래 글자의 시각 보정
+  .label,
+  .desc { padding-inline-start: rem(2); }
+
+  // 색상 코드(입력·출력)는 고정폭
+  .picker input[type='text'],
+  .hex { font-family: 'Jetendard', monospace; }
+
+  // 입력·옵션: 2열 격자, 라벨은 항상 위
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: rem(14) rem(12);
+  }
+  .control {
+    display: grid;
+    align-content: start;
+    gap: rem(6);
+    min-width: 0;
+  }
+
+  .picker {
+    display: flex;
+    align-items: center;
+    gap: rem(8);
+    padding: rem(4);
+    border: 1px solid var(--line);
+    border-radius: rem(8);
+    background: #fff;
+    &:has(input[type='text']:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+    &:has(input[aria-invalid='true']) { border-color: #b42318; }
+
+    input[type='color'] {
+      flex: none;
+      inline-size: rem(30);
+      block-size: rem(30);
+      padding: 0;
+      border: 0;
+      border-radius: rem(5);
+      background: none;
+      cursor: pointer;
+      &::-webkit-color-swatch-wrapper { padding: 0; }
+      &::-webkit-color-swatch { border: 1px solid rgba(0, 0, 0, 0.2); border-radius: rem(5); }
+      &::-moz-color-swatch { border: 1px solid rgba(0, 0, 0, 0.2); border-radius: rem(5); }
+    }
+    input[type='text'] {
+      inline-size: 100%;
+      min-inline-size: 0;
+      padding: rem(4) 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-weight: 500;
+      text-transform: uppercase;
+      &:focus-visible { outline: none; }
+      &[aria-invalid='true'] { color: #b42318; }
+    }
+  }
+
+  .copy {
+    flex: none;
+    display: grid;
+    place-items: center;
+    inline-size: rem(30);
+    block-size: rem(30);
+    padding: 0;
+    border: 0;
+    border-radius: rem(5);
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    .i-done { display: none; }
+    &:hover { color: var(--accent); }
+    &:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    &[data-copied] {
+      color: #14612b;
+      .i-copy { display: none; }
+      .i-done { display: block; }
+    }
+  }
+
+  // 알약형 라디오
+  .seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: rem(6);
+    label { position: relative; cursor: pointer; }
+    input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+    .pill {
+      display: grid;
+      place-items: center;
+      min-block-size: rem(30);
+      padding: 0 rem(14);
+      border: 1px solid var(--line);
+      border-radius: rem(8);
+      background: #fff;
+      font-size: rem(14);
+    }
+    input:checked + .pill {
+      border-color: var(--accent);
+      background: #f1f5fd;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    input:focus-visible + .pill { outline: 3px solid var(--accent); outline-offset: 2px; }
+  }
+
+  // 미리보기 + 결과: 한 카드, 행 사이는 선으로만 구분
+  .card {
+    display: grid;
+    border: 1px solid var(--line);
+    border-radius: rem(10);
+    background: #fff;
+    overflow: hidden;
+    > * + * { border-top: 1px solid var(--line); }
+  }
+  .row { padding: rem(12) rem(16); }
+
+  .result {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: rem(8) rem(16);
+  }
+  .score {
+    display: grid;
+    gap: rem(4);
+    min-width: 0;
+    output { font-size: rem(26); font-weight: 700; line-height: 1.1; }
+  }
+  .badge {
+    padding: rem(4) rem(16);
+    border-radius: rem(999);
+    font-size: rem(15);
+    font-weight: 600;
+  }
+
+  .chip {
+    flex: none;
+    inline-size: rem(22);
+    block-size: rem(22);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: rem(5);
+    background: var(--c);
+  }
+
+  .apply {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: rem(6) rem(8);
+    padding: rem(5) rem(5) rem(5) rem(6);
+    border: 1px solid #888;
+    border-radius: rem(8);
+    background: #fff;
+    color: inherit;
+    font: inherit;
+    font-size: rem(14);
+    cursor: pointer;
+    &:hover { background: #f5f5f5; }
+    &:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    // 누를 수 있음을 드러내는 채움 꼬리표
+    .cta {
+      margin-inline-start: rem(4);
+      padding: rem(3) rem(10);
+      border-radius: rem(5);
+      background: #333;
+      color: #fff;
+      font-size: rem(13);
+      font-weight: 600;
+    }
+    .hex { font-weight: 600; }
+    .sub { color: var(--muted); font-size: rem(13); font-variant-numeric: tabular-nums; }
+  }
+
+  @media (max-width: $bp-mobile) {
+    padding: rem(14);
+    .controls { grid-template-columns: 1fr; }
+  }
+  @media (forced-colors: active) {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    .chip { forced-color-adjust: none; }
+  }
+}

@@ -1,0 +1,172 @@
+---
+
+title: |-
+  플레이스홀더 글자색과 명암비,
+  어떤 기준으로 정해야 할까
+description: >
+  너무 연하면 읽기 어렵고 진하면 입력값처럼 보이는 플레이스홀더.
+  배경 대비 최소 명암비(4.5:1)와 입력 텍스트와의 명암비(3:1) 기준으로
+  두 글자색을 한 쌍으로 정하는 방법을 살펴본다.
+pubDate: '2026-11-15T02:10:00+09:00'
+tags:
+
+- UX
+- UI
+- accessibility
+
+references:
+  - title: 'Understanding SC 1.4.3'
+    url: 'https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html'
+    note: 'WCAG 2.2'
+  - title: 'The placeholder attribute'
+    url: 'https://html.spec.whatwg.org/multipage/input.html#the-placeholder-attribute'
+    note: 'WHATWG HTML Living Standard'
+  - title: 'Forms Tutorial: Instructions'
+    url: 'https://www.w3.org/WAI/tutorials/forms/instructions/'
+    note: 'W3C WAI'
+  - title: 'placeholder 속성'
+    url: 'https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/placeholder'
+    note: 'MDN'
+  - title: '::placeholder'
+    url: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/::placeholder'
+    note: 'MDN'
+  - title: 'Placeholders in Form Fields Are Harmful'
+    url: 'https://www.nngroup.com/articles/form-design-placeholders/'
+    note: 'Nielsen Norman Group'
+  - title: '웹 접근성 명암비 기준, 꼭 지켜야 할까?'
+    url: 'https://yozm.wishket.com/magazine/detail/2901/'
+    note: '요즘IT'
+
+---
+
+import PlaceholderTable from './demos/placeholder-table/index.astro';
+import ContrastChecker from './demos/contrast-checker/index.astro';
+import TextContrastTable from './demos/text-contrast-table/index.astro';
+import PlaceholderPairChecker from './demos/placeholder-pair-checker/index.astro';
+import PlaceholderUsage from './demos/placeholder-usage/index.astro';
+
+<dfn><ruby>플레이스홀더<rt lang="en">placeholder</rt></ruby></dfn>는 사용자가 값을 입력하기 전까지
+비어 있는 입력창에 표시되는 임시 안내 문구다. 가령 이메일 입력창에 `name@example.com`이라고 표시해 두면,
+무엇을 어떤 형식으로 입력해야 하는지 바로 알 수 있다. 다만 실제 입력된 글자와 구별하기 위해 연한 색으로 표현하는데, 막상 화면을 만들 때는 어느 정도로 연하게 하는게 적당할지 정하기가 쉽지 않다.
+너무 연하면 읽기 어렵고, 진하면 입력한 글자와 구분이 안 가기 때문이다.
+
+---
+
+## 얼마나 연하게 표현해야 할까
+
+플레이스홀더가 아무리 임시 문구라도 최소한 읽을 수 있을 만큼은 뚜렷해야 한다.
+이때 기준이 되는 것이 웹 접근성 지침인
+<abbr title="Web Content Accessibility Guidelines">WCAG</abbr>의 [최소 명암비 기준(AA 등급)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html#intent)이다.
+이 기준에서는 글자와 배경색 사이에 **최소 4.5:1의 명암비**를 요구하는데, 화면의 일반 글자뿐 아니라 플레이스홀더에도 예외 없이 적용된다.
+
+<aside class="postSubnote">
+<dfn>명암비</dfn>는 글자와 배경의 밝기 차이를 수치로 나타낸 것이다.
+같은 색이면 1:1이고, 차이가 커질수록 숫자도 커진다.
+대비가 낮은 글자는 시력이 낮거나 나이가 들어 밝기 차이를 구별하기 어려운 사람에게 잘 보이지 않는다.
+WCAG는 이런 사용자도 글자를 읽을 수 있도록 준수 수준을 A / AA / AAA 세 등급으로 나누며, 보통 실무에서는 중간 단계인 **AA 등급을 표준 기준**으로 삼는다.
+</aside>
+
+그렇다면 AA 등급 기준으로 최소 명암비를 충족하는 색은 어떤 색일까? 흰색(`#FFF`) 배경에서 본문 글자로 쓸 최소 명암비의 회색을 찾는다면, 그 값은 `#767676`(4.54:1) 이다. 
+`#999` 나 그 이상의 밝은 색도 흔하게 사용해 왔다면 이 값은 생각보다 진하다고 느낄 수 있다.
+
+`#FFF` 배경색 기준으로 자주 사용되는 다른 회색들도 함께 비교해 보자.
+
+<PlaceholderTable />
+
+연한 회색으로 많이 쓰이는 `#999`(2.85:1)나 `#888`(3.54:1)은 물론, `#777`(4.48:1) 마저도 미달이다. `#767676`까지 진해졌을 때 그제야 4.5:1을 간신히 넘는다.
+이보다 연해지면 평소에는 잘 보일지 몰라도, 시력이 약한 사용자에게는 글자가 보이지 않거나 화면 환경에 따라 읽히지 않을 수 있음을 명심하자.
+
+아래 도구에서 글자색과 배경색을 직접 입력해 명암비를 확인해 보자.
+등급(AA/AAA)과 텍스트 종류(본문/큰 텍스트)를 고르면 그에 맞는 기준으로 통과 여부를 알려 준다.
+기준에 못 미치는 색을 골랐다면, **가장 가까운 통과 색상**도 함께 제안받을 수 있다.
+
+<ContrastChecker />
+
+## 플레이스홀더가 너무 진해서 입력 글자색과 구분되지 않는다
+
+진짜 문제는 이제부터다. **플레이스홀더를 기준에 맞춰 진하게 잡은 바람에 정작 입력된 글자색과 구분이 어려워진다.**
+
+본문이나 입력창의 기본 글자색으로 `#666`처럼 적당히 진한 회색을 쓰는 곳이 많다.
+여기에 플레이스홀더를 `#767676`으로 맞추면 두 글자색의 명암비가 1.26:1에 불과해, 입력창에 적힌 글자가 플레이스홀더인지 실제 입력된 값인지 한눈에 구별하기 어렵다.
+
+플레이스홀더를 더 연하게 만들 수 없다면 방향을 반대로 잡아야 한다.
+플레이스홀더는 그대로 두고 **입력 글자색을 더 진하게** 만들어 두 글자색의 차이를 벌리는 것이다.
+
+## 입력 글자색은 얼마나 더 진해야 할까
+
+그렇다면 두 글자색은 얼마나 차이가 나야 할까?
+WCAG 1.4.1(색상 사용)의 기술 지침인 [G183](https://www.w3.org/WAI/WCAG22/Techniques/general/G183)에 따르면, 색상만으로 두 텍스트의 상태 차이를 구분해야 할 때는 **두 텍스트 색상 자체의 명암비가 최소 3:1 이상**이어야 한다.
+
+<aside class="postSubnote">
+G183은 '배경 대비 가독성'이 아니라 **'서로 다른 두 텍스트 간의 시각적 구별'**을 다루는 지침이다.
+밑줄 같은 별도의 시각적 단서 없이 일반 본문과 링크 텍스트를 색상으로만 구분할 때, 두 글자색의 명암비가 3:1 이상이어야 일반 시력을 가진 사용자가 상태 차이를 한눈에 인지할 수 있다고 정의한다.
+</aside>
+
+이 **3:1 규칙**을 흰색 배경(`#FFF`)의 플레이스홀더(`#767676`)와 입력 텍스트에 적용해 보자.
+입력 글자색별 명암비와 실제 표시 모습을 비교하면 다음과 같다.
+
+<TextContrastTable />
+
+플레이스홀더가 이미 꽤 진하기 때문에, 본문용으로 많이 쓰는 `#333`조차 명암비가 2.78:1에 그쳐 기준에 못 미친다.
+즉, 플레이스홀더의 최소 명암비(4.5:1)를 지키면서 두 텍스트 사이에 3:1 이상의 차이를 확보하려면 입력 텍스트는 최소 **`#2D2D2D`**(3.03:1)나 **`#222`**(3.50:1) 이상 진한 색을 써야 한다.
+
+결국 플레이스홀더의 색을 정하는 일은 회색 하나를 고르는 것이 아니다.
+**배경 대비 4.5:1을 넘기는 플레이스홀더**와 **그보다 3:1 이상 더 진한 입력 텍스트 색상**을 한 쌍으로 맞추는 일이다.
+
+아래 도구에 배경색과 입력 글자색을 넣으면 두 기준을 모두 만족하는 플레이스홀더 색을 찾아 준다.
+지금 글자색으로는 맞는 색이 없다면, 가장 가까운 글자색과 플레이스홀더 색을 한 쌍으로 제안한다.
+
+<PlaceholderPairChecker />
+
+## 과연 이 기준을 실무에서 지킬 수 있을까
+
+위 도구로 직접 색을 맞춰 보면 알 수 있듯, 배경 대비 4.5:1과 입력 텍스트 대비 3:1이라는 두 조건을 동시에 만족하는 색상 폭은 생각보다 훨씬 좁다.
+기준을 통과하는 `#767676`을 그대로 쓰자니 플레이스홀더가 너무 진해 보여 이미 값이 채워진 입력창처럼 보이기 쉽고, 입력 텍스트까지 `#222` 이상으로 진하게 고정해야 하니 디자인 선택지도 크게 줄어든다.
+과연 실무에서 이 까다로운 기준을 그대로 지키는 것이 가능할까?
+
+### 주요 서비스는 어떻게 쓰고 있을까
+
+실제 운영 중인 서비스들은 플레이스홀더와 입력 글자색을 어떻게 쓰고 있는지 확인하기 위해, 국내외 사이트 여섯 곳의 입력창을 무작위로 살펴보았다.
+그 결과 여섯 곳 가운데 두 기준을 모두 충족한 곳은 단 한 곳뿐이었다.
+나머지 다섯 곳은 모두 플레이스홀더가 배경 대비 4.5:1에 못 미쳤고, 그중 한 곳은 입력 글자와의 명암비도 3:1을 넘지 못했다.
+
+<PlaceholderUsage />
+
+대부분의 사이트가 배경 대비 4.5:1을 맞추기보다, 입력 글자와 확실히 구분되도록 플레이스홀더를 더 연하게 표현하는 쪽을 택하고 있는 셈이다.
+
+### 브라우저의 기본 플레이스홀더 색
+
+이러한 고민은 개별 웹사이트에만 국한되지 않는다. **웹 표준을 구현하는 브라우저들조차 기본값에서 이 기준을 일관되게 지키지 못하고 있다.**
+별도의 CSS를 지정하지 않았을 때 브라우저가 기본으로 제공하는 `::placeholder` 스타일을 살펴보면 엔진과 버전에 따라 제각각이다.
+
+| 브라우저 | 기본 `::placeholder` 색 | 흰 배경 대비 |
+| :--- | :--- | :--- |
+| Chrome · Edge | `#757575` | 4.61:1 (충족) |
+| Firefox | 입력 글자색의 54% 불투명도<br />(글자색 `#000`이면 `#757575`) | 4.61:1 (충족, 글자색이 연해지면 미달) |
+| Safari | `#A9A9A9` | 2.32:1 (미달) |
+
+- **Chrome · Edge**: 최소 명암비 기준을 충족한다. 과거에는 `darkgray`(`#A9A9A9`, 2.32:1)를 기본값으로 썼으나, Chrome 57(2017년)부터 기준을 넘기는 `#757575`(4.61:1)로 [변경했다](https://github.com/chromium/chromium/commit/1a64a69aa334a8cafcbffd75a7af0841be1285b0 "Placeholder style should meet WCAG contrast ratio guidelines - chromium/chromium@1a64a69").
+- **Firefox**: 기본 상태에서는 기준을 충족하지만, 입력 글자색에 따라 미달될 수 있다. 고정된 색을 지정하는 대신 [입력 글자색을 54%만 불투명하게 써서](https://github.com/mozilla-firefox/firefox/blob/6beeccd5eef3aa453b1a9bd267f6410b0f38121e/layout/style/res/forms.css#L175-L178) 플레이스홀더 색을 만들기 때문이다. 기본 검은색(`#000`) 글자와 흰색 배경에서는 `#757575`(4.61:1)가 되어 기준을 넘기지만, 입력 글자색을 조금만 연하게 바꿔도 플레이스홀더가 함께 연해져 곧바로 기준 미달이 된다.
+- **Safari**: 최소 명암비 기준에 크게 미달한다. Chrome이 버린 `darkgray`(`#A9A9A9`)를 [지금도 기본값으로 쓰기 때문](https://github.com/WebKit/WebKit/blob/73dc6d0454c27ccdd2e4c7eeef656987c90ca0c8/Source/WebCore/css/html.css#L740-L742)인데, 흰색 배경 대비 명암비가 2.32:1로 최소 기준(4.5:1)의 절반 수준에 그친다.
+
+이처럼 브라우저들마저 '충분히 읽히는 진하기'와 '비어 있는 입력창처럼 보이는 연하기' 사이에서 입장이 갈린다. 같은 `darkgray`에서 출발한 Chrome과 Safari가 서로 다른 선택을 했고, Firefox는 기준을 넘기되 글자색에 따라 결과가 달라지는 방식을 택했다. 그만큼 색상 값 하나만으로 가독성과 상태 구분을 동시에 만족시키기가 쉽지 않다는 뜻이다.
+
+## 명암비 기준을 지키되, 색상의 한계는 단서로 보완하자
+
+여러 서비스와 브라우저의 현황이 제각각이라고 해서 명암비 기준을 외면해도 된다는 뜻은 아니다.
+시력이 약한 사용자나 밝은 화면 환경에서도 안내 문구를 문제없이 읽을 수 있도록, **배경 대비 4.5:1과 입력 글자 대비 3:1이라는 기준을 이해하고 이를 충족하는 색상 쌍으로 구현하는 것이 기본**이다.
+
+다만 [MDN의 `::placeholder` 접근성 안내](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/::placeholder#accessibility)에서도 짚고 있듯, 명암비 기준을 맞추려고 플레이스홀더 색을 진하게 잡으면 이미 값이 채워진 입력창으로 오해하기 쉬운 현실적인 한계가 뒤따른다.
+이럴 때는 명암비를 포기하거나 플레이스홀더를 아예 쓰지 않는 극단적인 선택 대신, **사용자가 혼동하지 않도록 색상 외의 단서를 함께 제공**해 문제를 풀 수 있다.
+
+첫째, **플레이스홀더 문구 앞에 `"예:"`처럼 예시임을 알리는 머리말을 붙인다.**
+[MDN의 `placeholder` 속성 문서](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Attributes/placeholder)에서는 플레이스홀더에 샘플 값을 적을 때 `"예: hong@example.com"`처럼 예시임을 드러내는 머리말을 함께 적는 방식을 제시한다.
+입력창에 그냥 `"홍길동"`이나 `"010-1234-5678"`만 적혀 있으면 `#767676`처럼 진한 회색일 때 이미 입력된 값으로 착각하기 쉽지만, 앞에 `"예:"`가 붙어 있으면 글자색이 다소 진하더라도 아직 비어 있는 칸임을 문구 자체로 즉시 구분할 수 있다.
+
+둘째, **항목 이름(`<label>`)과 필수 입력 조건은 입력창 밖에 고정한다.**
+[WHATWG HTML 표준 명세](https://html.spec.whatwg.org/multipage/input.html#the-placeholder-attribute)와 [W3C WAI의 폼 안내 지침](https://www.w3.org/WAI/tutorials/forms/instructions/), 그리고 [닐슨 노먼 그룹(NN/g)](https://www.nngroup.com/articles/form-design-placeholders/)은 공통으로 플레이스홀더를 `<label>`의 대체재로 쓰지 말라고 권고한다.
+플레이스홀더는 글자를 입력하는 순간 사라지기 때문에, 항목 이름은 입력창 밖의 `<label>`로 상시 노출하고 비밀번호 조합 규칙처럼 입력 중에도 계속 참고해야 하는 조건은 입력창 주변의 보조 문구(Helper Text)로 분리하는 편이 좋다.
+이렇게 역할을 나누면 플레이스홀더는 본래 목적대로 짧은 입력 형식 예시만 담게 되어, 색상이 조금 진하더라도 실제 입력값과 헷갈릴 여지가 크게 줄어든다.
+
+결국 플레이스홀더를 설계하는 일은 회색 농도 하나를 고르는 것에 그치지 않는다.
+**접근성 기준에 맞는 색상 쌍(4.5:1 · 3:1)을 갖추는 것에서 출발해, 색상만으로 다 전달하기 어려운 상태 차이를 레이블과 예시 문구로 뒷받침할 때** 읽기 쉬우면서도 헷갈리지 않는 입력창이 완성된다.
