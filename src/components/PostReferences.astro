@@ -1,0 +1,22 @@
+---
+// 프론트매터 references 렌더 — 항목: { title, url, note? }
+const { references } = Astro.props;
+
+const escapeHtml = text => text.replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+// note 의 `백틱` 구간만 <code> 로 변환
+const renderNote = note => escapeHtml(note).replace(/`([^`]+)`/g, '<code>$1</code>');
+---
+
+{references && references.length > 0 && (
+  <aside class="postReferences" aria-labelledby="postReferencesTitle">
+    <h2 id="postReferencesTitle">더 알아보기</h2>
+    <ul>
+      {references.map(({ title, url, note }) => (
+        <li>
+          <a href={url}>{title}</a>
+          {note && <span class="postReferences__note" set:html={renderNote(note)} />}
+        </li>
+      ))}
+    </ul>
+  </aside>
+)}

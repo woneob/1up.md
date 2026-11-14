@@ -50,6 +50,7 @@ posts/2025-11-24.bulkhead-pattern/
 
 - 프론트매터: `title`·`description`·`pubDate`(ISO+TZ)·`tags`(배열), 선택 `robots`·`unlisted`·`updatedDate`.
   - `updatedDate`: JSON-LD `dateModified` 로 사용(없으면 `pubDate`). `pubDate` 와 다르면 상세 페이지에만 `(Updated: …)` 표기([PostMeta](src/components/PostMeta.astro)만, 카드 미표시).
+  - `references`(선택): 참고 링크 배열 `{ title, url, note? }`. 본문에 참고 섹션 쓰지 말고 여기에 — [PostReferences](src/components/PostReferences.astro)가 `.postBody` 뒤(밖)에 작은 글씨로 렌더, 헤딩은 "더 알아보기" 고정. `note` 는 평문(`백틱`만 `<code>` 변환). `.postBody` 밖이라 외부 링크 아이콘 미적용.
   - `title` 을 YAML `|-` 멀티라인으로 쓰면 [[slug].astro](src/pages/[slug].astro)가 `\n` 감지 → h1 에 `multilineTitle` 클래스. 별도 플래그 불필요.
 - **소스 분기**: prod=`src/content/posts/`(커밋), draft=`src/content.draft/posts/`(gitignore, `dev:draft` 전용). [posts.js](src/utils/posts.js)가 `MODE==='draft'` 로 선택. `import.meta.glob` 은 변수 보간 불가라 prod/dev 글로브를 쌍으로 선언 + `pick()`.
 

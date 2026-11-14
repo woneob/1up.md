@@ -1011,6 +1011,51 @@ button.shareBtn {
           text-underline-offset: rem(2);
         }
       }
+
+      // 프론트매터 references (PostReferences.astro)
+      .postReferences {
+        margin-top: rem(40);
+        padding-top: rem(24);
+        border-top: 1px solid #ccc;
+        font-size: rem(15);
+        word-break: keep-all;
+        color: #666;
+
+        h2 {
+          font-size: rem(24);
+          font-weight: 500;
+          color: #555;
+        }
+
+        ul {
+          margin-top: rem(10);
+          padding-left: rem(20);
+          list-style: disc;
+        }
+
+        li {
+          margin: rem(4) 0;
+
+          &::marker {
+            color: #999;
+          }
+        }
+
+        a {
+          color: #006fd5;
+          text-decoration: underline currentcolor rem(1);
+          text-decoration-skip-ink: auto;
+          text-underline-offset: rem(2);
+        }
+
+        .postReferences__note::before {
+          content: " — ";
+        }
+
+        code {
+          font-family: 'Jetendard', monospace;
+        }
+      }
     }
   }
 }
