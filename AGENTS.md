@@ -138,7 +138,19 @@ CSS vendor prefix·문법 다운레벨은 빌드 시 Lightning CSS(Vite 기본 C
 - 폰트: Pretendard 가변 서브셋 단일 woff2(전 경로). `@font-face` 익명 CORS 라 `crossorigin` 필수. [_font.scss](src/styles/_font.scss)는 `font-weight: 400 600` 한 블록으로 400/500/600 커버(용량은 축 범위로 결정).
 - **Jetendard**(code 전용 고정폭, [_font.scss](src/styles/_font.scss)): Pretendard 서브셋과 **동일 글리프 커버리지로 서브셋**(약 210KB). `.postBody code`(인라인·블록)에만 적용, 본문 17px 대비 `16/17em`. **preload 제외** — 코드는 크리티컬 패스 아니라 `font-display: swap` 으로 지연 로드(여기 헤더에 넣지 말 것). 재현: fontkit 로 `PretendardVariable.subset.woff2` cmap 추출 → subset-font(harfbuzz)로 동일 유니코드 집합 서브셋.
 
-**검증**: `chrome://net-export` 의 `...EARLY_HINTS... → 103`. curl·Node http2 프로브는 false negative — 쓰지 말 것.
+**검증**: 실제 Chrome 에서 확인. curl·Node http2 프로브는 false negative — 쓰지 말 것.
+
+- `performance.getEntriesByType('navigation')[0].firstInterimResponseStart > 0` 이면 103 수신, 폰트·CSS 리소스의 `initiatorType === 'early-hints'` 면 프리로드 성공.
+- 또는 `chrome://net-export` 의 `...EARLY_HINTS... → 103`.
+- URL 별 첫 요청엔 103 없음(Cloudflare 가 200 의 `Link` 를 학습한 뒤 발사) → 같은 URL 을 두 번 이상 요청해 판정.
+
+### 캐시
+
+캐시 정책은 `_headers` 한 곳([[...headers].js](src/pages/[...headers].js)). Cloudflare 영역 설정은 Browser Cache TTL = Respect Existing Headers, Cache Rule 없음.
+
+- `/_astro/*` = 1년 `immutable`(파일명 해시). `/fonts/*` = 30일(해시 없음 → 교체 시 파일명 변경).
+- HTML·`/api/*` 는 캐시 안 함(Pages 기본 `max-age=0, must-revalidate`, API 는 `no-store`).
+- **⚠️ 영역 Cache Rule 로 HTML 을 캐시하지 말 것** — 전체 요청 대상 규칙이 `/api/*` 까지 캐시해 새 글 미노출·좋아요 수 정체 발생(실측). Early Hints 는 캐시 규칙 없이 동작.
 
 ## SPA 전환
 

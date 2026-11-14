@@ -19,6 +19,14 @@ export async function GET() {
     `  ${fontPreload('PretendardVariable.subset.woff2')}`,
     `  Link: <${globalCssUrl}>; rel=preload; as=style`,
     '',
+    // 파일명에 해시 포함 → 내용이 바뀌면 URL 도 바뀜
+    '/_astro/*',
+    '  Cache-Control: public, max-age=31536000, immutable',
+    '',
+    // 해시 없음 → 교체 시 파일명 변경 필요
+    '/fonts/*',
+    '  Cache-Control: public, max-age=2592000',
+    '',
   ].join('\n');
 
   return new Response(body, {
