@@ -3,6 +3,7 @@ import { Picture } from 'astro:assets';
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
+import PostReferences from '~/components/PostReferences.astro';
 import LikeButton from '~/components/LikeButton.astro';
 import ShareButton from '~/components/ShareButton.astro';
 import ImageLightbox from '~/components/ImageLightbox.astro';
@@ -21,7 +22,7 @@ if (!post) {
   throw new Error(`포스트를 찾을 수 없습니다: ${slug}`);
 }
 
-const { title, description, pubDate, updatedDate, tags, robots, unlisted } = post.frontmatter;
+const { title, description, pubDate, updatedDate, tags, robots, unlisted, references } = post.frontmatter;
 const multilineTitle = title.includes('\n');
 const Content = post.module.default;
 const stats = post.stats;
@@ -70,6 +71,7 @@ const jsonLd = postGraph(post);
       <div class="postBody">
         <Content />
       </div>
+      <PostReferences {references} />
     </div>
   </article>
   <ImageLightbox />
