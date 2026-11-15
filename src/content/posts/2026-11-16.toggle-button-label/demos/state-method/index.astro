@@ -1,0 +1,454 @@
+---
+// 본문 인라인 데모(standalone 문서 아님). 현재 상태를 표현하는 방법 4종 — method prop 으로 하나씩 렌더.
+// - filled: 표현 고정 + 켜진 모양(aria-pressed). 비교할 옆 버튼 유무 비교
+// - split: 아이콘 = 현재 상태, 글자 = 누르면 일어날 일
+// - verb: 명사로 끝난 글자 vs 동사로 끝난 글자
+// - choices: 선택지 전부 노출(라디오 2개)
+// 초기 상태를 SSR 로 확정(제로 CLS) → script.js 는 전환만 담당.
+import MicIcon from './MicIcon.astro';
+
+const { method } = Astro.props;
+
+const FORMATS = [
+  { id: 'bold', glyph: 'B', label: '굵게', on: true },
+  { id: 'italic', glyph: 'I', label: '기울임', on: false },
+  { id: 'underline', glyph: 'U', label: '밑줄', on: false },
+];
+
+const VERB_COLUMNS = [
+  {
+    tone: 'neutral',
+    badge: '명사',
+    live: '음소거',
+    muted: '음소거 해제',
+    note: '지금 그 상태라는 건지, 누르면 그렇게 된다는 건지 알 수 없다.',
+  },
+  {
+    tone: 'good',
+    badge: '동사',
+    live: '음소거하기',
+    muted: '음소거 해제하기',
+    note: '누르면 일어날 동작으로 읽힌다.',
+  },
+];
+---
+
+<div class="demo sm-demo" data-method={method}>
+  {
+    method === 'filled' && (
+      <div class="sm-grid">
+        <figure class="sm-col">
+          <figcaption class="sm-head">
+            <span class="sm-badge sm-badge--good">옆 버튼 있음</span>
+            <span class="sm-title">서식 도구 모음</span>
+          </figcaption>
+          <div class="sm-box">
+            <div class="sm-toolbar" role="group" aria-label="글자 서식">
+              {FORMATS.map((f) => (
+                <button
+                  type="button"
+                  class={`sm-tool sm-tool--${f.id}`}
+                  data-toggle
+                  aria-pressed={String(f.on)}
+                  aria-label={f.label}
+                >
+                  {f.glyph}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div class="sm-note">채워지지 않은 옆 버튼과 견주면 어느 쪽이 켜졌는지 보인다.</div>
+        </figure>
+
+        <figure class="sm-col">
+          <figcaption class="sm-head">
+            <span class="sm-badge sm-badge--neutral">옆 버튼 없음</span>
+            <span class="sm-title">음소거 버튼</span>
+          </figcaption>
+          <div class="sm-box">
+            <button type="button" class="sm-round" data-toggle aria-pressed="true" aria-label="음소거">
+              <MicIcon slash />
+            </button>
+            <details class="sm-reveal">
+              <summary>지금 상태 보기</summary>
+              <span class="sm-if-muted">음소거 중</span>
+              <span class="sm-if-live">마이크 켜짐</span>
+            </details>
+          </div>
+          <div class="sm-note">채워진 쪽이 음소거인지, 이 버튼만 보고는 확신하기 어렵다.</div>
+        </figure>
+      </div>
+    )
+  }
+
+  {
+    method === 'split' && (
+      <div class="sm-row">
+        <button type="button" class="sm-zoom" data-toggle data-muted="false">
+          <span class="sm-zoom-icon">
+            <span class="sm-if-live">
+              <MicIcon />
+            </span>
+            <span class="sm-if-muted">
+              <MicIcon slash />
+            </span>
+          </span>
+          <span class="sm-zoom-text">
+            <span class="sm-if-live">음소거하기</span>
+            <span class="sm-if-muted">음소거 해제하기</span>
+          </span>
+        </button>
+
+        <div class="sm-legend">
+          <div>
+            <span class="sm-key">아이콘</span>
+            지금 상태 —<span class="sm-if-live"> 마이크 켜짐</span>
+            <span class="sm-if-muted"> 음소거 중</span>
+          </div>
+          <div>
+            <span class="sm-key">글자</span>
+            누르면 일어날 일
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {
+    method === 'verb' && (
+      <div class="sm-grid">
+        {VERB_COLUMNS.map((col) => (
+          <figure class="sm-col">
+            <figcaption class="sm-head">
+              <span class={`sm-badge sm-badge--${col.tone}`}>{col.badge}</span>
+              <span class="sm-title">{col.muted}</span>
+            </figcaption>
+            <div class="sm-box">
+              <button type="button" class="sm-text-btn" data-toggle data-muted="true">
+                <span class="sm-if-live">{col.live}</span>
+                <span class="sm-if-muted">{col.muted}</span>
+              </button>
+            </div>
+            <div class="sm-note">{col.note}</div>
+          </figure>
+        ))}
+      </div>
+    )
+  }
+
+  {
+    method === 'choices' && (
+      <div class="sm-row">
+        <div class="sm-box">
+          <fieldset class="sm-segment">
+            <legend class="sm-sr">마이크</legend>
+            <label class="sm-seg">
+              <input type="radio" name="sm-mic" value="live" checked />
+              <span>마이크 켜짐</span>
+            </label>
+            <label class="sm-seg">
+              <input type="radio" name="sm-mic" value="muted" />
+              <span>음소거</span>
+            </label>
+          </fieldset>
+        </div>
+        <div class="sm-note">지금 상태와 다른 선택지가 함께 보인다.</div>
+      </div>
+    )
+  }
+</div>
+
+<style lang="scss">
+  .sm-demo {
+    margin-block: rem(12) rem(20);
+    padding: rem(18) rem(14);
+    background: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: rem(7);
+    color: #3b3e49;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .sm-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: rem(16);
+
+    @media (max-width: $bp-mobile) {
+      grid-template-columns: 1fr;
+      gap: rem(20);
+    }
+  }
+
+  .sm-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: rem(12) rem(20);
+  }
+
+  .sm-col {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .sm-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.86rem;
+  }
+
+  .sm-title {
+    font-weight: 600;
+    color: #222;
+  }
+
+  .sm-badge {
+    flex: none;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.5;
+
+    &--good {
+      color: #1e874b;
+      background: #e9f7ef;
+    }
+    &--neutral {
+      color: #5b6170;
+      background: #eceef2;
+    }
+  }
+
+  .sm-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: rem(8) rem(14);
+    min-height: rem(72);
+    padding: rem(12);
+    border: 1px solid #cfcfd4;
+    border-radius: rem(8);
+    background: #fff;
+  }
+
+  .sm-note {
+    font-size: 0.8rem;
+    color: #777;
+
+    .sm-col & {
+      margin-top: 0.45rem;
+    }
+  }
+
+  // 공통 버튼 초기화
+  .sm-tool,
+  .sm-round,
+  .sm-zoom,
+  .sm-text-btn {
+    border: 1px solid #cfcfd4;
+    background: #fff;
+    color: #222;
+    font: inherit;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+  }
+
+  // 켜진 모양 = 배경 채움. 표현(글자·아이콘)은 고정
+  .sm-tool,
+  .sm-round {
+    display: grid;
+    place-items: center;
+    width: rem(40);
+    height: rem(40);
+    padding: 0;
+
+    &:hover {
+      background: #f4f4f6;
+    }
+
+    &[aria-pressed='true'] {
+      border-color: #2f3340;
+      background: #2f3340;
+      color: #fff;
+    }
+  }
+
+  .sm-toolbar {
+    display: flex;
+    gap: rem(4);
+  }
+
+  .sm-tool {
+    width: rem(34);
+    height: rem(34);
+    border-radius: rem(6);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1;
+
+    &--bold {
+      font-weight: 700;
+    }
+    &--italic {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+    }
+    &--underline {
+      text-decoration: underline;
+    }
+  }
+
+  .sm-round {
+    border-radius: 50%;
+  }
+
+  .sm-reveal {
+    font-size: 0.8rem;
+    color: #5b6170;
+
+    summary {
+      cursor: pointer;
+      user-select: none;
+
+      &:focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+      }
+    }
+
+    span {
+      font-weight: 600;
+      color: #222;
+    }
+  }
+
+  // 상태별 노출 — 기본은 마이크 켜짐(live) 쪽
+  .sm-if-muted {
+    display: none;
+  }
+
+  [data-muted='true'] .sm-if-live,
+  .sm-row:has([data-muted='true']) .sm-if-live,
+  .sm-box:has([aria-pressed='true']) .sm-if-live {
+    display: none;
+  }
+
+  [data-muted='true'] .sm-if-muted,
+  .sm-row:has([data-muted='true']) .sm-if-muted,
+  .sm-box:has([aria-pressed='true']) .sm-if-muted {
+    display: inline;
+  }
+
+  // 아이콘(현재 상태) + 글자(다음 동작) 묶음
+  .sm-zoom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: rem(4);
+    min-width: rem(132);
+    padding: rem(10) rem(14);
+    border-radius: rem(8);
+    font-size: 0.8rem;
+
+    &:hover {
+      background: #f4f4f6;
+    }
+
+    &[data-muted='true'] .sm-zoom-icon {
+      color: #d93025;
+    }
+  }
+
+  .sm-zoom-icon {
+    color: #1e874b;
+  }
+
+  .sm-legend {
+    font-size: 0.8rem;
+    color: #5b6170;
+  }
+
+  .sm-key {
+    display: inline-block;
+    min-width: rem(44);
+    font-weight: 600;
+    color: #222;
+  }
+
+  .sm-text-btn {
+    padding: 0.4rem 0.9rem;
+    border-radius: rem(6);
+    font-size: 0.85rem;
+
+    &:hover {
+      background: #f4f4f6;
+    }
+  }
+
+  // 선택지 전부 노출 — 네이티브 라디오(방향키 이동·선택 상태는 브라우저 담당)
+  .sm-segment {
+    display: flex;
+    min-width: 0;
+    margin: 0;
+    padding: rem(2);
+    border: 1px solid #ddd;
+    border-radius: rem(7);
+    background: #eceef2;
+  }
+
+  .sm-seg {
+    position: relative;
+    padding: 0.3rem 0.8rem;
+    border-radius: rem(6);
+    color: #6b7080;
+    font-size: 0.8rem;
+    cursor: pointer;
+    user-select: none;
+
+    input {
+      position: absolute;
+      inset: 0;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    &:has(input:checked) {
+      background: #fff;
+      color: #111;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    }
+
+    &:has(input:focus-visible) {
+      outline: 2px solid #3b82f6;
+      outline-offset: 1px;
+    }
+  }
+
+  .sm-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+</style>
+
+<script>
+  import './script.js';
+</script>
