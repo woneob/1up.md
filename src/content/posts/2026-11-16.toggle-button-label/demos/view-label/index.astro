@@ -1,0 +1,361 @@
+---
+// 본문 인라인 데모(standalone 문서 아님). 보기 방식 전환 버튼의 표현 3종 비교.
+// - next: 누르면 바뀔 다음 방식을 표현(미래 동작)
+// - current: 지금 적용된 방식을 표현(현재 상태)
+// - segment: 선택지 전부 노출 + 현재 쪽 강조(세그먼트 컨트롤)
+// 초기 상태(카드형)를 SSR 로 확정(제로 CLS) → script.js 는 전환·옵션만 담당.
+const VIEWS = [
+  { id: 'card', label: '카드형' },
+  { id: 'list', label: '리스트형' },
+  { id: 'gallery', label: '갤러리형' },
+];
+
+const columns = [
+  {
+    mode: 'next',
+    tone: 'neutral',
+    badge: '미래 동작',
+    title: '다음 방식을 표현',
+    label: VIEWS[1].label,
+    note: '버튼만 보고는 지금 어떤 방식인지 알 수 없다.',
+  },
+  {
+    mode: 'current',
+    tone: 'neutral',
+    badge: '현재 상태',
+    title: '지금 방식을 표현',
+    label: VIEWS[0].label,
+    note: '지금 방식은 알 수 있지만, 누르면 어디로 가는지는 알 수 없다.',
+  },
+  {
+    mode: 'segment',
+    tone: 'good',
+    badge: '세그먼트',
+    title: '선택지를 모두 노출',
+    note: '현재 방식과 다른 선택지가 한눈에 보인다.',
+  },
+];
+
+const items = Array.from({ length: 6 }, (_, i) => i);
+---
+
+<div class="demo vl-demo">
+  <div class="vl-options">
+    <label class="vl-option">
+      <input type="checkbox" data-option="blind" />
+      <span>미리보기 가리고 버튼만 보기</span>
+    </label>
+  </div>
+
+  <div class="vl-grid">
+    {
+      columns.map((col) => (
+        <figure class="vl-col" data-mode={col.mode}>
+          <figcaption class="vl-head">
+            <span class={`vl-badge vl-badge--${col.tone}`}>{col.badge}</span>
+            <span class="vl-title">{col.title}</span>
+          </figcaption>
+
+          <div class="vl-box">
+            <div class="vl-bar">
+              {col.mode === 'segment' ? (
+                <div class="vl-segment" role="group" aria-label="보기 방식">
+                  {VIEWS.map((v, i) => (
+                    <button
+                      type="button"
+                      class="vl-seg"
+                      data-view={v.id}
+                      aria-pressed={i === 0 ? 'true' : 'false'}
+                    >
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <button type="button" class="vl-btn">
+                  {col.label}
+                </button>
+              )}
+            </div>
+
+            <div class="vl-preview" data-view="card" aria-hidden="true">
+              {items.map(() => (
+                <span class="vl-item">
+                  <span class="vl-thumb" />
+                  <span class="vl-lines">
+                    <span />
+                    <span />
+                  </span>
+                </span>
+              ))}
+              <span class="vl-blind">?</span>
+            </div>
+          </div>
+
+          <div class="vl-note">{col.note}</div>
+        </figure>
+      ))
+    }
+  </div>
+</div>
+
+<style lang="scss">
+  .vl-demo {
+    padding: rem(24) rem(14) rem(28);
+    background: #f9f9f9;
+    border: 1px solid #e3e3e3;
+    border-radius: rem(7);
+    color: #3b3e49;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+
+  .vl-options {
+    display: flex;
+    justify-content: center;
+    margin-bottom: rem(20);
+    font-size: 0.8rem;
+    color: #555;
+  }
+
+  .vl-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    user-select: none;
+
+    input {
+      margin: 0;
+      accent-color: #3b82f6;
+    }
+  }
+
+  .vl-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: rem(16);
+
+    @media (max-width: $bp-content) {
+      grid-template-columns: 1fr;
+      max-width: rem(320);
+      margin-inline: auto;
+      gap: rem(24);
+    }
+  }
+
+  .vl-col {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .vl-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.86rem;
+  }
+
+  .vl-title {
+    font-weight: 600;
+    color: #222;
+  }
+
+  .vl-badge {
+    flex: none;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.5;
+
+    &--good {
+      color: #1e874b;
+      background: #e9f7ef;
+    }
+    &--neutral {
+      color: #5b6170;
+      background: #eceef2;
+    }
+  }
+
+  .vl-box {
+    overflow: hidden;
+    border: 1px solid #cfcfd4;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .vl-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid #ececf0;
+  }
+
+  .vl-btn,
+  .vl-seg {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid #cfcfd4;
+    border-radius: 6px;
+    background: #fff;
+    color: #222;
+    font: inherit;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid #3b82f6;
+      outline-offset: 1px;
+    }
+  }
+
+  .vl-btn:hover {
+    background: #f4f4f6;
+  }
+
+  .vl-segment {
+    display: flex;
+    padding: 2px;
+    border-radius: 7px;
+    background: #eceef2;
+  }
+
+  .vl-seg {
+    padding-inline: 0.55rem;
+    border-color: transparent;
+    background: none;
+    color: #6b7080;
+
+    &[aria-pressed='true'] {
+      background: #fff;
+      color: #111;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  // 보기 방식별 배치 — data-view 로 전환
+  .vl-preview {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    height: rem(176);
+    overflow: hidden;
+    padding: 0.6rem;
+    align-content: start;
+
+    &[data-view='card'] {
+      grid-template-columns: 1fr 1fr;
+
+      .vl-item {
+        flex-direction: column;
+      }
+      .vl-thumb {
+        height: rem(22);
+      }
+      .vl-item:nth-child(n + 5) {
+        display: none;
+      }
+    }
+
+    &[data-view='list'] {
+      grid-template-columns: 1fr;
+      gap: 4px;
+
+      .vl-item {
+        flex-direction: row;
+        align-items: center;
+      }
+      .vl-thumb {
+        flex: none;
+        width: rem(18);
+        height: rem(14);
+      }
+      .vl-lines span:nth-child(2) {
+        display: none;
+      }
+    }
+
+    &[data-view='gallery'] {
+      grid-template-columns: repeat(3, 1fr);
+
+      // 세로 방향이어야 썸네일이 칸 폭을 채움(가로면 폭 0)
+      .vl-item {
+        flex-direction: column;
+        padding: 0;
+        border: 0;
+      }
+      .vl-thumb {
+        height: rem(58);
+        border-radius: 4px;
+      }
+      .vl-lines {
+        display: none;
+      }
+    }
+  }
+
+  .vl-item {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid #ececf0;
+    border-radius: 5px;
+  }
+
+  .vl-thumb {
+    border-radius: 3px;
+    background: #dbe4f3;
+  }
+
+  .vl-lines {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+
+    span {
+      height: 4px;
+      border-radius: 2px;
+      background: #e3e3e8;
+
+      &:nth-child(2) {
+        width: 60%;
+      }
+    }
+  }
+
+  // 가리기 옵션 — 버튼만으로 현재/다음 상태를 추측해 보게
+  .vl-blind {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: #f1f2f5;
+    color: #b0b4bf;
+    font-size: 1.6rem;
+    font-weight: 600;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+
+    .vl-demo.is-blind & {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  .vl-note {
+    margin-top: 0.45rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #777;
+  }
+</style>
+
+<script>
+  import './script.js';
+</script>
