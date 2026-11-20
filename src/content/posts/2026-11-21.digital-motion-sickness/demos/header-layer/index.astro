@@ -1,0 +1,607 @@
+---
+// 자동 숨김 헤더 3D 레이어 & 윈도우 마스크(오프스크린) 데모
+// - 드래그로 3D 시점을 자유롭게 회전(rotateX / rotateY)하며 층간 분리와 오프스크린을 관찰
+// - 각 층의 라벨과 지시선은 해당 층(Z 깊이)에そのまま 속해, 회전 시 앞층 마스크 뒤로 자연스럽게 가려짐
+const id = `hl-${Math.random().toString(36).slice(2, 8)}`;
+const sentences = [
+  '가장 앞의 반투명 유리판에 뚫린 구멍이 사용자가 보는 화면(윈도우)이다.',
+  '구멍 안쪽에 있는 영역만 화면에 보이고, 구멍을 벗어나 유리판 뒤로 가면 오프스크린이다.',
+  '레이어를 분리하면 헤더만 앞쪽 층에서 구멍 바깥(유리판 뒤)으로 이동한다.',
+  '한 층에 배치하면 헤더가 본문과 같은 층에 붙어 있어, 헤더가 빠질 때 본문까지 딸려 올라간다.',
+  '화면을 드래그해 자유롭게 돌려 보며 각 층이 어떻게 움직이는지 비교해 보자.',
+];
+const paragraphs = Array.from({ length: 18 }, (_, i) => ({
+  no: i + 1,
+  text: sentences[i % sentences.length],
+}));
+---
+
+<div class="layer-demo" data-layer-demo data-mode="overlay" data-view="2d">
+  <div class="toolbar">
+    <div class="seg" role="radiogroup" aria-label="구조 선택">
+      <label>
+        <input type="radio" name={`${id}-mode`} value="overlay" data-mode-option checked />
+        <span class="segItem">헤더만 움직임</span>
+      </label>
+      <label>
+        <input type="radio" name={`${id}-mode`} value="push" data-mode-option />
+        <span class="segItem">본문까지 움직임</span>
+      </label>
+    </div>
+    <div class="seg segView" role="radiogroup" aria-label="시점 선택">
+      <label title="3D 측면 보기">
+        <input type="radio" name={`${id}-view`} value="3d" data-view-option aria-label="3D 측면 보기" />
+        <span class="segItem">
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 2.5 16.5 6.25v7.5L10 17.5 3.5 13.75v-7.5L10 2.5Z" />
+            <path d="M10 10 16.5 6.25M10 10 3.5 6.25M10 10v7.5" />
+          </svg>
+          <span>3D</span>
+        </span>
+      </label>
+      <label title="2D 정면 보기">
+        <input type="radio" name={`${id}-view`} value="2d" data-view-option checked aria-label="2D 정면 보기" />
+        <span class="segItem">
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="3.5" width="13" height="13" rx="2" />
+            <path d="M3.5 8h13" />
+          </svg>
+          <span>2D</span>
+        </span>
+      </label>
+    </div>
+  </div>
+
+  <div class="stage" data-stage>
+    <div class="scene" data-scene>
+      <!-- 1. 가장 뒤층 (Z=0): 본문 레이어 -->
+      <div class="bodyLayer" aria-hidden="true">
+        <div class="bodyClip">
+          <div class="bodyTrack" data-body-track>
+            {paragraphs.map(({ no, text }) => (
+              <div class="para"><span class="no">{no}</span>{text}</div>
+            ))}
+          </div>
+        </div>
+        <span class="layerBadge badgeBody" data-badge="body">본문 층 (고정)</span>
+      </div>
+
+      <!-- 2. 가운데층 (레이어 분리 시 Z=32px / 한 층에 배치 시 Z=0): 헤더 레이어 -->
+      <div class="headerLayer" aria-hidden="true">
+        <div class="headerBar">
+          <span class="logo">LOGO</span>
+          <span class="layerBadge badgeHeader" data-badge="header">헤더 층 (분리됨)</span>
+        </div>
+      </div>
+
+      <!-- 3. 가장 앞층 (Z=64px): 가운데 둥근 사각형 구멍(뷰포트)이 뚫린 불투명 유리 마스크 판 -->
+      <div class="windowMask" aria-hidden="true">
+        <div class="windowGlass">
+          <svg class="glassSvg" aria-hidden="true">
+            <defs>
+              <pattern
+                id={`${id}-stripe`}
+                width="14"
+                height="14"
+                patternTransform="rotate(-45)"
+                patternUnits="userSpaceOnUse"
+              >
+                <rect width="7" height="14" fill="rgb(202 213 228 / 78%)" />
+                <rect x="7" width="7" height="14" fill="rgb(224 231 242 / 86%)" />
+              </pattern>
+              <mask id={`${id}-hole`}>
+                <rect width="100%" height="100%" fill="#fff" />
+                <rect class="holeCutout" fill="#000" />
+              </mask>
+            </defs>
+            <rect width="100%" height="100%" fill={`url(#${id}-stripe)`} mask={`url(#${id}-hole)`} />
+          </svg>
+          <div class="glassTop">
+            <span class="offscreenLabel">오프스크린 (유리 마스크 뒤)</span>
+          </div>
+          <div class="windowHole"></div>
+        </div>
+        <span class="layerBadge badgeMask">윈도우 마스크 (구멍 = 화면)</span>
+      </div>
+
+      <!-- 실제 스크롤 입력을 받는 투명 프록시 (구멍 영역) -->
+      <div
+        class="scrollProxy"
+        data-scroll-proxy
+        tabindex="0"
+        role="region"
+        aria-label="3D 레이어 예시 화면 (스크롤 가능)"
+        data-pagefind-ignore
+      >
+        <div class="scrollSpacer" data-scroll-spacer></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="hint">천천히 위아래로 스크롤하며 문장을 읽어 보면 두 방식의 차이를 뚜렷하게 체감할 수 있다.</span>
+  </div>
+</div>
+
+<style lang="scss">
+  .layer-demo {
+    --accent: #315bb5;
+    --muted: #555;
+    --bar: #{rem(46)};
+    --vp-w: #{rem(216)};
+    --vp-h: #{rem(240)};
+    --mask-top: #{rem(58)};
+    --mask-bot: #{rem(50)};
+    --mask-side: #{rem(22)};
+    --z-header: #{rem(32)};
+    --z-mask: #{rem(64)};
+
+    display: grid;
+    gap: rem(14);
+    padding: rem(20);
+    border-radius: rem(10);
+    box-shadow:
+      inset 0 0 0 1px rgb(0 0 0 / 6%),
+      inset 0 2px 2px rgb(0 0 0 / 4%);
+    background: #f6f6f6;
+    color: #222;
+    color-scheme: light;
+    font-size: rem(14);
+    text-align: left;
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: rem(8) rem(12);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: rem(13);
+    }
+
+    // 세그먼트 컨트롤
+    .seg {
+      display: inline-flex;
+      padding: rem(3);
+      border-radius: rem(9);
+      background: rgb(0 0 0 / 8%);
+      box-shadow: 
+        inset 0 1px 1px rgb(0 0 0 / 8%), 
+        0 1px rgb(255 255 255 / 60%);
+      gap: rem(2);
+      label { position: relative; cursor: pointer; }
+      input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+      .segItem {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: rem(5);
+        min-block-size: rem(28);
+        padding: 0 rem(12);
+        border-radius: rem(7);
+        color: #4b5262;
+        font-size: rem(13);
+        font-weight: 500;
+        @media (prefers-reduced-motion: no-preference) {
+          transition:
+            background-color 0.18s ease,
+            color 0.18s ease,
+            box-shadow 0.18s ease;
+        }
+      }
+      input:checked + .segItem {
+        background: #fff;
+        color: var(--accent);
+        font-weight: 600;
+        box-shadow:
+          0 1px 3px rgb(0 0 0 / 12%),
+          0 0 0 0.5px rgb(0 0 0 / 5%);
+      }
+      input:focus-visible + .segItem {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+    }
+
+    .segView .segItem {
+      padding: 0 rem(10);
+    }
+
+    // 3D 무대 (원근 왜곡 없이 각 변의 기울기가 평행하도록 직교 투영)
+    .stage {
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: calc(var(--mask-top) + #{rem(38)}) rem(16) calc(var(--mask-bot) + #{rem(38)});
+      border: 1px solid #dce2ed;
+      border-radius: rem(10);
+      background: 
+        radial-gradient(circle at 50% 45%, #fff 0%, #fafafa 65%, #ffffff 100%);
+      box-shadow: 
+        inset 0 1px rgb(0 0 0 / 2%), 
+        0 1px rgb(255 255 255 / 80%);
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
+
+    &[data-dragging] {
+      .stage { cursor: grabbing; }
+      .scene { transition: none; }
+    }
+
+    .scene {
+      --scroll: 0px;
+      --rx: 0deg;
+      --ry: 0deg;
+      position: relative;
+      inline-size: var(--vp-w);
+      block-size: var(--vp-h);
+      transform-style: preserve-3d;
+      transform: rotateX(var(--rx)) rotateY(var(--ry));
+      @media (prefers-reduced-motion: no-preference) {
+        transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+    }
+
+    // 한 층에 배치(push) 모드: 헤더와 본문 박스가 같은 Z=0 평면에서 위아래로 맞닿아 본문 박스 자체가 위아래로 밀려 움직임
+    &[data-mode='push'] {
+      --z-header: 0px;
+      .headerBar {
+        box-shadow: none;
+      }
+      .bodyClip {
+        inset: var(--bar) 0 calc(var(--bar) * -1);
+        border-start-start-radius: 0;
+        border-start-end-radius: 0;
+      }
+      .bodyTrack {
+        padding-block-start: rem(12);
+      }
+      .badgeHeader {
+        --color: #a1281d;
+        background: #a1281d;
+      }
+      .badgeBody {
+        --color: #a1281d;
+        inset-block-start: calc(var(--bar) + #{rem(96)});
+        border-color: #a1281d;
+        color: #a1281d;
+      }
+    }
+
+    // 정면(2D) 보기 모드: 카메라 회전 해제 + 각 층 밀착
+    &[data-view='2d'] {
+      --z-header: #{rem(2)};
+      --z-mask: #{rem(4)};
+      .layerBadge {
+        opacity: 0;
+      }
+      .headerBar {
+        box-shadow: none;
+      }
+    }
+
+    // 각 3D 레이어에 직접 속하는 라벨 배지 + 지시선 (앞층 마스크 뒤에 놓이면 선과 라벨 모두 자연스럽게 마스크 뒤로 가려짐)
+    .layerBadge {
+      --color: #2b3a55;
+      position: absolute;
+      padding: rem(3) rem(8);
+      border-radius: rem(6);
+      font-size: rem(11);
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+      pointer-events: none;
+      @media (prefers-reduced-motion: no-preference) {
+        transition:
+          inset-block-start 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          translate 0.26s ease-out,
+          opacity 0.3s ease,
+          background-color 0.25s ease,
+          border-color 0.25s ease,
+          color 0.25s ease;
+      }
+    }
+
+    .badgeHeader {
+      --lead: #{rem(48)};
+      inset-block-start: 50%;
+      inset-inline-start: calc(var(--lead) * -1);
+      transform: translate(-100%, -50%);
+      background: #2b3a55;
+      color: #fff;
+      &::after {
+        content: '';
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-end: calc(var(--lead) * -1);
+        inline-size: var(--lead);
+        block-size: 1.5px;
+        background: var(--color);
+      }
+    }
+
+    .badgeMask {
+      --color: #4a5a75;
+      --lead: #{rem(16)};
+      inset-block-end: rem(20);
+      inset-inline-start: calc(var(--lead) * -1);
+      transform: translate(-100%, 50%);
+      background: #4a5a75;
+      color: #fff;
+      &::after {
+        content: '';
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-end: calc(var(--lead) * -1);
+        inline-size: var(--lead);
+        block-size: 1.5px;
+        background: var(--color);
+      }
+    }
+
+    .badgeBody {
+      --lead: #{rem(36)};
+      inset-block-start: rem(96);
+      inset-inline-end: calc(var(--lead) * -1);
+      transform: translate(100%, -50%);
+      background: #fff;
+      border: 1.5px solid #2b3a55;
+      color: #2b3a55;
+      &::before {
+        content: '';
+        position: absolute;
+        inset-block-start: 50%;
+        inset-inline-start: calc(var(--lead) * -1);
+        inline-size: var(--lead);
+        block-size: 1.5px;
+        background: var(--color);
+      }
+    }
+
+    // 1. 가장 뒤층 (Z=0): 본문 층
+    .bodyLayer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      transform: translateZ(0);
+    }
+
+    // 본문 영역 박스: 레이어 분리 시 화면(0..vp-h)에 고정, 한 층에 배치 시 헤더와 함께 위아래로 통째로 이동
+    .bodyClip {
+      position: absolute;
+      inset: 0;
+      border-radius: rem(10);
+      background: #fff;
+      box-shadow:
+        12px 18px 28px rgb(20 30 50 / 14%),
+        0 1px 4px rgb(0 0 0 / 10%),
+         0 0 0px 1px rgb(0 0 0 / 6%);
+      overflow: hidden;
+      @media (prefers-reduced-motion: no-preference) {
+        transition:
+          inset 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          translate 0.26s ease-out;
+      }
+    }
+
+    .bodyTrack {
+      display: grid;
+      gap: rem(12);
+      padding: calc(var(--bar) + #{rem(12)}) rem(14) rem(16);
+      translate: 0 calc(var(--scroll) * -1);
+    }
+
+    .para {
+      font-size: rem(13);
+      line-height: 1.55;
+      color: #222;
+      & + .para {
+        padding-block-start: rem(12);
+        border-block-start: 1px solid #e2e5ec;
+      }
+      .no {
+        display: inline-grid;
+        place-items: center;
+        min-inline-size: rem(19);
+        block-size: rem(19);
+        margin-inline-end: rem(6);
+        border-radius: rem(999);
+        background: #e6ebf5;
+        color: var(--accent);
+        font-size: rem(11);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+    }
+
+    // 2. 가운데층 (Z=32px 또는 push 시 Z=0): 헤더 층
+    .headerLayer {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 2;
+      block-size: var(--bar);
+      transform: translateZ(var(--z-header));
+      pointer-events: none;
+      @media (prefers-reduced-motion: no-preference) {
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+    }
+
+    .headerBar {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 rem(14);
+      border-radius: rem(8) rem(8) 0 0;
+      background: #2b3a55;
+      color: #fff;
+      box-shadow:
+        -10px 14px 20px rgb(20 30 50 / 24%),
+        0 2px 6px rgb(0 0 0 / 15%);
+      @media (prefers-reduced-motion: no-preference) {
+        transition:
+          translate 0.26s ease-out,
+          box-shadow 0.35s ease;
+      }
+    }
+
+    .logo {
+      font-size: rem(14);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    // 헤더 숨김 시: 구멍 위쪽(유리 마스크 뒤 오프스크린)으로 이동
+    &[data-hidden] .headerBar {
+      translate: 0 -100%;
+    }
+
+    // 한 층에 배치(push) + 헤더 숨김: 헤더가 구멍 밖으로 빠질 때 맞닿은 본문 박스 전체가 함께 딸려 올라감
+    &[data-mode='push'][data-hidden] {
+      .bodyClip,
+      .badgeBody {
+        translate: 0 calc(var(--bar) * -1);
+      }
+    }
+
+    // 3. 가장 앞층 (Z=64px): 가운데 구멍이 뚫린 반투명 유리 마스크 판
+    .windowMask {
+      position: absolute;
+      inset: calc(var(--mask-top) * -1) calc(var(--mask-side) * -1) calc(var(--mask-bot) * -1);
+      z-index: 3;
+      transform: translateZ(var(--z-mask));
+      pointer-events: none;
+      @media (prefers-reduced-motion: no-preference) {
+        transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+    }
+
+    .windowGlass {
+      position: absolute;
+      inset: 0;
+      border-radius: rem(16);
+      box-shadow:
+        -12px 18px 28px rgb(20 32 56 / 18%), 
+        0 0 0 1px rgb(51 67 104 / 25%), 
+        inset 0 1px rgb(255 255 255 / 75%);
+      overflow: hidden;
+    }
+
+    // 가운데 둥근 사각형 구멍이 뚫린 간유리(Frosted Glass) SVG 마스크
+    .glassSvg {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    .holeCutout {
+      x: calc(var(--mask-side) - 1px);
+      y: calc(var(--mask-top) - 1px);
+      width: var(--vp-w);
+      height: var(--vp-h);
+      rx: #{rem(10)};
+      ry: #{rem(10)};
+    }
+
+    .glassTop {
+      position: absolute;
+      inset: 0 0 auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-block-start: rem(7);
+    }
+
+    .offscreenLabel {
+      padding: rem(2) rem(8);
+      border-radius: rem(999);
+      background: rgb(55 68 92 / 84%);
+      box-shadow: 
+        inset 0 2px 3px rgb(0 0 0 / 10%),
+        0 1px rgb(255 255 255 / 40%);
+      color: #fff;
+      font-size: rem(11);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    // 가운데 뚫린 둥근 네모 구멍(뷰포트): 내부는 완전히 투명하고 둥근 절단면 테두리만 표현
+    .windowHole {
+      position: absolute;
+      inset: calc(var(--mask-top) - 1px) calc(var(--mask-side) - 1px) calc(var(--mask-bot) - 1px);
+      box-sizing: border-box;
+      border-radius: rem(10);
+      box-shadow: 
+        inset 0 1px 0 rgb(0 33 69 / 39%), 
+        inset 0 0 0 1px rgb(255 255 255);
+      background: transparent;
+    }
+
+    // 스크롤 입력 프록시 (구멍 영역 위 투명 스크롤러)
+    .scrollProxy {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      transform: translateZ(calc(var(--z-mask) + #{rem(4)}));
+      scrollbar-width: none;
+      touch-action: pan-y;
+      cursor: grab;
+      &::-webkit-scrollbar { display: none; }
+      &[data-swiping] { cursor: grabbing; }
+      &:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+      }
+    }
+
+    .scrollSpacer {
+      inline-size: 1px;
+      block-size: rem(900);
+    }
+
+    .foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    @media (max-width: $bp-mobile) {
+      --vp-w: #{rem(196)};
+      --vp-h: #{rem(224)};
+      --mask-top: #{rem(54)};
+      --mask-bot: #{rem(44)};
+      --mask-side: #{rem(20)};
+      --z-header: #{rem(28)};
+      --z-mask: #{rem(56)};
+      padding: rem(14);
+      .stage {
+        padding: calc(var(--mask-top) + #{rem(30)}) rem(12) calc(var(--mask-bot) + #{rem(30)});
+      }
+      .layerBadge {
+        display: none;
+      }
+    }
+
+    @media (forced-colors: active) {
+      background: Canvas;
+      color: CanvasText;
+      border-color: CanvasText;
+      .headerBar { border: 1px solid CanvasText; }
+    }
+  }
+</style>
+<script>import './script.js';</script>

@@ -1,0 +1,10 @@
+---
+import HeaderDemo from '../HeaderDemo.astro';
+
+const phones = [
+  { mode: 'overlay', label: '헤더만 움직임' },
+  { mode: 'push', label: '본문까지 움직임' },
+];
+---
+
+<HeaderDemo phones={phones} sync meter />
