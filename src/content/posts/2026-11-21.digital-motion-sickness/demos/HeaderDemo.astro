@@ -1,0 +1,392 @@
+---
+// 자동 숨김 헤더 데모 공용 컴포넌트
+// - phones: [{ mode: 'overlay' | 'push', label? }]
+//   - overlay: 헤더만 transform 으로 이동(본문 고정)
+//   - push: 헤더 높이를 줄여 본문 레이아웃까지 이동
+// - sync: 여러 화면의 스크롤 위치 동기화
+// - meter: 스크롤한 거리 · 본문이 움직인 거리 표시(토글, 화면 하단 고정)
+const { phones, sync = false, meter = false } = Astro.props;
+
+const sentences = [
+  '스크롤을 내리면 헤더가 사라지고 본문이 더 넓게 보인다.',
+  '읽던 줄에 시선을 두고 천천히 스크롤해 보자.',
+  '스크롤을 올리면 숨어 있던 헤더가 다시 나타난다.',
+  '손가락이 움직인 만큼만 본문이 움직이는지 살펴보자.',
+  '방향을 바꾸는 순간 본문이 튀는지 확인해 보자.',
+];
+// 크게 보기(데스크톱 포함)에서도 스크롤이 생길 만큼 충분히
+const paragraphs = Array.from({ length: 40 }, (_, i) => ({ no: i + 1, text: sentences[i % sentences.length] }));
+---
+
+<div class="header-demo" data-header-demo data-sync={sync || undefined}>
+  <div class="phones">
+    {phones.map(({ mode, label }) => (
+      <div class="unit">
+        {label && <div class="caption" data-mode={mode}>{label}</div>}
+        <div class="phone" data-phone data-mode={mode} data-meter={meter || undefined}>
+          <div class="bar" data-bar>
+            <div class="barInner">
+              <div class="barRow">
+                <span class="logo">LOGO</span>
+                <button type="button" class="expand" data-expand aria-label="크게 보기" title="크게 보기">
+                  <svg class="i-open" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>
+                  <svg class="i-close" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          {meter && (
+            <label class="check barCheck">
+              <input type="checkbox" data-meter-toggle />
+              이동 거리 보기
+            </label>
+          )}
+          <div
+            class="scroller"
+            data-scroller
+            tabindex="0"
+            role="region"
+            aria-label={`${label ?? '자동 숨김 헤더'} 예시 화면 (스크롤 가능)`}
+            data-pagefind-ignore
+          >
+            <div class="content" data-content>
+              {paragraphs.map(({ no, text }) => (
+                <div class="para"><span class="no">{no}</span>{text}</div>
+              ))}
+            </div>
+          </div>
+          {meter && (
+            <div class="meter" aria-live="off">
+              <div class="row">
+                <span class="key">스크롤</span>
+                <output data-out="scrolled">0px</output>
+              </div>
+              <div class="row">
+                <span class="key">본문 이동</span>
+                <output data-out="moved">0px</output>
+              </div>
+              <div class="row diff" data-diff="0">
+                <span class="key">차이</span>
+                <output data-out="diff">0px</output>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div class="foot">
+    <span class="hint">화면 안쪽을 위아래로 스크롤</span>
+    {meter && <button type="button" class="reset" data-reset>초기화</button>}
+  </div>
+</div>
+
+<style lang="scss">
+  // 본문 규칙(.postBody p/ul/li)과 충돌 방지로 div·span 만 사용
+  .header-demo {
+    --accent: #315bb5;
+    --muted: #555;
+    --bar: 3.6rem;
+    display: grid;
+    gap: rem(14);
+    padding: rem(20);
+    border-radius: rem(10);
+    box-shadow:
+      inset 0 0 0 1px rgb(0 0 0 / 6%),
+      inset 0 2px 2px rgb(0 0 0 / 4%);
+    background: #f6f6f6;
+    color: #222;
+    color-scheme: light;
+    font-size: rem(15);
+    text-align: left;
+
+    output { font-variant-numeric: tabular-nums; }
+
+    .hint { color: var(--muted); font-size: rem(13); }
+
+    .phones {
+      display: flex;
+      justify-content: center;
+      gap: rem(16);
+    }
+    .unit {
+      display: grid;
+      align-content: start;
+      gap: rem(8);
+      flex: 1;
+      min-inline-size: 0;
+      max-inline-size: rem(280);
+    }
+
+    .caption {
+      font-size: rem(14);
+      font-weight: 600;
+      text-align: center;
+      &[data-mode='overlay'] { color: #14612b; }
+      &[data-mode='push'] { color: #a1281d; }
+    }
+
+    // 예시 화면: 헤더 + 스크롤 영역
+    // - --check: 헤더 하단 체크박스 블록 높이(크게 보기 + meter 일 때만)
+    .phone {
+      --check: 0px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      block-size: rem(340);
+      border: 1px solid #bbb;
+      border-radius: rem(14);
+      background: #fff;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    // 바깥(.bar) 높이가 줄면 아래에 붙은 안쪽(.barInner)이 위부터 잘려 밀려 올라가는 모양
+    .bar {
+      flex: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      block-size: var(--bar);
+      background: #2b3a55;
+      color: #fff;
+      overflow: hidden;
+    }
+    .barInner {
+      flex: none;
+      block-size: var(--bar);
+    }
+    .barRow {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      block-size: var(--bar);
+      padding: 0 rem(14);
+      font-size: rem(15);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+    }
+
+    // 이동 거리 보기 체크박스: 화면마다 헤더 하단에 붙는 블록
+    // - 헤더가 숨겨져도 상단에 남음(sticky 처럼)
+    .barCheck {
+      position: relative;
+      z-index: 1;
+      display: none;
+      flex: none;
+      align-items: center;
+      gap: rem(6);
+      box-sizing: border-box;
+      block-size: var(--check);
+      padding: 0 rem(14);
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+      background: #f4f4f4;
+      color: #222;
+      font-size: rem(13);
+      cursor: pointer;
+      input {
+        inline-size: rem(15);
+        block-size: rem(15);
+        margin: 0;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+    }
+    .phone[data-meter] {
+      --check: #{rem(36)};
+      .barCheck { display: flex; }
+    }
+    .expand {
+      display: grid;
+      place-items: center;
+      inline-size: rem(36);
+      block-size: rem(36);
+      margin-inline-end: rem(-8);
+      padding: 0;
+      border: 0;
+      border-radius: rem(6);
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      .i-close { display: none; }
+      &:hover { background: rgba(255, 255, 255, 0.12); }
+      &:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+    }
+
+    // 크게 보기: 고정 레이어로 브라우저 창에 맞춤
+    .phone[data-expanded] {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 1000;
+      inline-size: 100vw; // 페이지 스크롤바 자리(scrollbar-gutter)까지 덮기
+      block-size: auto;
+      border: 0;
+      border-radius: 0;
+      .expand {
+        .i-open { display: none; }
+        .i-close { display: block; }
+      }
+      .content {
+        max-inline-size: rem(640);
+        margin-inline: auto;
+      }
+      .para { font-size: rem(16); }
+      &[data-meter] {
+        --check: #{rem(44)};
+        .barCheck { font-size: rem(15); }
+      }
+    }
+
+    .scroller {
+      flex: 1;
+      min-block-size: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+      user-select: none;
+      cursor: grab;
+      &::-webkit-scrollbar { display: none; }
+      &[data-swiping] { cursor: grabbing; }
+      &:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+    }
+    .content {
+      display: grid;
+      gap: rem(14);
+      padding: rem(14);
+    }
+    .para {
+      font-size: rem(14);
+      line-height: 1.6;
+      & + .para {
+        padding-block-start: rem(14);
+        border-block-start: 1px solid #d8d8d8;
+      }
+      .no {
+        display: inline-grid;
+        place-items: center;
+        min-inline-size: rem(20);
+        block-size: rem(20);
+        margin-inline-end: rem(6);
+        border-radius: rem(999);
+        background: #e6ebf5;
+        color: var(--accent);
+        font-size: rem(12);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+    }
+
+    // overlay: 헤더를 본문 위 별도 층으로 띄우고 transform 으로만 이동
+    .phone[data-mode='overlay'] {
+      .bar {
+        position: absolute;
+        inset: 0 0 auto;
+        z-index: 1;
+        @media (prefers-reduced-motion: no-preference) {
+          transition: translate 0.2s ease-out;
+        }
+      }
+      // 체크박스 블록도 별도 층, 헤더가 숨으면 헤더 높이만큼 함께 올라가 상단에 고정
+      .barCheck {
+        position: absolute;
+        inset: var(--bar) 0 auto;
+        @media (prefers-reduced-motion: no-preference) {
+          transition: translate 0.2s ease-out;
+        }
+      }
+      .content { padding-block-start: calc(var(--bar) + var(--check) + #{rem(14)}); }
+      &[data-hidden] .bar { translate: 0 -100%; }
+      &[data-hidden] .barCheck { translate: 0 calc(var(--bar) * -1); }
+    }
+
+    // push: 헤더 영역 높이를 줄여 아래 본문 레이아웃까지 이동
+    // - 음수 margin 은 전역 .postBody :first-child { margin-top: 0 } 에 덮여 사용 불가
+    .phone[data-mode='push'] {
+      .bar {
+        @media (prefers-reduced-motion: no-preference) {
+          transition: block-size 0.2s ease-out;
+        }
+      }
+      &[data-hidden] .bar { block-size: 0; }
+    }
+
+    // 초기화: 전환 없이 즉시 복귀
+    .phone[data-instant] :is(.bar, .barCheck) { transition: none; }
+
+    // 이동 거리: 예시 화면 하단 고정 반투명 패널, 토글로 표시
+    // - 스크롤 조작을 가리지 않도록 포인터 이벤트 통과
+    .meter {
+      position: absolute;
+      inset: auto rem(8) rem(8);
+      z-index: 2;
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      max-inline-size: rem(360);
+      margin-inline: auto;
+      padding: rem(6) rem(4);
+      border-radius: rem(8);
+      background: rgb(32 36 43 / 75%);
+      color: #fff;
+      font-size: rem(11);
+      line-height: 1.3;
+      text-align: center;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+      .row { display: grid; }
+      .key { color: rgb(255 255 255 / 0.72); font-size: rem(10); }
+      output { font-weight: 600; }
+      .diff[data-diff='0'] output { color: #8fe3a8; }
+      .diff:not([data-diff='0']) output { color: #ff9b8f; }
+    }
+    // 크게 보기: 본문 글자 크기에 맞춰 확대
+    .phone[data-expanded] .meter {
+      inset: auto rem(16) rem(16);
+      max-inline-size: rem(480);
+      padding: rem(10) rem(8);
+      border-radius: rem(12);
+      font-size: rem(16);
+      .key { font-size: rem(13); }
+    }
+    .phone[data-meter-on] .meter { display: grid; }
+
+    .foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: rem(8);
+    }
+    .reset {
+      padding: rem(4) rem(12);
+      border: 1px solid #888;
+      border-radius: rem(8);
+      background: #fff;
+      color: inherit;
+      font: inherit;
+      font-size: rem(13);
+      cursor: pointer;
+      &:hover { background: #f5f5f5; }
+      &:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    }
+
+    @media (max-width: $bp-mobile) {
+      padding: rem(14);
+      .phones { gap: rem(10); }
+      .content { padding-inline: rem(10); }
+      .para { font-size: rem(13); }
+    }
+    @media (forced-colors: active) {
+      background: Canvas;
+      color: CanvasText;
+      border-color: CanvasText;
+      .bar { border-block-end: 1px solid CanvasText; }
+    }
+  }
+</style>
+<script>import './header-demo.js';</script>
