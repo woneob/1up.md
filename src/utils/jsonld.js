@@ -1,4 +1,5 @@
 import site from '~/data/site.config.yml';
+import { oneLine } from '~/utils/oneLine.js';
 
 // JSON-LD 노드 그래프 빌더. site.config.yml 단일 출처.
 // 전 페이지에 baseGraph()(WebSite+Person+로고) 주입 → 페이지별 노드를 @id 참조로 연결
@@ -12,9 +13,6 @@ const ID = {
   person: `${SITE_URL}/#person`,
   logo: `${SITE_URL}/#logo`,
 };
-
-// YAML 블록 스칼라 줄바꿈을 공백으로 정규화.
-const oneLine = (str) => String(str ?? '').replace(/\s*\n\s*/g, ' ').trim();
 
 function socialUrls() {
   const s = site.author?.social ?? {};

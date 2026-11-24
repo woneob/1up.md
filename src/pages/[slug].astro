@@ -1,5 +1,5 @@
 ---
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import DefaultLayout from '~/layouts/DefaultLayout.astro';
 import PostMeta from '~/components/PostMeta.astro';
 import PostTags from '~/components/PostTags.astro';
@@ -29,9 +29,25 @@ const stats = post.stats;
 const cover = post.cover;
 
 const jsonLd = postGraph(post);
+
+const ogImage = cover
+  ? await getImage({ src: cover, width: 1200, height: 630, fit: 'cover', format: 'jpeg' })
+  : null;
+
+const og = {
+  type: 'article',
+  image: ogImage && {
+    src: ogImage.src,
+    width: ogImage.attributes.width,
+    height: ogImage.attributes.height,
+  },
+  publishedTime: pubDate,
+  modifiedTime: updatedDate || pubDate,
+  tags,
+};
 ---
 
-<DefaultLayout {title} {description} {robots} pageId="post" {jsonLd}>
+<DefaultLayout {title} {description} {robots} pageId="post" {jsonLd} {og}>
   {/* data-pagefind-body 가 있는 페이지만 Pagefind 인덱싱 대상 → 포스트 본문만 검색됨.
       unlisted 포스트는 속성을 생략해 검색 인덱스에서 제외(다른 표면과 동일하게 숨김). */}
   <article data-pagefind-body={!unlisted || undefined}>
