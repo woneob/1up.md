@@ -186,6 +186,14 @@ trailing slash 없음. [astro.config.mjs](astro.config.mjs) `trailingSlash:'neve
 - 페이지별: 홈 `blogGraph()`, 포스트 `postGraph()`(BlogPosting+BreadcrumbList), about `profileGraph()`, 태그 `collectionGraph()`.
 - `publisher` = `Person`(개인 블로그). BlogPosting 커버는 절대 URL(없으면 로고 @id), `dateModified`=`updatedDate ?? pubDate`.
 
+## Open Graph
+
+[Head.astro](src/components/Head.astro)가 전 페이지 `og:*` 출력(기본 `website`). 포스트는 [[slug].astro](src/pages/[slug].astro)가 `og` prop(`type:'article'`·이미지·날짜·태그)을 DefaultLayout 경유로 전달.
+
+- **twitter:* 는 `twitter:card` 만** — X 가 title·description·image 를 `og:*` 로 폴백. 중복 선언 금지.
+- `og:title` = 사이트명 접미사 없는 원제목(멀티라인은 한 줄로), `og:url` = canonical.
+- `og:image` = 커버를 `getImage` 로 1200×630 JPEG 생성(`fit: 'cover'` 중앙 크롭, SNS 크롤러 WebP 미지원 대비). **커버 없으면 생략**(기본 이미지 없음).
+
 ## 조회수 / 좋아요 (D1 + Pages Functions)
 
 정적 사이트 + **Cloudflare Pages Functions + D1**. `functions/` 는 Astro 빌드 무관, Pages 가 Worker 로 서빙.
