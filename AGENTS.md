@@ -168,7 +168,7 @@ trailing slash 없음. [astro.config.mjs](astro.config.mjs) `trailingSlash:'neve
 
 ## 마크다운 렌더링
 
-- Shiki `nord`. `import.meta.env.BUILD_TIME` = 빌드 시점 ISO(astro.config Vite `define`). 사람이 읽는 표기로 포맷할 땐 `timeZone: site.timezone` 지정 — Cloudflare 빌드 서버는 UTC.
+- Shiki 테마 = [github-sharp.json](src/themes/shiki/github-sharp.json)(VS Code GitHub Sharp 테마 추출본). 다른 VS Code 테마로 교체 시 `include` 는 Shiki 미해석 → 병합해 단일 파일로. 코드 블록 박스(여백·테두리·`rem(14)`)는 `.postBody pre.astro-code`, 배경·글자색은 테마 인라인. `import.meta.env.BUILD_TIME` = 빌드 시점 ISO(astro.config Vite `define`). 사람이 읽는 표기로 포맷할 땐 `timeZone: site.timezone` 지정 — Cloudflare 빌드 서버는 UTC.
 - **remark 는 `markdown.processor: unified(...)` 한 곳에만**(`@astrojs/markdown-remark`). `.mdx` 는 `@astrojs/mdx` 가 렌더하되 `extendMarkdownConfig` 로 상속 → `mdx()` 옵션 안 넘김.
   - **⚠️ `processor` 삭제 금지**: Astro 7 에서 remark 의 비deprecated 경로는 이것뿐(`markdown.remarkPlugins`·`mdx({remarkPlugins})` 둘 다 deprecated). `@astrojs/markdown-remark` 를 devDependency 로 직접 선언 — 제거하면 config 깨짐.
 - 플러그인 2개([astro.config.mjs](astro.config.mjs) `remarkPlugins`, **순서 고정**):

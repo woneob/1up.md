@@ -15,6 +15,10 @@ const remarkPlugins = [resolveMissingImages, resolvePostRelativeUrls, colorSwatc
 
 const SITE = 'https://1up.md';
 
+// 코드 하이라이트 테마 = VS Code "GitHub Sharp"(joaomoreno.github-sharp-theme) 정리본.
+// 확장 테마 JSON 에서 name·type·colors·tokenColors 만 추출(JSONC → JSON).
+const shikiTheme = JSON.parse(fs.readFileSync(path.resolve('./src/themes/shiki/github-sharp.json'), 'utf8'));
+
 // CSS vendor prefix·다운레벨 대상. 빌드 시 package.json browserslist → esbuild 타깃으로 변환.
 const cssTarget = browserCssTarget();
 
@@ -70,7 +74,7 @@ export default defineConfig({
       }
     }),
     shikiConfig: {
-      theme: 'nord',
+      theme: shikiTheme,
     },
   },
   vite: {
